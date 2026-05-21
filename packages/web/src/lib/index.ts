@@ -1,1 +1,1 @@
-export {};
+export { initStorage, getStorage, closeStorage } from "./sqlite-init";
