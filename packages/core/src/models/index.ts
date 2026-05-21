@@ -1,5 +1,7 @@
-export { Note, CreateNoteInput, UpdateNoteInput, NoteType, createDefaultNote } from "./note";
-export { Folder, CreateFolderInput, UpdateFolderInput, createDefaultFolder } from "./folder";
-export { Attachment, AttachmentType } from "./attachment";
-export { Tag } from "./tag";
-export { SearchInput, SearchResult, TagFilterMode } from "./search";
+export type { Note, CreateNoteInput, UpdateNoteInput, NoteType } from "./note";
+export { createDefaultNote } from "./note";
+export type { Folder, CreateFolderInput, UpdateFolderInput } from "./folder";
+export { createDefaultFolder } from "./folder";
+export type { Attachment, AttachmentType } from "./attachment";
+export type { Tag } from "./tag";
+export type { SearchInput, SearchResult, TagFilterMode } from "./search";

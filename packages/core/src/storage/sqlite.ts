@@ -1,57 +1,60 @@
 import SQLiteESMFactory from "wa-sqlite/dist/wa-sqlite-async.mjs";
 import * as SQLite from "wa-sqlite";
+import { IDBMinimalVFS } from "wa-sqlite/src/examples/IDBMinimalVFS.js";
 
-let db: number | null = null;
-let api: SQLiteAPI | null = null;
-
-type SQLiteAPI = ReturnType<typeof SQLite.Factory>;
+const DB_NAME = "notes";
+const VFS_NAME = "idb_vfs";
 
 const DDL = `
 CREATE TABLE IF NOT EXISTS folders (
   id TEXT PRIMARY KEY,
-  name TEXT,
+  name TEXT NOT NULL,
   parent_id TEXT,
-  sort_order INTEGER DEFAULT 0,
-  created_at INTEGER,
-  updated_at INTEGER
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS notes (
   id TEXT PRIMARY KEY,
-  title TEXT,
-  content_json TEXT DEFAULT '',
-  md_text TEXT DEFAULT '',
+  title TEXT NOT NULL DEFAULT '',
+  content_json TEXT NOT NULL DEFAULT '',
+  md_text TEXT NOT NULL DEFAULT '',
   folder_id TEXT REFERENCES folders(id),
-  type TEXT DEFAULT 'rich',
-  created_at INTEGER,
-  updated_at INTEGER,
+  type TEXT NOT NULL DEFAULT 'rich',
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
   deleted_at INTEGER,
-  version INTEGER DEFAULT 1
+  version INTEGER NOT NULL DEFAULT 1
 );
 
 CREATE TABLE IF NOT EXISTS attachments (
   id TEXT PRIMARY KEY,
-  note_id TEXT REFERENCES notes(id) ON DELETE CASCADE,
-  type TEXT,
-  filename TEXT,
-  mime_type TEXT,
-  size INTEGER,
-  created_at INTEGER
+  note_id TEXT NOT NULL REFERENCES notes(id) ON DELETE CASCADE,
+  type TEXT NOT NULL,
+  filename TEXT NOT NULL,
+  mime_type TEXT NOT NULL,
+  size INTEGER NOT NULL,
+  created_at INTEGER NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS tags (
   id TEXT PRIMARY KEY,
-  name TEXT UNIQUE
+  name TEXT NOT NULL UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS note_tags (
-  note_id TEXT REFERENCES notes(id) ON DELETE CASCADE,
-  tag_id TEXT REFERENCES tags(id) ON DELETE CASCADE,
+  note_id TEXT NOT NULL REFERENCES notes(id) ON DELETE CASCADE,
+  tag_id TEXT NOT NULL REFERENCES tags(id) ON DELETE CASCADE,
   PRIMARY KEY (note_id, tag_id)
 );
 
 CREATE VIRTUAL TABLE IF NOT EXISTS notes_fts USING fts5(
-  title, content, content=notes, content_rowid=rowid, tokenize=simple
+  title,
+  content_json,
+  md_text,
+  content=notes,
+  content_rowid=id
 );
 
 CREATE INDEX IF NOT EXISTS idx_notes_folder_id ON notes(folder_id);
@@ -59,34 +62,85 @@ CREATE INDEX IF NOT EXISTS idx_notes_deleted_at ON notes(deleted_at);
 CREATE INDEX IF NOT EXISTS idx_notes_updated_at ON notes(updated_at);
 CREATE INDEX IF NOT EXISTS idx_folders_parent_id ON folders(parent_id);
 CREATE INDEX IF NOT EXISTS idx_attachments_note_id ON attachments(note_id);
+CREATE INDEX IF NOT EXISTS idx_note_tags_note_id ON note_tags(note_id);
+CREATE INDEX IF NOT EXISTS idx_note_tags_tag_id ON note_tags(tag_id);
 `;
 
-export async function initSQLite(): Promise<number> {
-  const module = await SQLiteESMFactory();
-  api = SQLite.Factory(module);
-  db = await api.open_v2("notes.db");
-  await api.exec(db, DDL);
-  return db;
+type SQLiteAPI = ReturnType<typeof SQLite.Factory>;
+type SQLiteCompatibleType = number | string | Uint8Array | Array<number> | bigint | null;
+
+let globalDb: number | null = null;
+let globalApi: SQLiteAPI | null = null;
+
+export interface SQLiteDB {
+  sqlite3: SQLiteAPI;
+  db: number;
 }
 
-export async function closeSQLite(): Promise<void> {
-  if (db !== null && api !== null) {
-    await api.close(db);
-    db = null;
-    api = null;
+export async function initSQLite(dbName?: string): Promise<SQLiteDB> {
+  const module = await SQLiteESMFactory();
+  const sqlite3 = SQLite.Factory(module);
+
+  const vfs = new IDBMinimalVFS(dbName ?? DB_NAME);
+  sqlite3.vfs_register(vfs as any, true);
+
+  const db = await sqlite3.open_v2(
+    dbName ?? DB_NAME,
+    SQLite.SQLITE_OPEN_CREATE | SQLite.SQLITE_OPEN_READWRITE,
+    VFS_NAME
+  );
+
+  await sqlite3.exec(db, DDL);
+
+  globalDb = db;
+  globalApi = sqlite3;
+
+  return { sqlite3, db };
+}
+
+export async function closeSQLite(sqliteDB?: SQLiteDB): Promise<void> {
+  if (sqliteDB) {
+    await sqliteDB.sqlite3.close(sqliteDB.db);
+  } else if (globalDb !== null && globalApi !== null) {
+    await globalApi.close(globalDb);
+    globalDb = null;
+    globalApi = null;
   }
 }
 
 export function getDB(): number {
-  if (db === null) {
-    throw new Error("SQLite database not initialized");
-  }
-  return db;
+  if (globalDb === null) throw new Error("SQLite database not initialized");
+  return globalDb;
 }
 
 export function getApi(): SQLiteAPI {
-  if (api === null) {
-    throw new Error("SQLite API not initialized");
+  if (globalApi === null) throw new Error("SQLite API not initialized");
+  return globalApi;
+}
+
+export async function runSQL(
+  sqliteDB: SQLiteDB,
+  sql: string,
+  params?: SQLiteCompatibleType[]
+): Promise<void> {
+  await sqliteDB.sqlite3.run(sqliteDB.db, sql, params);
+}
+
+export async function querySQL<T = Record<string, SQLiteCompatibleType>>(
+  sqliteDB: SQLiteDB,
+  sql: string,
+  params?: SQLiteCompatibleType[]
+): Promise<T[]> {
+  const result = await sqliteDB.sqlite3.execWithParams(sqliteDB.db, sql, params);
+  if (!result.rows.length) return [];
+
+  const rows: T[] = [];
+  for (const row of result.rows) {
+    const obj: Record<string, SQLiteCompatibleType> = {};
+    for (let i = 0; i < result.columns.length; i++) {
+      obj[result.columns[i]] = row[i] as SQLiteCompatibleType;
+    }
+    rows.push(obj as T);
   }
-  return api;
+  return rows;
 }
