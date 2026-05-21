@@ -11,11 +11,13 @@
     "lint": "tsc --noEmit"
   },
   "devDependencies": {
+    "fake-indexeddb": "^6.2.5",
+    "happy-dom": "^15",
     "typescript": "^5",
-    "vitest": "^3",
-    "happy-dom": "^15"
+    "vitest": "^3"
   },
   "dependencies": {
-    "uuid": "^9"
+    "uuid": "^9",
+    "wa-sqlite": "1.0.0"
   }
 }
