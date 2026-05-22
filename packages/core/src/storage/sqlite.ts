@@ -47,20 +47,22 @@ CREATE TABLE IF NOT EXISTS note_tags (
   PRIMARY KEY (note_id, tag_id)
 );
 
+CREATE INDEX IF NOT EXISTS idx_note_tags_note_id ON note_tags(note_id);
+CREATE INDEX IF NOT EXISTS idx_note_tags_tag_id ON note_tags(tag_id);
+CREATE INDEX IF NOT EXISTS idx_notes_folder_id ON notes(folder_id);
+CREATE INDEX IF NOT EXISTS idx_notes_deleted_at ON notes(deleted_at);
+CREATE INDEX IF NOT EXISTS idx_notes_updated_at ON notes(updated_at);
+CREATE INDEX IF NOT EXISTS idx_folders_parent_id ON folders(parent_id);
+CREATE INDEX IF NOT EXISTS idx_attachments_note_id ON attachments(note_id);
+`;
+
+const FTS5_DDL = `
 CREATE VIRTUAL TABLE IF NOT EXISTS notes_fts USING fts5(
   title,
   content_json,
   md_text,
   content=notes
 );
-
-CREATE INDEX IF NOT EXISTS idx_notes_folder_id ON notes(folder_id);
-CREATE INDEX IF NOT EXISTS idx_notes_deleted_at ON notes(deleted_at);
-CREATE INDEX IF NOT EXISTS idx_notes_updated_at ON notes(updated_at);
-CREATE INDEX IF NOT EXISTS idx_folders_parent_id ON folders(parent_id);
-CREATE INDEX IF NOT EXISTS idx_attachments_note_id ON attachments(note_id);
-CREATE INDEX IF NOT EXISTS idx_note_tags_note_id ON note_tags(note_id);
-CREATE INDEX IF NOT EXISTS idx_note_tags_tag_id ON note_tags(tag_id);
 `;
 
 type SQLiteAPI = ReturnType<typeof SQLite.Factory>;
@@ -78,15 +80,16 @@ export async function initSQLite(dbName?: string): Promise<SQLiteDB> {
   const module = await SQLiteESMFactory();
   const sqlite3 = SQLite.Factory(module);
 
-  // TODO: Use IDBBatchAtomicVFS for IndexedDB persistence once wa-sqlite provides
-  // a reliable async VFS. Currently using default in-memory VFS as IDBMinimalVFS
-  // is incompatible with the async build.
   const db = await sqlite3.open_v2(
     dbName ?? DB_NAME,
     SQLite.SQLITE_OPEN_CREATE | SQLite.SQLITE_OPEN_READWRITE
   );
 
   await sqlite3.exec(db, DDL);
+  try {
+    await sqlite3.exec(db, FTS5_DDL);
+  } catch {
+  }
 
   globalDb = db;
   globalApi = sqlite3;

@@ -8,12 +8,16 @@
   "scripts": {
     "build": "tsc",
     "test": "vitest run",
+    "test:browser": "vitest run --config vitest.config.browser.ts",
     "lint": "tsc --noEmit"
   },
   "devDependencies": {
+    "@types/uuid": "^9",
     "fake-indexeddb": "^6.2.5",
     "happy-dom": "^15",
     "typescript": "^5",
+    "@vitest/browser": "^3",
+    "playwright": "^1.60",
     "vitest": "^3"
   },
   "dependencies": {

@@ -1,12 +1,21 @@
 import { WebStorageAdapter } from "@notes/core";
 
 let adapter: WebStorageAdapter | null = null;
+let initPromise: Promise<WebStorageAdapter> | null = null;
 
 export async function initStorage(): Promise<WebStorageAdapter> {
   if (adapter) return adapter;
-  adapter = new WebStorageAdapter();
-  await adapter.init();
-  return adapter;
+  if (initPromise) return initPromise;
+  const newAdapter = new WebStorageAdapter();
+  initPromise = newAdapter.init().then(() => {
+    adapter = newAdapter;
+    initPromise = null;
+    return adapter;
+  }).catch((e) => {
+    initPromise = null;
+    throw e;
+  });
+  return initPromise;
 }
 
 export function getStorage(): WebStorageAdapter {

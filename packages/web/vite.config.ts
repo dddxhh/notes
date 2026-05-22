@@ -9,7 +9,15 @@ export default defineConfig({
       "@notes/core": resolve(__dirname, "../core/src/index.ts"),
     },
   },
+  assetsInclude: ["**/*.wasm"],
+  optimizeDeps: {
+    exclude: ["wa-sqlite"],
+  },
   server: {
     port: 3000,
+    headers: {
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Cross-Origin-Embedder-Policy": "require-corp",
+    },
   },
 });
