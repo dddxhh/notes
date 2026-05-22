@@ -12,3 +12,4 @@ export type { FolderTreeNode } from "./useFolderTree";
 export { useAttachmentIntegrity } from "./useAttachmentIntegrity";
 export { useAttachmentUpload } from "./useAttachmentUpload";
 export type { UploadResult } from "./useAttachmentUpload";
+export { useThumbnailRenderer } from "./useThumbnailRenderer";
