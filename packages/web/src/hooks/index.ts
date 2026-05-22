@@ -7,3 +7,6 @@ export { useTheme } from "./useTheme";
 export { useToast } from "./useToast";
 export { useToastStore } from "./useToast";
 export { useAttachmentRenderer } from "./useAttachmentRenderer";
+export { useAttachmentIntegrity } from "./useAttachmentIntegrity";
+export { useAttachmentUpload } from "./useAttachmentUpload";
+export type { UploadResult } from "./useAttachmentUpload";
