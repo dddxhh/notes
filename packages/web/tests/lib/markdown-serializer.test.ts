@@ -165,4 +165,65 @@ describe("customVideo 序列化", () => {
     expect(resultMd).toContain("attachment://vid-456");
     expect(resultMd).toContain("<video");
   });
+
+  it("proseMirrorJSONToMarkdown 应将 customVideo+attachment:// 序列化为 video HTML 标记", () => {
+    const json = JSON.stringify({
+      type: "doc",
+      content: [
+        {
+          type: "customVideo",
+          attrs: { src: "attachment://vid-789", title: null },
+        },
+      ],
+    });
+    const resultMd = proseMirrorJSONToMarkdown(json);
+    expect(resultMd).toContain(`<video src="attachment://vid-789" controls></video>`);
+  });
+});
+
+describe("Image/Video bidirectional conversion with attachment://", () => {
+  it("customImage roundtrip: MD → JSON → MD preserves attachment:// src", () => {
+    const md = "![photo](attachment://att-roundtrip)";
+    const json = markdownToProseMirrorJSON(md);
+    const parsed = JSON.parse(json);
+    const customImageNode = parsed.content.find((n: any) => n.type === "customImage");
+    expect(customImageNode).toBeDefined();
+    expect(customImageNode.attrs.src).toBe("attachment://att-roundtrip");
+    const resultMd = proseMirrorJSONToMarkdown(json);
+    expect(resultMd).toContain("![photo](attachment://att-roundtrip)");
+  });
+
+  it("customImage roundtrip: MD → JSON → MD preserves https:// src", () => {
+    const md = "![screenshot](https://cdn.example.com/img.png)";
+    const json = markdownToProseMirrorJSON(md);
+    const resultMd = proseMirrorJSONToMarkdown(json);
+    expect(resultMd).toContain("![screenshot](https://cdn.example.com/img.png)");
+  });
+
+  it("customVideo roundtrip: JSON with attachment:// → MD → JSON preserves src", () => {
+    const json = JSON.stringify({
+      type: "doc",
+      content: [
+        {
+          type: "customVideo",
+          attrs: { src: "attachment://vid-rt", title: null },
+        },
+      ],
+    });
+    const resultMd = proseMirrorJSONToMarkdown(json);
+    expect(resultMd).toContain("attachment://vid-rt");
+  });
+
+  it("multiple images with mixed sources roundtrip correctly", () => {
+    const md = "![local](attachment://att-1)\n\n![remote](https://example.com/img.jpg)";
+    const json = markdownToProseMirrorJSON(md);
+    const parsed = JSON.parse(json);
+    const images = parsed.content.filter((n: any) => n.type === "customImage");
+    expect(images.length).toBe(2);
+    expect(images[0].attrs.src).toBe("attachment://att-1");
+    expect(images[1].attrs.src).toBe("https://example.com/img.jpg");
+    const resultMd = proseMirrorJSONToMarkdown(json);
+    expect(resultMd).toContain("![local](attachment://att-1)");
+    expect(resultMd).toContain("![remote](https://example.com/img.jpg)");
+  });
 });

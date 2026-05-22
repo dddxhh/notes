@@ -389,7 +389,7 @@ const customSerializer = new MarkdownSerializer(
       state.write(`<video src="${node.attrs.src}" controls></video>`);
       state.closeBlock(node);
     },
-    hardBreak(state: any, node: any) {
+hardBreak(state: any, node: any) {
       state.write("\\\n");
     },
     text(state: any, node: any) {
