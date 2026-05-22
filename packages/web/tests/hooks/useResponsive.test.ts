@@ -6,23 +6,22 @@ describe("useResponsive 工具", () => {
     expect(types).toHaveLength(3);
   });
 
-  it("640px 以下应判定为 mobile", () => {
+  it("768px 以下应判定为 mobile", () => {
     const width = 320;
-    const device = width < 640 ? "mobile" : width < 768 ? "tablet" : "desktop";
+    const device = width < 768 ? "mobile" : width < 1024 ? "tablet" : "desktop";
     expect(device).toBe("mobile");
-    expect(width < 640).toBe(true);
     expect(width < 768).toBe(true);
   });
 
-  it("640-768px 应判定为 tablet", () => {
-    const width = 700;
-    const device = width < 640 ? "mobile" : width < 768 ? "tablet" : "desktop";
+  it("768-1024px 应判定为 tablet", () => {
+    const width = 900;
+    const device = width < 768 ? "mobile" : width < 1024 ? "tablet" : "desktop";
     expect(device).toBe("tablet");
   });
 
-  it("768px 以上应判定为 desktop", () => {
-    const width = 1024;
-    const device = width < 640 ? "mobile" : width < 768 ? "tablet" : "desktop";
+  it("1024px 以上应判定为 desktop", () => {
+    const width = 1200;
+    const device = width < 768 ? "mobile" : width < 1024 ? "tablet" : "desktop";
     expect(device).toBe("desktop");
   });
 });

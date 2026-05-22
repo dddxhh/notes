@@ -26,13 +26,13 @@ export function useResponsive(): ResponsiveState {
     return () => window.removeEventListener("resize", handleResize);
   }, [setIsMobile]);
 
-  const device: DeviceType = width < 640 ? "mobile" : width < 768 ? "tablet" : "desktop";
+  const device: DeviceType = width < 768 ? "mobile" : width < 1024 ? "tablet" : "desktop";
 
   return {
     device,
-    isMobile: width < 640,
-    isTablet: width >= 640 && width < 768,
-    isDesktop: width >= 768,
+    isMobile: width < 768,
+    isTablet: width >= 768 && width < 1024,
+    isDesktop: width >= 1024,
     width,
   };
 }
