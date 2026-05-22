@@ -34,7 +34,10 @@ export const CustomVideo = Node.create<CustomVideoOptions>({
     return [{ tag: "video[src]" }];
   },
   renderHTML({ HTMLAttributes }) {
-    return ["video", mergeAttributes(this.options.HTMLAttributes, { controls: "true" }, HTMLAttributes)];
+    return [
+      "video",
+      mergeAttributes(this.options.HTMLAttributes, { controls: "true" }, HTMLAttributes),
+    ];
   },
   addNodeView() {
     return ReactNodeViewRenderer(VideoRenderer);
@@ -44,10 +47,12 @@ export const CustomVideo = Node.create<CustomVideoOptions>({
       setCustomVideo:
         (options: { src: string; title?: string }) =>
         ({ chain }) => {
-          return chain().insertContent({
-            type: this.name,
-            attrs: options,
-          }).run();
+          return chain()
+            .insertContent({
+              type: this.name,
+              attrs: options,
+            })
+            .run();
         },
     };
   },

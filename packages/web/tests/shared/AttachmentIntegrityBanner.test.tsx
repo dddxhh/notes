@@ -9,17 +9,14 @@ import AttachmentIntegrityBanner from "../../src/components/shared/AttachmentInt
 describe("AttachmentIntegrityBanner", () => {
   it("renders nothing when missingAttachments is empty", () => {
     const { container } = render(
-      <AttachmentIntegrityBanner missingAttachments={[]} onDismiss={vi.fn()} />
+      <AttachmentIntegrityBanner missingAttachments={[]} onDismiss={vi.fn()} />,
     );
     expect(container.innerHTML).toBe("");
   });
 
   it("renders warning banner when attachments are missing", () => {
     const { container } = render(
-      <AttachmentIntegrityBanner
-        missingAttachments={["att1", "att2"]}
-        onDismiss={vi.fn()}
-      />
+      <AttachmentIntegrityBanner missingAttachments={["att1", "att2"]} onDismiss={vi.fn()} />,
     );
     expect(container.textContent).toContain("2");
     expect(container.textContent).toContain("附件文件丢失");
@@ -27,10 +24,7 @@ describe("AttachmentIntegrityBanner", () => {
 
   it("renders correct count for single missing attachment", () => {
     const { container } = render(
-      <AttachmentIntegrityBanner
-        missingAttachments={["att1"]}
-        onDismiss={vi.fn()}
-      />
+      <AttachmentIntegrityBanner missingAttachments={["att1"]} onDismiss={vi.fn()} />,
     );
     expect(container.textContent).toContain("1");
   });
@@ -39,10 +33,7 @@ describe("AttachmentIntegrityBanner", () => {
     const onDismiss = vi.fn();
     const user = userEvent.setup();
     render(
-      <AttachmentIntegrityBanner
-        missingAttachments={["att1", "att2"]}
-        onDismiss={onDismiss}
-      />
+      <AttachmentIntegrityBanner missingAttachments={["att1", "att2"]} onDismiss={onDismiss} />,
     );
     const dismissBtn = document.querySelector(".integrity-banner-dismiss");
     expect(dismissBtn).toBeTruthy();
@@ -52,10 +43,7 @@ describe("AttachmentIntegrityBanner", () => {
 
   it("uses integrity-banner CSS class", () => {
     const { container } = render(
-      <AttachmentIntegrityBanner
-        missingAttachments={["att1"]}
-        onDismiss={vi.fn()}
-      />
+      <AttachmentIntegrityBanner missingAttachments={["att1"]} onDismiss={vi.fn()} />,
     );
     const banner = container.querySelector(".integrity-banner");
     expect(banner).toBeTruthy();

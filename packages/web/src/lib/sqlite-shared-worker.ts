@@ -80,15 +80,7 @@ export class WriteLock {
 
 export function isWriteOperation(sql: string): boolean {
   const normalized = sql.trimStart().toUpperCase();
-  const prefixes = [
-    "INSERT",
-    "UPDATE",
-    "DELETE",
-    "CREATE",
-    "ALTER",
-    "DROP",
-    "REPLACE",
-  ];
+  const prefixes = ["INSERT", "UPDATE", "DELETE", "CREATE", "ALTER", "DROP", "REPLACE"];
   return prefixes.some((p) => normalized.startsWith(p));
 }
 
@@ -111,9 +103,7 @@ export function extractTableName(sql: string): string | null {
 export class SharedWorkerSQLiteHandler {
   private writeLock = new WriteLock();
   private executor: SQLExecutor | null = null;
-  private broadcastFn:
-    | ((notification: DataChangeNotification) => void)
-    | null = null;
+  private broadcastFn: ((notification: DataChangeNotification) => void) | null = null;
 
   constructor(executor?: SQLExecutor) {
     if (executor) this.executor = executor;
@@ -123,9 +113,7 @@ export class SharedWorkerSQLiteHandler {
     this.executor = executor;
   }
 
-  setBroadcastFn(
-    fn: (notification: DataChangeNotification) => void
-  ): void {
+  setBroadcastFn(fn: (notification: DataChangeNotification) => void): void {
     this.broadcastFn = fn;
   }
 
@@ -144,10 +132,7 @@ export class SharedWorkerSQLiteHandler {
         }
         case "query": {
           if (!this.executor) throw new Error("No executor set");
-          const rows = await this.executor.query(
-            request.sql!,
-            request.params
-          );
+          const rows = await this.executor.query(request.sql!, request.params);
           return { id: request.id, type: "query-result", rows };
         }
         case "run": {
@@ -182,8 +167,7 @@ export class SharedWorkerSQLiteHandler {
           };
       }
     } catch (e: unknown) {
-      const message =
-        e instanceof Error ? e.message : String(e);
+      const message = e instanceof Error ? e.message : String(e);
       return {
         id: request.id,
         type: `${request.type}-result`,
@@ -204,16 +188,17 @@ export class SharedWorkerSQLiteClient {
   private changeListeners: Array<(tables: string[]) => void> = [];
   private initialized = false;
   private requestIdCounter = 0;
-  private workerUrl: string | URL;
 
-  constructor(workerUrl?: string | URL) {
-    this.workerUrl = workerUrl ?? "/sqlite-worker.js";
+  static isAvailable(): boolean {
+    return typeof SharedWorker !== "undefined";
   }
 
   async init(): Promise<void> {
     if (this.initialized) return;
 
-    this.worker = new SharedWorker(this.workerUrl, { type: "module" });
+    this.worker = new SharedWorker(new URL("./sqlite-worker.ts", import.meta.url), {
+      type: "module",
+    });
     this.port = this.worker.port;
     this.port.start();
 
@@ -245,10 +230,7 @@ export class SharedWorkerSQLiteClient {
     this.initialized = true;
   }
 
-  async query<T = Record<string, unknown>>(
-    sql: string,
-    params?: unknown[]
-  ): Promise<T[]> {
+  async query<T = Record<string, unknown>>(sql: string, params?: unknown[]): Promise<T[]> {
     const result = await this.sendRequest({
       type: "query",
       sql,
@@ -280,13 +262,7 @@ export class SharedWorkerSQLiteClient {
     };
   }
 
-  static isAvailable(): boolean {
-    return typeof SharedWorker !== "undefined";
-  }
-
-  private sendRequest(
-    request: Omit<SqlRequest, "id">
-  ): Promise<unknown> {
+  private sendRequest(request: Omit<SqlRequest, "id">): Promise<unknown> {
     const id = String(++this.requestIdCounter);
     return new Promise((resolve, reject) => {
       this.pending.set(id, { resolve, reject });
@@ -334,7 +310,7 @@ export class SharedWorkerStorageAdapter implements StorageAdapter {
         input.type ?? "rich",
         now,
         now,
-      ]
+      ],
     );
     return {
       id,
@@ -351,32 +327,25 @@ export class SharedWorkerStorageAdapter implements StorageAdapter {
   }
 
   async updateNote(id: string, input: UpdateNoteInput): Promise<Note> {
-    const rows = await this.client.query<Row>(
-      `SELECT * FROM notes WHERE id=?`,
-      [id]
-    );
+    const rows = await this.client.query<Row>(`SELECT * FROM notes WHERE id=?`, [id]);
     if (!rows.length) throw new Error(`Note ${id} not found`);
     const existing = mapNoteRow(rows[0]);
 
     const title = input.title ?? existing.title;
     const contentJson = input.contentJson ?? existing.contentJson;
     const mdText = input.mdText ?? existing.mdText;
-    const folderId =
-      input.folderId !== undefined ? input.folderId : existing.folderId;
+    const folderId = input.folderId !== undefined ? input.folderId : existing.folderId;
     const type = input.type ?? existing.type;
-    const deletedAt =
-      input.deletedAt !== undefined ? input.deletedAt : existing.deletedAt;
+    const deletedAt = input.deletedAt !== undefined ? input.deletedAt : existing.deletedAt;
     const now = Date.now();
     const version = existing.version + 1;
 
     await this.client.run(
       `UPDATE notes SET title=?, content_json=?, md_text=?, folder_id=?, type=?, updated_at=?, deleted_at=?, version=? WHERE id=?`,
-      [title, contentJson, mdText, folderId, type, now, deletedAt, version, id]
+      [title, contentJson, mdText, folderId, type, now, deletedAt, version, id],
     );
 
-    await this.client.run(
-      `INSERT INTO notes_fts(notes_fts) VALUES('rebuild')`
-    );
+    await this.client.run(`INSERT INTO notes_fts(notes_fts) VALUES('rebuild')`);
 
     return {
       ...existing,
@@ -393,38 +362,19 @@ export class SharedWorkerStorageAdapter implements StorageAdapter {
 
   async deleteNote(id: string): Promise<void> {
     const now = Date.now();
-    await this.client.run(
-      `UPDATE notes SET deleted_at=?, updated_at=? WHERE id=?`,
-      [now, now, id]
-    );
-    await this.client.run(
-      `INSERT INTO notes_fts(notes_fts) VALUES('rebuild')`
-    );
+    await this.client.run(`UPDATE notes SET deleted_at=?, updated_at=? WHERE id=?`, [now, now, id]);
+    await this.client.run(`INSERT INTO notes_fts(notes_fts) VALUES('rebuild')`);
   }
 
   async permanentlyDeleteNote(id: string): Promise<void> {
-    await this.client.run(
-      `DELETE FROM note_tags WHERE note_id=?`,
-      [id]
-    );
-    await this.client.run(
-      `DELETE FROM attachments WHERE note_id=?`,
-      [id]
-    );
-    await this.client.run(
-      `DELETE FROM notes WHERE id=?`,
-      [id]
-    );
-    await this.client.run(
-      `INSERT INTO notes_fts(notes_fts) VALUES('rebuild')`
-    );
+    await this.client.run(`DELETE FROM note_tags WHERE note_id=?`, [id]);
+    await this.client.run(`DELETE FROM attachments WHERE note_id=?`, [id]);
+    await this.client.run(`DELETE FROM notes WHERE id=?`, [id]);
+    await this.client.run(`INSERT INTO notes_fts(notes_fts) VALUES('rebuild')`);
   }
 
   async getNote(id: string): Promise<Note | null> {
-    const rows = await this.client.query<Row>(
-      `SELECT * FROM notes WHERE id=?`,
-      [id]
-    );
+    const rows = await this.client.query<Row>(`SELECT * FROM notes WHERE id=?`, [id]);
     if (!rows.length) return null;
     return mapNoteRow(rows[0]);
   }
@@ -438,8 +388,7 @@ export class SharedWorkerStorageAdapter implements StorageAdapter {
       params.push(folderId);
     }
     if (tagId) {
-      sql +=
-        ` AND EXISTS(SELECT 1 FROM note_tags WHERE note_tags.note_id=notes.id AND note_tags.tag_id=?)`;
+      sql += ` AND EXISTS(SELECT 1 FROM note_tags WHERE note_tags.note_id=notes.id AND note_tags.tag_id=?)`;
       params.push(tagId);
     }
     sql += ` ORDER BY updated_at DESC`;
@@ -453,7 +402,7 @@ export class SharedWorkerStorageAdapter implements StorageAdapter {
     const now = Date.now();
     await this.client.run(
       `INSERT INTO folders (id, name, parent_id, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)`,
-      [id, input.name, input.parentId ?? null, input.sortOrder ?? 0, now, now]
+      [id, input.name, input.parentId ?? null, input.sortOrder ?? 0, now, now],
     );
     return {
       id,
@@ -466,24 +415,19 @@ export class SharedWorkerStorageAdapter implements StorageAdapter {
   }
 
   async updateFolder(id: string, input: UpdateFolderInput): Promise<Folder> {
-    const rows = await this.client.query<Row>(
-      `SELECT * FROM folders WHERE id=?`,
-      [id]
-    );
+    const rows = await this.client.query<Row>(`SELECT * FROM folders WHERE id=?`, [id]);
     if (!rows.length) throw new Error(`Folder ${id} not found`);
 
     const existing = rows[0];
     const name = input.name ?? (existing.name as string);
     const parentId =
-      input.parentId !== undefined
-        ? input.parentId
-        : (existing.parent_id as string | null);
+      input.parentId !== undefined ? input.parentId : (existing.parent_id as string | null);
     const sortOrder = input.sortOrder ?? (existing.sort_order as number);
     const now = Date.now();
 
     await this.client.run(
       `UPDATE folders SET name=?, parent_id=?, sort_order=?, updated_at=? WHERE id=?`,
-      [name, parentId, sortOrder, now, id]
+      [name, parentId, sortOrder, now, id],
     );
 
     return {
@@ -516,17 +460,13 @@ export class SharedWorkerStorageAdapter implements StorageAdapter {
     return rows.map(mapFolderRow);
   }
 
-  async saveAttachment(
-    noteId: string,
-    file: File,
-    type: AttachmentType
-  ): Promise<Attachment> {
+  async saveAttachment(noteId: string, file: File, type: AttachmentType): Promise<Attachment> {
     const id = generateId();
     const now = Date.now();
 
     await this.client.run(
       `INSERT INTO attachments (id, note_id, type, filename, mime_type, size, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [id, noteId, type, file.name, file.type, file.size, now]
+      [id, noteId, type, file.name, file.type, file.size, now],
     );
 
     await saveBlob(id, file);
@@ -558,17 +498,12 @@ export class SharedWorkerStorageAdapter implements StorageAdapter {
   }
 
   async deleteAttachment(id: string): Promise<void> {
-    await this.client.run(
-      `DELETE FROM attachments WHERE id=?`,
-      [id]
-    );
+    await this.client.run(`DELETE FROM attachments WHERE id=?`, [id]);
     await deleteBlob(id);
   }
 
   async listAttachmentIds(): Promise<string[]> {
-    const rows = await this.client.query<Row>(
-      `SELECT id FROM attachments`
-    );
+    const rows = await this.client.query<Row>(`SELECT id FROM attachments`);
     return rows.map((r) => r.id as string);
   }
 
@@ -581,9 +516,7 @@ export class SharedWorkerStorageAdapter implements StorageAdapter {
     }
 
     if (input.query) {
-      conditions.push(
-        "notes.rowid IN (SELECT rowid FROM notes_fts WHERE notes_fts MATCH ?)"
-      );
+      conditions.push("notes.rowid IN (SELECT rowid FROM notes_fts WHERE notes_fts MATCH ?)");
       params.push(input.query);
     }
 
@@ -601,14 +534,14 @@ export class SharedWorkerStorageAdapter implements StorageAdapter {
       if (input.tagMode === "intersection") {
         for (const tagId of input.tagIds) {
           conditions.push(
-            "EXISTS(SELECT 1 FROM note_tags WHERE note_tags.note_id=notes.id AND note_tags.tag_id=?)"
+            "EXISTS(SELECT 1 FROM note_tags WHERE note_tags.note_id=notes.id AND note_tags.tag_id=?)",
           );
           params.push(tagId);
         }
       } else {
         const placeholders = input.tagIds.map(() => "?").join(",");
         conditions.push(
-          `EXISTS(SELECT 1 FROM note_tags WHERE note_tags.note_id=notes.id AND note_tags.tag_id IN (${placeholders}))`
+          `EXISTS(SELECT 1 FROM note_tags WHERE note_tags.note_id=notes.id AND note_tags.tag_id IN (${placeholders}))`,
         );
         params.push(...input.tagIds);
       }
@@ -616,20 +549,14 @@ export class SharedWorkerStorageAdapter implements StorageAdapter {
 
     if (input.hasAttachment) {
       conditions.push(
-        "EXISTS(SELECT 1 FROM attachments WHERE attachments.note_id=notes.id AND attachments.type=?)"
+        "EXISTS(SELECT 1 FROM attachments WHERE attachments.note_id=notes.id AND attachments.type=?)",
       );
       params.push(input.hasAttachment);
     }
 
     if (input.dateRange) {
-      const col =
-        input.dateRange.field === "created_at"
-          ? "notes.created_at"
-          : "notes.updated_at";
-      if (
-        input.dateRange.from !== undefined &&
-        input.dateRange.to !== undefined
-      ) {
+      const col = input.dateRange.field === "created_at" ? "notes.created_at" : "notes.updated_at";
+      if (input.dateRange.from !== undefined && input.dateRange.to !== undefined) {
         conditions.push(`${col} BETWEEN ? AND ?`);
         params.push(input.dateRange.from, input.dateRange.to);
       } else if (input.dateRange.from !== undefined) {
@@ -641,8 +568,7 @@ export class SharedWorkerStorageAdapter implements StorageAdapter {
       }
     }
 
-    const where =
-      conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
+    const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
 
     const countSql = `SELECT COUNT(*) as total FROM notes ${where}`;
     const countRows = await this.client.query<Row>(countSql, params);
@@ -660,11 +586,7 @@ export class SharedWorkerStorageAdapter implements StorageAdapter {
     const offset = input.offset ?? 0;
 
     const dataSql = `SELECT notes.id, notes.title, notes.updated_at FROM notes ${where} ORDER BY ${orderCol} ${sortOrder === "asc" ? "ASC" : "DESC"} LIMIT ? OFFSET ?`;
-    const dataRows = await this.client.query<Row>(dataSql, [
-      ...params,
-      limit,
-      offset,
-    ]);
+    const dataRows = await this.client.query<Row>(dataSql, [...params, limit, offset]);
 
     return {
       notes: dataRows.map((r) => ({
@@ -679,49 +601,37 @@ export class SharedWorkerStorageAdapter implements StorageAdapter {
 
   async createTag(name: string): Promise<Tag> {
     const id = generateId();
-    await this.client.run(
-      `INSERT INTO tags (id, name) VALUES (?, ?)`,
-      [id, name]
-    );
+    await this.client.run(`INSERT INTO tags (id, name) VALUES (?, ?)`, [id, name]);
     return { id, name };
   }
 
   async addTagToNote(noteId: string, tagId: string): Promise<void> {
-    await this.client.run(
-      `INSERT INTO note_tags (note_id, tag_id) VALUES (?, ?)`,
-      [noteId, tagId]
-    );
+    await this.client.run(`INSERT INTO note_tags (note_id, tag_id) VALUES (?, ?)`, [noteId, tagId]);
   }
 
   async addTagsToNote(noteId: string, tagIds: string[]): Promise<void> {
     for (const tagId of tagIds) {
-      await this.client.run(
-        `INSERT INTO note_tags (note_id, tag_id) VALUES (?, ?)`,
-        [noteId, tagId]
-      );
+      await this.client.run(`INSERT INTO note_tags (note_id, tag_id) VALUES (?, ?)`, [
+        noteId,
+        tagId,
+      ]);
     }
   }
 
   async removeTagFromNote(noteId: string, tagId: string): Promise<void> {
-    await this.client.run(
-      `DELETE FROM note_tags WHERE note_id=? AND tag_id=?`,
-      [noteId, tagId]
-    );
+    await this.client.run(`DELETE FROM note_tags WHERE note_id=? AND tag_id=?`, [noteId, tagId]);
   }
 
   async removeTagsFromNote(noteId: string, tagIds: string[]): Promise<void> {
     for (const tagId of tagIds) {
-      await this.client.run(
-        `DELETE FROM note_tags WHERE note_id=? AND tag_id=?`,
-        [noteId, tagId]
-      );
+      await this.client.run(`DELETE FROM note_tags WHERE note_id=? AND tag_id=?`, [noteId, tagId]);
     }
   }
 
   async getTagsForNote(noteId: string): Promise<Tag[]> {
     const rows = await this.client.query<Row>(
       `SELECT t.id, t.name FROM tags t INNER JOIN note_tags nt ON t.id=nt.tag_id WHERE nt.note_id=?`,
-      [noteId]
+      [noteId],
     );
     return rows.map((r) => ({
       id: r.id as string,
@@ -730,9 +640,7 @@ export class SharedWorkerStorageAdapter implements StorageAdapter {
   }
 
   async listTags(): Promise<Tag[]> {
-    const rows = await this.client.query<Row>(
-      `SELECT id, name FROM tags ORDER BY name ASC`
-    );
+    const rows = await this.client.query<Row>(`SELECT id, name FROM tags ORDER BY name ASC`);
     return rows.map((r) => ({
       id: r.id as string,
       name: r.name as string,

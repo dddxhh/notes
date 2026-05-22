@@ -22,7 +22,12 @@ export function validateFile(file: File): FileValidationResult {
   const type = detectAttachmentType(mimeType);
 
   if (type === null) {
-    return { valid: false, error: `Unsupported file type: ${mimeType}`, type: null, needsCompress: false };
+    return {
+      valid: false,
+      error: `Unsupported file type: ${mimeType}`,
+      type: null,
+      needsCompress: false,
+    };
   }
 
   if (file.size > MAX_FILE_SIZE) {

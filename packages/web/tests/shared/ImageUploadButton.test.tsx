@@ -28,7 +28,9 @@ describe("ImageUploadButton", () => {
   });
 
   it("uses custom className when provided", () => {
-    const { container } = render(<ImageUploadButton onFileSelected={vi.fn()} className="custom-btn" />);
+    const { container } = render(
+      <ImageUploadButton onFileSelected={vi.fn()} className="custom-btn" />,
+    );
     const button = container.querySelector("button")!;
     expect(button.className).toBe("custom-btn");
   });

@@ -93,7 +93,9 @@ describe("NoteCard thumbnail display", () => {
   it("shows thumbnail when first image attachment exists and thumbnail resolves", () => {
     mockThumbnailSrc.mockReturnValue("blob:http://localhost/thumb-url");
     mockThumbnailError.mockReturnValue(false);
-    const { container } = render(<NoteCard note={mockNote} onClick={vi.fn()} attachments={[imageAttachment]} />);
+    const { container } = render(
+      <NoteCard note={mockNote} onClick={vi.fn()} attachments={[imageAttachment]} />,
+    );
     const img = container.querySelector("img.note-card-thumbnail");
     expect(img).toBeTruthy();
     expect(img?.getAttribute("src")).toBe("blob:http://localhost/thumb-url");
@@ -102,7 +104,9 @@ describe("NoteCard thumbnail display", () => {
   it("shows placeholder when thumbnail has error", () => {
     mockThumbnailSrc.mockReturnValue(null);
     mockThumbnailError.mockReturnValue(true);
-    const { container } = render(<NoteCard note={mockNote} onClick={vi.fn()} attachments={[imageAttachment]} />);
+    const { container } = render(
+      <NoteCard note={mockNote} onClick={vi.fn()} attachments={[imageAttachment]} />,
+    );
     const placeholder = container.querySelector(".note-card-thumbnail-placeholder");
     expect(placeholder).toBeTruthy();
   });
@@ -118,14 +122,22 @@ describe("NoteCard thumbnail display", () => {
   it("shows nothing when only video attachments (no image)", () => {
     mockThumbnailSrc.mockReturnValue(null);
     mockThumbnailError.mockReturnValue(false);
-    const { container } = render(<NoteCard note={mockNote} onClick={vi.fn()} attachments={[videoAttachment]} />);
+    const { container } = render(
+      <NoteCard note={mockNote} onClick={vi.fn()} attachments={[videoAttachment]} />,
+    );
     expect(container.querySelector("img.note-card-thumbnail")).toBeNull();
   });
 
   it("shows thumbnail for first image even when mixed with video attachments", () => {
     mockThumbnailSrc.mockReturnValue("blob:http://localhost/thumb-url2");
     mockThumbnailError.mockReturnValue(false);
-    const { container } = render(<NoteCard note={mockNote} onClick={vi.fn()} attachments={[videoAttachment, imageAttachment]} />);
+    const { container } = render(
+      <NoteCard
+        note={mockNote}
+        onClick={vi.fn()}
+        attachments={[videoAttachment, imageAttachment]}
+      />,
+    );
     const img = container.querySelector("img.note-card-thumbnail");
     expect(img).toBeTruthy();
     expect(mockThumbnailSrc).toHaveBeenCalledWith("att-img-1");

@@ -6,8 +6,30 @@ import type { Note } from "@notes/core";
 afterEach(cleanup);
 
 const mockDeletedNotes: Note[] = [
-  { id: "n1", title: "Deleted Note 1", contentJson: "", mdText: "", folderId: null, type: "rich", createdAt: 1000, updatedAt: 2000, deletedAt: 6000, version: 1 },
-  { id: "n2", title: "Deleted Note 2", contentJson: "", mdText: "", folderId: "f1", type: "rich", createdAt: 4000, updatedAt: 5000, deletedAt: 3000, version: 2 },
+  {
+    id: "n1",
+    title: "Deleted Note 1",
+    contentJson: "",
+    mdText: "",
+    folderId: null,
+    type: "rich",
+    createdAt: 1000,
+    updatedAt: 2000,
+    deletedAt: 6000,
+    version: 1,
+  },
+  {
+    id: "n2",
+    title: "Deleted Note 2",
+    contentJson: "",
+    mdText: "",
+    folderId: "f1",
+    type: "rich",
+    createdAt: 4000,
+    updatedAt: 5000,
+    deletedAt: 3000,
+    version: 2,
+  },
 ];
 
 const mockRestoreNote = vi.fn().mockResolvedValue(undefined);
@@ -30,8 +52,8 @@ const mockUIState = {
 };
 
 vi.mock("../../src/stores", () => ({
-  useNotesStore: (selector?: any) => selector ? selector(mockNotesState) : mockNotesState,
-  useUIStore: (selector?: any) => selector ? selector(mockUIState) : mockUIState,
+  useNotesStore: (selector?: any) => (selector ? selector(mockNotesState) : mockNotesState),
+  useUIStore: (selector?: any) => (selector ? selector(mockUIState) : mockUIState),
   useFoldersStore: vi.fn(),
   useAttachmentsStore: vi.fn(),
   useTagsStore: vi.fn(),
@@ -140,7 +162,9 @@ describe("TrashView", () => {
     const user = userEvent.setup();
     render(<TrashView />);
     await user.click(screen.getByRole("button", { name: "清空回收站" }));
-    expect(screen.getByText("确定要清空回收站吗？所有笔记将被永久删除，此操作不可恢复。")).toBeTruthy();
+    expect(
+      screen.getByText("确定要清空回收站吗？所有笔记将被永久删除，此操作不可恢复。"),
+    ).toBeTruthy();
   });
 
   it("confirming 清空回收站 calls permanentlyDeleteNote for each note", async () => {

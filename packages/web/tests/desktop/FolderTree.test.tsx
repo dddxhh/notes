@@ -8,17 +8,38 @@ vi.mock("../../src/hooks", () => ({
   useFolderTree: () => ({
     tree: [
       {
-        folder: { id: "f1", name: "Work", parentId: null, sortOrder: 0, createdAt: 1, updatedAt: 1 },
+        folder: {
+          id: "f1",
+          name: "Work",
+          parentId: null,
+          sortOrder: 0,
+          createdAt: 1,
+          updatedAt: 1,
+        },
         children: [
           {
-            folder: { id: "f2", name: "Projects", parentId: "f1", sortOrder: 0, createdAt: 1, updatedAt: 1 },
+            folder: {
+              id: "f2",
+              name: "Projects",
+              parentId: "f1",
+              sortOrder: 0,
+              createdAt: 1,
+              updatedAt: 1,
+            },
             children: [],
           },
         ],
         expanded: false,
       },
       {
-        folder: { id: "f3", name: "Personal", parentId: null, sortOrder: 1, createdAt: 1, updatedAt: 1 },
+        folder: {
+          id: "f3",
+          name: "Personal",
+          parentId: null,
+          sortOrder: 1,
+          createdAt: 1,
+          updatedAt: 1,
+        },
         children: [],
         expanded: false,
       },
@@ -43,7 +64,9 @@ describe("FolderTree", () => {
   it("calls onSelectFolder with folder id when folder name is clicked", async () => {
     const onSelectFolder = vi.fn();
     const user = userEvent.setup();
-    const { container } = render(<FolderTree onSelectFolder={onSelectFolder} selectedFolderId={null} />);
+    const { container } = render(
+      <FolderTree onSelectFolder={onSelectFolder} selectedFolderId={null} />,
+    );
     const folderNames = container.querySelectorAll("[data-folder-id]");
     await user.click(folderNames[0]!);
     expect(onSelectFolder).toHaveBeenCalledWith("f1");
@@ -52,7 +75,9 @@ describe("FolderTree", () => {
   it("calls onSelectFolder with null when '全部笔记' is clicked", async () => {
     const onSelectFolder = vi.fn();
     const user = userEvent.setup();
-    const { container } = render(<FolderTree onSelectFolder={onSelectFolder} selectedFolderId="f1" />);
+    const { container } = render(
+      <FolderTree onSelectFolder={onSelectFolder} selectedFolderId="f1" />,
+    );
     const allNotesBtn = container.querySelector("[data-all-notes]");
     await user.click(allNotesBtn!);
     expect(onSelectFolder).toHaveBeenCalledWith(null);

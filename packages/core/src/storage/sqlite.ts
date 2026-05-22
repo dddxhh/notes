@@ -90,13 +90,14 @@ export async function initSQLite(dbName?: string): Promise<SQLiteDB> {
   const db = await sqlite3.open_v2(
     dbName ?? DB_NAME,
     SQLite.SQLITE_OPEN_CREATE | SQLite.SQLITE_OPEN_READWRITE,
-    VFS_NAME
+    VFS_NAME,
   );
 
   await sqlite3.exec(db, DDL);
   try {
     await sqlite3.exec(db, FTS5_DDL);
-  } catch {
+  } catch (_e) {
+    // FTS5 not available, skip
   }
 
   globalDb = db;
@@ -132,7 +133,7 @@ export function getApi(): SQLiteAPI {
 export async function runSQL(
   sqliteDB: SQLiteDB,
   sql: string,
-  params?: SQLiteCompatibleType[]
+  params?: SQLiteCompatibleType[],
 ): Promise<void> {
   await sqliteDB.sqlite3.run(sqliteDB.db, sql, params);
 }
@@ -140,7 +141,7 @@ export async function runSQL(
 export async function querySQL<T = Record<string, SQLiteCompatibleType>>(
   sqliteDB: SQLiteDB,
   sql: string,
-  params?: SQLiteCompatibleType[]
+  params?: SQLiteCompatibleType[],
 ): Promise<T[]> {
   const result = await sqliteDB.sqlite3.execWithParams(sqliteDB.db, sql, params);
   if (!result.rows.length) return [];

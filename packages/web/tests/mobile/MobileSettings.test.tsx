@@ -18,7 +18,16 @@ vi.mock("../../src/stores", () => ({
     return selector ? selector(state) : state;
   },
   useUIStore: (selector?: any) => {
-    const state = { theme: "light", editorMode: "wysiwyg", sidebarOpen: true, isMobile: true, setEditorMode: vi.fn(), setTheme: vi.fn(), setSidebarOpen: vi.fn(), setIsMobile: vi.fn() };
+    const state = {
+      theme: "light",
+      editorMode: "wysiwyg",
+      sidebarOpen: true,
+      isMobile: true,
+      setEditorMode: vi.fn(),
+      setTheme: vi.fn(),
+      setSidebarOpen: vi.fn(),
+      setIsMobile: vi.fn(),
+    };
     return selector ? selector(state) : state;
   },
   useSlashCommandStore: (selector?: any) => {

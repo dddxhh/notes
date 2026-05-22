@@ -1,9 +1,6 @@
 import { WebStorageAdapter } from "@notes/core";
 import type { StorageAdapter } from "@notes/core";
-import {
-  SharedWorkerSQLiteClient,
-  SharedWorkerStorageAdapter,
-} from "./sqlite-shared-worker";
+import { SharedWorkerSQLiteClient, SharedWorkerStorageAdapter } from "./sqlite-shared-worker";
 
 type ConnectionMode = "shared-worker" | "direct";
 

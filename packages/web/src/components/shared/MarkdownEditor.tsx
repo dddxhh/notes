@@ -25,13 +25,10 @@ export default function MarkdownEditor({ content, onUpdate, preview }: MarkdownE
     setLocalContent(content);
   }, [content]);
 
-  const handleChange = useCallback(
-    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      const newContent = e.target.value;
-      setLocalContent(newContent);
-    },
-    []
-  );
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newContent = e.target.value;
+    setLocalContent(newContent);
+  }, []);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -48,18 +45,27 @@ export default function MarkdownEditor({ content, onUpdate, preview }: MarkdownE
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center gap-2 px-2 py-1 border-b" style={{ borderColor: "var(--border-color)" }}>
+      <div
+        className="flex items-center gap-2 px-2 py-1 border-b"
+        style={{ borderColor: "var(--border-color)" }}
+      >
         <button
           onClick={() => setShowPreview(false)}
           className={`px-2 py-1 text-xs rounded ${!showPreview ? "font-bold" : ""}`}
-          style={{ color: showPreview ? "var(--text-secondary)" : "var(--text-primary)", backgroundColor: !showPreview ? "var(--bg-tertiary)" : "transparent" }}
+          style={{
+            color: showPreview ? "var(--text-secondary)" : "var(--text-primary)",
+            backgroundColor: !showPreview ? "var(--bg-tertiary)" : "transparent",
+          }}
         >
           源码
         </button>
         <button
           onClick={() => setShowPreview(true)}
           className={`px-2 py-1 text-xs rounded ${showPreview ? "font-bold" : ""}`}
-          style={{ color: !showPreview ? "var(--text-secondary)" : "var(--text-primary)", backgroundColor: showPreview ? "var(--bg-tertiary)" : "transparent" }}
+          style={{
+            color: !showPreview ? "var(--text-secondary)" : "var(--text-primary)",
+            backgroundColor: showPreview ? "var(--bg-tertiary)" : "transparent",
+          }}
         >
           预览
         </button>
@@ -75,7 +81,12 @@ export default function MarkdownEditor({ content, onUpdate, preview }: MarkdownE
           value={localContent}
           onChange={handleChange}
           className="w-full h-full p-4 font-mono text-sm resize-none focus:outline-none"
-          style={{ backgroundColor: "var(--bg-secondary)", color: "var(--text-primary)", border: "1px solid var(--border-color)", borderRadius: "0.5rem" }}
+          style={{
+            backgroundColor: "var(--bg-secondary)",
+            color: "var(--text-primary)",
+            border: "1px solid var(--border-color)",
+            borderRadius: "0.5rem",
+          }}
           placeholder="开始编写 Markdown..."
           spellCheck={false}
         />

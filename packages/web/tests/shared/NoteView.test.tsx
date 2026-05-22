@@ -17,14 +17,25 @@ let mockTags: { id: string; name: string }[] = [];
 
 vi.mock("../../src/stores", () => ({
   useUIStore: (selector: any) =>
-    selector({ editorMode: mockEditorMode, setEditorMode: vi.fn(), isMobile: mockIsMobile, setIsMobile: vi.fn() }),
+    selector({
+      editorMode: mockEditorMode,
+      setEditorMode: vi.fn(),
+      isMobile: mockIsMobile,
+      setIsMobile: vi.fn(),
+    }),
   useNotesStore: () => ({ notes: [], currentNote: null }),
   useSlashCommandStore: (selector: any) =>
     selector({ pendingUpload: null, setPendingUpload: vi.fn() }),
-  useAttachmentsStore: (selector: any) =>
-    selector({ attachments: [], addAttachment: vi.fn() }),
+  useAttachmentsStore: (selector: any) => selector({ attachments: [], addAttachment: vi.fn() }),
   useTagsStore: (selector: any) =>
-    selector({ tags: mockTags, setTags: vi.fn(), addTag: vi.fn(), removeTag: vi.fn(), loading: false, setLoading: vi.fn() }),
+    selector({
+      tags: mockTags,
+      setTags: vi.fn(),
+      addTag: vi.fn(),
+      removeTag: vi.fn(),
+      loading: false,
+      setLoading: vi.fn(),
+    }),
 }));
 
 vi.mock("../../src/hooks", () => ({
@@ -78,19 +89,32 @@ vi.mock("../../src/components/shared/EditorToolbar", () => ({
 
 vi.mock("../../src/components/shared/MarkdownEditor", () => ({
   default: ({ content, onUpdate }: any) => (
-    <textarea placeholder="开始编写 Markdown..." defaultValue={content} onChange={(e: any) => onUpdate(e.target.value)} />
+    <textarea
+      placeholder="开始编写 Markdown..."
+      defaultValue={content}
+      onChange={(e: any) => onUpdate(e.target.value)}
+    />
   ),
 }));
 
 vi.mock("../../src/components/shared/ModeToggle", () => ({
-  default: () => <div><button>所见即所得</button><button>Markdown</button></div>,
+  default: () => (
+    <div>
+      <button>所见即所得</button>
+      <button>Markdown</button>
+    </div>
+  ),
 }));
 
 vi.mock("../../src/components/shared/TagBadge", () => ({
   default: ({ name, removable, onRemove }: any) => (
     <span data-testid="tag-badge">
       #{name}
-      {removable && <button data-testid="remove-tag-btn" onClick={onRemove}>×</button>}
+      {removable && (
+        <button data-testid="remove-tag-btn" onClick={onRemove}>
+          ×
+        </button>
+      )}
     </span>
   ),
 }));
@@ -98,9 +122,17 @@ vi.mock("../../src/components/shared/TagBadge", () => ({
 vi.mock("../../src/components/shared/TagSelector", () => ({
   default: ({ selectedTagIds, onAdd, onRemove, onCreateTag }: any) => (
     <div data-testid="tag-selector">
-      {selectedTagIds.map((id: string) => <span key={id} data-testid="selected-tag">{id}</span>)}
-      <button data-testid="add-tag-btn" onClick={() => onAdd("tag-new")}>添加</button>
-      <button data-testid="create-tag-btn" onClick={() => onCreateTag("新标签")}>新建</button>
+      {selectedTagIds.map((id: string) => (
+        <span key={id} data-testid="selected-tag">
+          {id}
+        </span>
+      ))}
+      <button data-testid="add-tag-btn" onClick={() => onAdd("tag-new")}>
+        添加
+      </button>
+      <button data-testid="create-tag-btn" onClick={() => onCreateTag("新标签")}>
+        新建
+      </button>
     </div>
   ),
 }));
@@ -187,9 +219,12 @@ describe("NoteView", () => {
     const textarea = container.querySelector("textarea");
     expect(textarea).toBeTruthy();
     await user.type(textarea!, "extra");
-    await waitFor(() => {
-      expect(mockUpdateNote).toHaveBeenCalled();
-    }, { timeout: 2000 });
+    await waitFor(
+      () => {
+        expect(mockUpdateNote).toHaveBeenCalled();
+      },
+      { timeout: 2000 },
+    );
   });
 
   it("renders existing tags as TagBadge components", () => {
@@ -260,7 +295,15 @@ describe("NoteView drag/paste upload + Toast + Object URL cleanup", () => {
   });
 
   it("handleFileUpload calls uploadFile and shows success toast", async () => {
-    const mockAttachment = { id: "att-1", noteId: "note-1", type: "image", filename: "img.png", mimeType: "image/png", size: 100, createdAt: Date.now() };
+    const mockAttachment = {
+      id: "att-1",
+      noteId: "note-1",
+      type: "image",
+      filename: "img.png",
+      mimeType: "image/png",
+      size: 100,
+      createdAt: Date.now(),
+    };
     mockUploadFile.mockResolvedValue({ success: true, attachment: mockAttachment });
     render(<NoteView note={mockNote} />);
     expect(mockUploadFile).not.toHaveBeenCalled();

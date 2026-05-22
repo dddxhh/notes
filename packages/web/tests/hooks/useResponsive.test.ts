@@ -116,10 +116,12 @@ describe("useResponsive", () => {
         offsetTop: 0,
         offsetLeft: 0,
         scale: 1,
-        addEventListener: vi.fn((event: string, cb: Function) => { resizeListeners.push(cb); }),
+        addEventListener: vi.fn((event: string, cb: Function) => {
+          resizeListeners.push(cb);
+        }),
         removeEventListener: vi.fn(),
       };
-      Object.defineProperty(mockVisualViewport, 'height', { get: () => vvHeight });
+      Object.defineProperty(mockVisualViewport, "height", { get: () => vvHeight });
       (window as any).visualViewport = mockVisualViewport;
       const { result } = renderHook(() => useResponsive());
       expect(result.current.isKeyboardVisible).toBe(false);

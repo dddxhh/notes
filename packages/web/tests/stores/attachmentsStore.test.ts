@@ -57,7 +57,9 @@ describe("useAttachmentsStore", () => {
   });
 
   it("removeAttachment filters out the attachment with matching id", () => {
-    useAttachmentsStore.getState().setAttachments([mockAttachment1, mockAttachment2, mockAttachment3]);
+    useAttachmentsStore
+      .getState()
+      .setAttachments([mockAttachment1, mockAttachment2, mockAttachment3]);
     useAttachmentsStore.getState().removeAttachment("id1");
     const state = useAttachmentsStore.getState();
     expect(state.attachments).toEqual([mockAttachment2, mockAttachment3]);

@@ -21,7 +21,11 @@ export default function MobileDrawer({ open, onOpenChange, onNavigate }: MobileD
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Trigger asChild>
-        <button aria-label="打开导航" className="p-2 rounded-md hover:opacity-80" style={{ backgroundColor: "var(--bg-tertiary)", color: "var(--text-primary)" }}>
+        <button
+          aria-label="打开导航"
+          className="p-2 rounded-md hover:opacity-80"
+          style={{ backgroundColor: "var(--bg-tertiary)", color: "var(--text-primary)" }}
+        >
           ☰
         </button>
       </Dialog.Trigger>
@@ -33,18 +37,26 @@ export default function MobileDrawer({ open, onOpenChange, onNavigate }: MobileD
         >
           <Dialog.Title className="text-lg font-bold mb-4">导航</Dialog.Title>
           <Dialog.Close asChild>
-            <button aria-label="关闭" className="absolute top-3 right-3 p-2 rounded-md hover:opacity-80" style={{ backgroundColor: "var(--bg-tertiary)" }}>
+            <button
+              aria-label="关闭"
+              className="absolute top-3 right-3 p-2 rounded-md hover:opacity-80"
+              style={{ backgroundColor: "var(--bg-tertiary)" }}
+            >
               ✕
             </button>
           </Dialog.Close>
 
           <div className="mb-4">
-            <h3 className="text-sm font-semibold mb-2" style={{ color: "var(--text-secondary)" }}>文件夹</h3>
+            <h3 className="text-sm font-semibold mb-2" style={{ color: "var(--text-secondary)" }}>
+              文件夹
+            </h3>
             <FolderTree onSelectFolder={handleSelectFolder} selectedFolderId={null} />
           </div>
 
           <div>
-            <h3 className="text-sm font-semibold mb-2" style={{ color: "var(--text-secondary)" }}>标签</h3>
+            <h3 className="text-sm font-semibold mb-2" style={{ color: "var(--text-secondary)" }}>
+              标签
+            </h3>
             <div className="flex flex-wrap gap-2">
               {tags.map((tag) => (
                 <button

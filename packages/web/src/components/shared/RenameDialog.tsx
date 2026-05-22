@@ -52,7 +52,11 @@ export default function RenameDialog({
             onChange={(e) => setName(e.target.value)}
             onKeyDown={handleKeyDown}
             className="w-full rounded-md border px-3 py-2 mb-4 outline-none focus:ring-2 focus:ring-blue-500"
-            style={{ backgroundColor: "var(--bg-primary)", color: "var(--text-primary)", borderColor: "var(--border-color)" }}
+            style={{
+              backgroundColor: "var(--bg-primary)",
+              color: "var(--text-primary)",
+              borderColor: "var(--border-color)",
+            }}
           />
           <div className="flex justify-end gap-2">
             <Dialog.Close asChild>

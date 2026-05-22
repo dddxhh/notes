@@ -10,13 +10,20 @@ let fts5Available = false;
 describe("FTS5 搜索", () => {
   beforeAll(async () => {
     db = await initSQLite("test_fts5");
-    const rows = await querySQL<{ name: string }>(db, `SELECT name FROM sqlite_master WHERE type='table' AND name='notes_fts'`);
+    const rows = await querySQL<{ name: string }>(
+      db,
+      `SELECT name FROM sqlite_master WHERE type='table' AND name='notes_fts'`,
+    );
     fts5Available = rows.length > 0;
 
     if (!fts5Available) return;
 
     const folderId = generateId();
-    await runSQL(db, `INSERT INTO folders (id, name, parent_id, sort_order, created_at, updated_at) VALUES (?, ?, NULL, 0, ?, ?)`, [folderId, "测试文件夹", Date.now(), Date.now()]);
+    await runSQL(
+      db,
+      `INSERT INTO folders (id, name, parent_id, sort_order, created_at, updated_at) VALUES (?, ?, NULL, 0, ?, ?)`,
+      [folderId, "测试文件夹", Date.now(), Date.now()],
+    );
 
     const tag1Id = generateId();
     const tag2Id = generateId();
@@ -25,9 +32,37 @@ describe("FTS5 搜索", () => {
 
     const now = Date.now();
     const noteIds = [generateId(), generateId(), generateId()];
-    await runSQL(db, `INSERT INTO notes (id, title, content_json, md_text, folder_id, type, created_at, updated_at, deleted_at, version) VALUES (?, ?, ?, ?, ?, 'rich', ?, ?, NULL, 1)`, [noteIds[0], "SQLite全文搜索", "关于FTS5的内容", "# SQLite全文搜索", folderId, now - 1000, now]);
-    await runSQL(db, `INSERT INTO notes (id, title, content_json, md_text, folder_id, type, created_at, updated_at, deleted_at, version) VALUES (?, ?, ?, ?, ?, 'rich', ?, ?, NULL, 1)`, [noteIds[1], "索引数据库优化", "数据库性能优化方案", "# 索引数据库优化", null, now - 500, now]);
-    await runSQL(db, `INSERT INTO notes (id, title, content_json, md_text, folder_id, type, created_at, updated_at, deleted_at, version) VALUES (?, ?, ?, ?, ?, 'rich', ?, ?, ?, 1)`, [noteIds[2], "已删除笔记", "已删除的内容", "", null, now, now, now]);
+    await runSQL(
+      db,
+      `INSERT INTO notes (id, title, content_json, md_text, folder_id, type, created_at, updated_at, deleted_at, version) VALUES (?, ?, ?, ?, ?, 'rich', ?, ?, NULL, 1)`,
+      [
+        noteIds[0],
+        "SQLite全文搜索",
+        "关于FTS5的内容",
+        "# SQLite全文搜索",
+        folderId,
+        now - 1000,
+        now,
+      ],
+    );
+    await runSQL(
+      db,
+      `INSERT INTO notes (id, title, content_json, md_text, folder_id, type, created_at, updated_at, deleted_at, version) VALUES (?, ?, ?, ?, ?, 'rich', ?, ?, NULL, 1)`,
+      [
+        noteIds[1],
+        "索引数据库优化",
+        "数据库性能优化方案",
+        "# 索引数据库优化",
+        null,
+        now - 500,
+        now,
+      ],
+    );
+    await runSQL(
+      db,
+      `INSERT INTO notes (id, title, content_json, md_text, folder_id, type, created_at, updated_at, deleted_at, version) VALUES (?, ?, ?, ?, ?, 'rich', ?, ?, ?, 1)`,
+      [noteIds[2], "已删除笔记", "已删除的内容", "", null, now, now, now],
+    );
 
     await runSQL(db, `INSERT INTO notes_fts(notes_fts) VALUES('rebuild')`);
 

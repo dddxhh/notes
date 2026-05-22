@@ -20,15 +20,25 @@ export function useSearch() {
     }
   }, []);
 
-  const updateFilter = useCallback((partial: Partial<SearchInput>) => {
-    const newInput = { ...searchInput, ...partial };
-    setSearchInput(newInput);
-    if (newInput.query || newInput.folderId || newInput.tagIds?.length || newInput.type || newInput.hasAttachment || newInput.dateRange) {
-      executeSearch(newInput);
-    } else {
-      setResult(null);
-    }
-  }, [searchInput, executeSearch]);
+  const updateFilter = useCallback(
+    (partial: Partial<SearchInput>) => {
+      const newInput = { ...searchInput, ...partial };
+      setSearchInput(newInput);
+      if (
+        newInput.query ||
+        newInput.folderId ||
+        newInput.tagIds?.length ||
+        newInput.type ||
+        newInput.hasAttachment ||
+        newInput.dateRange
+      ) {
+        executeSearch(newInput);
+      } else {
+        setResult(null);
+      }
+    },
+    [searchInput, executeSearch],
+  );
 
   const clearSearch = useCallback(() => {
     setSearchInput({});

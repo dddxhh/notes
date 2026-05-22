@@ -12,11 +12,17 @@ import {
 } from "./indexeddb";
 import { searchNotes } from "../search/fts5";
 import {
-  Note, CreateNoteInput, UpdateNoteInput,
-  Folder, CreateFolderInput, UpdateFolderInput,
-  Attachment, AttachmentType,
+  Note,
+  CreateNoteInput,
+  UpdateNoteInput,
+  Folder,
+  CreateFolderInput,
+  UpdateFolderInput,
+  Attachment,
+  AttachmentType,
   Tag,
-  SearchInput, SearchResult,
+  SearchInput,
+  SearchResult,
 } from "../models";
 import { generateId } from "../utils";
 
@@ -56,7 +62,16 @@ export class WebStorageAdapter implements StorageAdapter {
       db,
       `INSERT INTO notes (id, title, content_json, md_text, folder_id, type, created_at, updated_at, deleted_at, version)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL, 1)`,
-      [id, input.title, input.contentJson ?? "", input.mdText ?? "", input.folderId ?? null, input.type ?? "rich", now, now]
+      [
+        id,
+        input.title,
+        input.contentJson ?? "",
+        input.mdText ?? "",
+        input.folderId ?? null,
+        input.type ?? "rich",
+        now,
+        now,
+      ],
     );
     return {
       id,
@@ -90,12 +105,22 @@ export class WebStorageAdapter implements StorageAdapter {
     await runSQL(
       db,
       `UPDATE notes SET title=?, content_json=?, md_text=?, folder_id=?, type=?, updated_at=?, deleted_at=?, version=? WHERE id=?`,
-      [title, contentJson, mdText, folderId, type, now, deletedAt, version, id]
+      [title, contentJson, mdText, folderId, type, now, deletedAt, version, id],
     );
 
     await runSQL(db, `INSERT INTO notes_fts(notes_fts) VALUES('rebuild')`);
 
-    return { ...existing, title, contentJson, mdText, folderId, type, updatedAt: now, deletedAt, version };
+    return {
+      ...existing,
+      title,
+      contentJson,
+      mdText,
+      folderId,
+      type,
+      updatedAt: now,
+      deletedAt,
+      version,
+    };
   }
 
   async deleteNote(id: string): Promise<void> {
@@ -146,7 +171,7 @@ export class WebStorageAdapter implements StorageAdapter {
     await runSQL(
       db,
       `INSERT INTO folders (id, name, parent_id, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)`,
-      [id, input.name, input.parentId ?? null, input.sortOrder ?? 0, now, now]
+      [id, input.name, input.parentId ?? null, input.sortOrder ?? 0, now, now],
     );
     return {
       id,
@@ -165,11 +190,16 @@ export class WebStorageAdapter implements StorageAdapter {
 
     const existing = rows[0];
     const name = input.name ?? (existing.name as string);
-    const parentId = input.parentId !== undefined ? input.parentId : (existing.parent_id as string | null);
+    const parentId =
+      input.parentId !== undefined ? input.parentId : (existing.parent_id as string | null);
     const sortOrder = input.sortOrder ?? (existing.sort_order as number);
     const now = Date.now();
 
-    await runSQL(db, `UPDATE folders SET name=?, parent_id=?, sort_order=?, updated_at=? WHERE id=?`, [name, parentId, sortOrder, now, id]);
+    await runSQL(
+      db,
+      `UPDATE folders SET name=?, parent_id=?, sort_order=?, updated_at=? WHERE id=?`,
+      [name, parentId, sortOrder, now, id],
+    );
 
     return {
       id,
@@ -211,7 +241,7 @@ export class WebStorageAdapter implements StorageAdapter {
     await runSQL(
       db,
       `INSERT INTO attachments (id, note_id, type, filename, mime_type, size, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [id, noteId, type, file.name, file.type, file.size, now]
+      [id, noteId, type, file.name, file.type, file.size, now],
     );
 
     await saveBlob(id, file);
@@ -220,7 +250,8 @@ export class WebStorageAdapter implements StorageAdapter {
       try {
         const thumbnail = await generateImageThumbnail(file);
         await saveThumbnail(id, thumbnail);
-      } catch {
+      } catch (_e) {
+        // thumbnail generation failed, skip
       }
     }
 
@@ -267,7 +298,10 @@ export class WebStorageAdapter implements StorageAdapter {
   }
 
   async addTagToNote(noteId: string, tagId: string): Promise<void> {
-    await runSQL(this.getDB(), `INSERT INTO note_tags (note_id, tag_id) VALUES (?, ?)`, [noteId, tagId]);
+    await runSQL(this.getDB(), `INSERT INTO note_tags (note_id, tag_id) VALUES (?, ?)`, [
+      noteId,
+      tagId,
+    ]);
   }
 
   async addTagsToNote(noteId: string, tagIds: string[]): Promise<void> {
@@ -278,7 +312,10 @@ export class WebStorageAdapter implements StorageAdapter {
   }
 
   async removeTagFromNote(noteId: string, tagId: string): Promise<void> {
-    await runSQL(this.getDB(), `DELETE FROM note_tags WHERE note_id=? AND tag_id=?`, [noteId, tagId]);
+    await runSQL(this.getDB(), `DELETE FROM note_tags WHERE note_id=? AND tag_id=?`, [
+      noteId,
+      tagId,
+    ]);
   }
 
   async removeTagsFromNote(noteId: string, tagIds: string[]): Promise<void> {
@@ -292,7 +329,7 @@ export class WebStorageAdapter implements StorageAdapter {
     const rows = await querySQL<Row>(
       this.getDB(),
       `SELECT t.id, t.name FROM tags t INNER JOIN note_tags nt ON t.id=nt.tag_id WHERE nt.note_id=?`,
-      [noteId]
+      [noteId],
     );
     return rows.map((r) => ({ id: r.id as string, name: r.name as string }));
   }

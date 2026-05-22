@@ -1,5 +1,9 @@
 import { useState, useEffect } from "react";
-import { isAttachmentSrc, parseAttachmentId, resolveAttachmentSrc } from "../lib/attachment-protocol";
+import {
+  isAttachmentSrc,
+  parseAttachmentId,
+  resolveAttachmentSrc,
+} from "../lib/attachment-protocol";
 import { getStorage } from "../lib";
 
 export function useAttachmentRenderer(src: string): {
@@ -25,7 +29,9 @@ export function useAttachmentRenderer(src: string): {
     let cancelled = false;
 
     const id = parseAttachmentId(src)!;
-    resolveAttachmentSrc(src, (attachmentId: string) => getStorage().getAttachmentBlob(attachmentId))
+    resolveAttachmentSrc(src, (attachmentId: string) =>
+      getStorage().getAttachmentBlob(attachmentId),
+    )
       .then((result) => {
         if (cancelled) return;
         if (result) {

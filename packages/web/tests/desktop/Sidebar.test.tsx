@@ -5,9 +5,42 @@ import userEvent from "@testing-library/user-event";
 afterEach(cleanup);
 
 const mockNotes = [
-  { id: "n1", title: "Note 1", contentJson: "", mdText: "", folderId: null, type: "rich", createdAt: 1, updatedAt: 1, deletedAt: null, version: 1 },
-  { id: "n2", title: "Note 2", contentJson: "", mdText: "", folderId: null, type: "rich", createdAt: 2, updatedAt: 2, deletedAt: null, version: 1 },
-  { id: "n3", title: "Deleted Note", contentJson: "", mdText: "", folderId: null, type: "rich", createdAt: 3, updatedAt: 3, deletedAt: 3, version: 1 },
+  {
+    id: "n1",
+    title: "Note 1",
+    contentJson: "",
+    mdText: "",
+    folderId: null,
+    type: "rich",
+    createdAt: 1,
+    updatedAt: 1,
+    deletedAt: null,
+    version: 1,
+  },
+  {
+    id: "n2",
+    title: "Note 2",
+    contentJson: "",
+    mdText: "",
+    folderId: null,
+    type: "rich",
+    createdAt: 2,
+    updatedAt: 2,
+    deletedAt: null,
+    version: 1,
+  },
+  {
+    id: "n3",
+    title: "Deleted Note",
+    contentJson: "",
+    mdText: "",
+    folderId: null,
+    type: "rich",
+    createdAt: 3,
+    updatedAt: 3,
+    deletedAt: 3,
+    version: 1,
+  },
 ];
 
 const mockTags = [
@@ -48,8 +81,7 @@ vi.mock("../../src/stores", () => ({
     }),
   useSlashCommandStore: (selector: any) =>
     selector({ pendingUpload: null, setPendingUpload: vi.fn() }),
-  useAttachmentsStore: (selector: any) =>
-    selector({ attachments: [], addAttachment: vi.fn() }),
+  useAttachmentsStore: (selector: any) => selector({ attachments: [], addAttachment: vi.fn() }),
 }));
 
 vi.mock("../../src/hooks", () => ({

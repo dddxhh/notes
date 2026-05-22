@@ -5,11 +5,21 @@ interface SearchBarProps {
   onToggleFilter: () => void;
 }
 
-export default function SearchBar({ query, onQueryChange, showFilter, onToggleFilter }: SearchBarProps) {
+export default function SearchBar({
+  query,
+  onQueryChange,
+  showFilter,
+  onToggleFilter,
+}: SearchBarProps) {
   return (
     <div className="flex items-center gap-2" style={{ backgroundColor: "var(--bg-secondary)" }}>
-      <div className="flex items-center flex-1 rounded-md border px-2" style={{ borderColor: "var(--border-color)", backgroundColor: "var(--bg-primary)" }}>
-        <span className="text-sm" style={{ color: "var(--text-secondary)" }}>🔍</span>
+      <div
+        className="flex items-center flex-1 rounded-md border px-2"
+        style={{ borderColor: "var(--border-color)", backgroundColor: "var(--bg-primary)" }}
+      >
+        <span className="text-sm" style={{ color: "var(--text-secondary)" }}>
+          🔍
+        </span>
         <input
           value={query}
           onChange={(e) => onQueryChange(e.target.value)}

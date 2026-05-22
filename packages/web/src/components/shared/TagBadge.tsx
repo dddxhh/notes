@@ -14,7 +14,10 @@ export default function TagBadge({ name, onClick, removable, onRemove }: TagBadg
       #{name}
       {removable && (
         <button
-          onClick={(e) => { e.stopPropagation(); onRemove?.(); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            onRemove?.();
+          }}
           className="text-blue-500 hover:text-red-500 ml-0.5"
         >
           ×

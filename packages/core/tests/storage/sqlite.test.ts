@@ -18,7 +18,7 @@ describe.skip("SQLite 存储（wa-sqlite 需要 WASM 运行环境，happy-dom �
       "SELECT name FROM sqlite_master WHERE type='table' AND name='folders'",
       (row) => {
         tables.push(row[0] as string);
-      }
+      },
     );
     expect(tables).toContain("folders");
     await closeSQLite(sqliteDB);
@@ -32,7 +32,7 @@ describe.skip("SQLite 存储（wa-sqlite 需要 WASM 运行环境，happy-dom �
       "SELECT name FROM sqlite_master WHERE type='table' AND name='notes'",
       (row) => {
         tables.push(row[0] as string);
-      }
+      },
     );
     expect(tables).toContain("notes");
     await closeSQLite(sqliteDB);
@@ -46,7 +46,7 @@ describe.skip("SQLite 存储（wa-sqlite 需要 WASM 运行环境，happy-dom �
       "SELECT name FROM sqlite_master WHERE type='table' AND name='notes_fts'",
       (row) => {
         tables.push(row[0] as string);
-      }
+      },
     );
     expect(tables).toContain("notes_fts");
     await closeSQLite(sqliteDB);

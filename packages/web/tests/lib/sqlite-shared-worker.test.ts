@@ -105,39 +105,29 @@ describe("SharedWorker single-write-lock for multi-tab SQLite coordination", () 
       expect(isWriteOperation("  UPDATE notes SET ...")).toBe(true);
     });
     it("should classify FTS rebuild as write (starts with INSERT)", () => {
-      expect(
-        isWriteOperation("INSERT INTO notes_fts(notes_fts) VALUES('rebuild')")
-      ).toBe(true);
+      expect(isWriteOperation("INSERT INTO notes_fts(notes_fts) VALUES('rebuild')")).toBe(true);
     });
   });
 
   describe("extractTableName", () => {
     it("should extract table from INSERT INTO", () => {
-      expect(extractTableName("INSERT INTO notes (id) VALUES (?)")).toBe(
-        "notes"
-      );
+      expect(extractTableName("INSERT INTO notes (id) VALUES (?)")).toBe("notes");
     });
     it("should extract table from UPDATE", () => {
-      expect(extractTableName("UPDATE notes SET title=? WHERE id=?")).toBe(
-        "notes"
-      );
+      expect(extractTableName("UPDATE notes SET title=? WHERE id=?")).toBe("notes");
     });
     it("should extract table from DELETE FROM", () => {
-      expect(extractTableName("DELETE FROM folders WHERE id=?")).toBe(
-        "folders"
-      );
+      expect(extractTableName("DELETE FROM folders WHERE id=?")).toBe("folders");
     });
     it("should extract table from CREATE TABLE IF NOT EXISTS", () => {
-      expect(
-        extractTableName("CREATE TABLE IF NOT EXISTS tags (id TEXT PRIMARY KEY)")
-      ).toBe("tags");
+      expect(extractTableName("CREATE TABLE IF NOT EXISTS tags (id TEXT PRIMARY KEY)")).toBe(
+        "tags",
+      );
     });
     it("should extract table from CREATE VIRTUAL TABLE", () => {
-      expect(
-        extractTableName(
-          "CREATE VIRTUAL TABLE IF NOT EXISTS notes_fts USING fts5(...)"
-        )
-      ).toBe("notes_fts");
+      expect(extractTableName("CREATE VIRTUAL TABLE IF NOT EXISTS notes_fts USING fts5(...)")).toBe(
+        "notes_fts",
+      );
     });
     it("should return null for SELECT", () => {
       expect(extractTableName("SELECT * FROM notes")).toBeNull();
@@ -204,10 +194,7 @@ describe("SharedWorker single-write-lock for multi-tab SQLite coordination", () 
         params: ["abc"],
       });
       expect(response).toEqual({ id: "1", type: "run-result" });
-      expect(executor.run).toHaveBeenCalledWith(
-        "INSERT INTO notes (id) VALUES (?)",
-        ["abc"]
-      );
+      expect(executor.run).toHaveBeenCalledWith("INSERT INTO notes (id) VALUES (?)", ["abc"]);
       expect(broadcastFn).toHaveBeenCalledWith({
         type: "data-change",
         tables: ["notes"],
@@ -228,14 +215,12 @@ describe("SharedWorker single-write-lock for multi-tab SQLite coordination", () 
       let runningCount = 0;
       let maxConcurrent = 0;
 
-      (executor.run as ReturnType<typeof vi.fn>).mockImplementation(
-        async () => {
-          runningCount++;
-          maxConcurrent = Math.max(maxConcurrent, runningCount);
-          await new Promise((r) => setTimeout(r, 30));
-          runningCount--;
-        }
-      );
+      (executor.run as ReturnType<typeof vi.fn>).mockImplementation(async () => {
+        runningCount++;
+        maxConcurrent = Math.max(maxConcurrent, runningCount);
+        await new Promise((r) => setTimeout(r, 30));
+        runningCount--;
+      });
 
       const responses = await Promise.all([
         handler.handleRequest({
@@ -267,15 +252,13 @@ describe("SharedWorker single-write-lock for multi-tab SQLite coordination", () 
       let runningCount = 0;
       let maxConcurrent = 0;
 
-      (executor.query as ReturnType<typeof vi.fn>).mockImplementation(
-        async () => {
-          runningCount++;
-          maxConcurrent = Math.max(maxConcurrent, runningCount);
-          await new Promise((r) => setTimeout(r, 30));
-          runningCount--;
-          return [];
-        }
-      );
+      (executor.query as ReturnType<typeof vi.fn>).mockImplementation(async () => {
+        runningCount++;
+        maxConcurrent = Math.max(maxConcurrent, runningCount);
+        await new Promise((r) => setTimeout(r, 30));
+        runningCount--;
+        return [];
+      });
 
       await Promise.all([
         handler.handleRequest({
@@ -302,9 +285,7 @@ describe("SharedWorker single-write-lock for multi-tab SQLite coordination", () 
     });
 
     it("should release write lock after error", async () => {
-      (executor.run as ReturnType<typeof vi.fn>).mockRejectedValue(
-        new Error("SQL error")
-      );
+      (executor.run as ReturnType<typeof vi.fn>).mockRejectedValue(new Error("SQL error"));
 
       const response = await handler.handleRequest({
         id: "1",
@@ -366,10 +347,7 @@ describe("SharedWorker single-write-lock for multi-tab SQLite coordination", () 
         }),
       };
 
-      vi.stubGlobal(
-        "SharedWorker",
-        vi.fn().mockReturnValue({ port: mockPort })
-      );
+      vi.stubGlobal("SharedWorker", vi.fn().mockReturnValue({ port: mockPort }));
       vi.stubGlobal(
         "BroadcastChannel",
         vi.fn().mockImplementation((name: string) => ({
@@ -377,7 +355,7 @@ describe("SharedWorker single-write-lock for multi-tab SQLite coordination", () 
           onmessage: null as any,
           postMessage: vi.fn(),
           close: vi.fn(),
-        }))
+        })),
       );
 
       client = new SharedWorkerSQLiteClient();
@@ -465,8 +443,7 @@ describe("SharedWorker single-write-lock for multi-tab SQLite coordination", () 
       const listener = vi.fn();
       client.onDataChange(listener);
 
-      const bcInstance = (BroadcastChannel as ReturnType<typeof vi.fn>)
-        .mock.results[0].value;
+      const bcInstance = (BroadcastChannel as ReturnType<typeof vi.fn>).mock.results[0].value;
       bcInstance.onmessage({
         data: { type: "data-change", tables: ["notes"] },
       });
@@ -482,8 +459,7 @@ describe("SharedWorker single-write-lock for multi-tab SQLite coordination", () 
       const unsub = client.onDataChange(listener);
       unsub();
 
-      const bcInstance = (BroadcastChannel as ReturnType<typeof vi.fn>)
-        .mock.results[0].value;
+      const bcInstance = (BroadcastChannel as ReturnType<typeof vi.fn>).mock.results[0].value;
       bcInstance.onmessage({
         data: { type: "data-change", tables: ["notes"] },
       });

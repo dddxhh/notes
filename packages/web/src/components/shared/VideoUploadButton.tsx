@@ -18,7 +18,13 @@ export default function VideoUploadButton({ onFileSelected, className }: VideoUp
       <button onClick={handleClick} className={className || "toolbar-btn"} title="插入视频">
         🎬
       </button>
-      <input ref={inputRef} type="file" accept="video/*" style={{ display: "none" }} onChange={handleFileChange} />
+      <input
+        ref={inputRef}
+        type="file"
+        accept="video/*"
+        style={{ display: "none" }}
+        onChange={handleFileChange}
+      />
     </>
   );
 }

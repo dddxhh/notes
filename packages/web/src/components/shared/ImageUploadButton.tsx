@@ -18,7 +18,13 @@ export default function ImageUploadButton({ onFileSelected, className }: ImageUp
       <button onClick={handleClick} className={className || "toolbar-btn"} title="插入图片">
         🖼
       </button>
-      <input ref={inputRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleFileChange} />
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        style={{ display: "none" }}
+        onChange={handleFileChange}
+      />
     </>
   );
 }

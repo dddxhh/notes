@@ -11,7 +11,12 @@ import { buildFolderTree } from "../../src/hooks/useFolderTree";
 import { useFolderTree } from "../../src/hooks/useFolderTree";
 import type { Folder } from "@notes/core";
 
-const makeFolder = (id: string, name: string, parentId: string | null, sortOrder: number = 0): Folder => ({
+const makeFolder = (
+  id: string,
+  name: string,
+  parentId: string | null,
+  sortOrder: number = 0,
+): Folder => ({
   id,
   name,
   parentId,

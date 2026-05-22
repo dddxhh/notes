@@ -19,7 +19,10 @@ vi.mock("../../src/lib/attachment-protocol", () => ({
 
 vi.mock("../../src/components/shared/ImageUploadButton", () => ({
   default: ({ onFileSelected }: any) => (
-    <button data-testid="image-upload-btn" onClick={() => onFileSelected(new File([], "test.png", { type: "image/png" }))}>
+    <button
+      data-testid="image-upload-btn"
+      onClick={() => onFileSelected(new File([], "test.png", { type: "image/png" }))}
+    >
       ImageUpload
     </button>
   ),
@@ -27,7 +30,10 @@ vi.mock("../../src/components/shared/ImageUploadButton", () => ({
 
 vi.mock("../../src/components/shared/VideoUploadButton", () => ({
   default: ({ onFileSelected }: any) => (
-    <button data-testid="video-upload-btn" onClick={() => onFileSelected(new File([], "test.mp4", { type: "video/mp4" }))}>
+    <button
+      data-testid="video-upload-btn"
+      onClick={() => onFileSelected(new File([], "test.mp4", { type: "video/mp4" }))}
+    >
       VideoUpload
     </button>
   ),
@@ -78,7 +84,15 @@ describe("EditorToolbar", () => {
 
   it("clicking image upload button calls uploadFile then setCustomImage on success", async () => {
     const user = userEvent.setup();
-    const attachment = { id: "att1", noteId: "note-1", type: "image", filename: "photo.jpg", mimeType: "image/jpeg", size: 1024, createdAt: 1000 };
+    const attachment = {
+      id: "att1",
+      noteId: "note-1",
+      type: "image",
+      filename: "photo.jpg",
+      mimeType: "image/jpeg",
+      size: 1024,
+      createdAt: 1000,
+    };
     mockUploadFile.mockResolvedValue({ success: true, attachment });
     const { getByTestId } = render(<EditorToolbar editor={mockEditor} />);
     await user.click(getByTestId("image-upload-btn"));
@@ -88,7 +102,15 @@ describe("EditorToolbar", () => {
 
   it("clicking video upload button calls uploadFile then setCustomVideo on success", async () => {
     const user = userEvent.setup();
-    const attachment = { id: "att2", noteId: "note-1", type: "video", filename: "clip.mp4", mimeType: "video/mp4", size: 2048, createdAt: 2000 };
+    const attachment = {
+      id: "att2",
+      noteId: "note-1",
+      type: "video",
+      filename: "clip.mp4",
+      mimeType: "video/mp4",
+      size: 2048,
+      createdAt: 2000,
+    };
     mockUploadFile.mockResolvedValue({ success: true, attachment });
     const { getByTestId } = render(<EditorToolbar editor={mockEditor} />);
     await user.click(getByTestId("video-upload-btn"));

@@ -8,7 +8,8 @@ const mockSetEditorMode = vi.fn();
 let mockEditorMode: "wysiwyg" | "markdown" = "wysiwyg";
 
 vi.mock("../../src/stores", () => ({
-  useUIStore: (selector: any) => selector({ editorMode: mockEditorMode, setEditorMode: mockSetEditorMode }),
+  useUIStore: (selector: any) =>
+    selector({ editorMode: mockEditorMode, setEditorMode: mockSetEditorMode }),
 }));
 
 import ModeToggle from "../../src/components/shared/ModeToggle";

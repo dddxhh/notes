@@ -28,10 +28,13 @@ export default function MobileLayout() {
     setCurrentNote(note);
   }, [createNote, setCurrentNote]);
 
-  const handleSelectNoteFromSearch = useCallback((id: string) => {
-    setCurrentNote(null);
-    setScreen("noteList");
-  }, [setCurrentNote]);
+  const handleSelectNoteFromSearch = useCallback(
+    (id: string) => {
+      setCurrentNote(null);
+      setScreen("noteList");
+    },
+    [setCurrentNote],
+  );
 
   const handleDrawerNavigate = useCallback(() => {
     setDrawerOpen(false);
@@ -62,14 +65,22 @@ export default function MobileLayout() {
   ];
 
   return (
-    <div className="flex flex-col h-screen" style={{ backgroundColor: "var(--bg-primary)", color: "var(--text-primary)" }}>
-      <div className="flex items-center p-2 border-b" style={{ borderColor: "var(--border-color)" }}>
-        <MobileDrawer open={drawerOpen} onOpenChange={setDrawerOpen} onNavigate={handleDrawerNavigate} />
+    <div
+      className="flex flex-col h-screen"
+      style={{ backgroundColor: "var(--bg-primary)", color: "var(--text-primary)" }}
+    >
+      <div
+        className="flex items-center p-2 border-b"
+        style={{ borderColor: "var(--border-color)" }}
+      >
+        <MobileDrawer
+          open={drawerOpen}
+          onOpenChange={setDrawerOpen}
+          onNavigate={handleDrawerNavigate}
+        />
       </div>
 
-      <div className="flex-1 overflow-auto">
-        {renderScreen()}
-      </div>
+      <div className="flex-1 overflow-auto">{renderScreen()}</div>
 
       <MobileFAB onNewNote={handleNewNote} />
 
@@ -80,11 +91,16 @@ export default function MobileLayout() {
         {tabs.map((tab) => (
           <button
             key={tab.key}
-            onClick={() => { setCurrentNote(null); setScreen(tab.key); }}
+            onClick={() => {
+              setCurrentNote(null);
+              setScreen(tab.key);
+            }}
             className={`text-xs ${
               screen === tab.key && !currentNote ? "text-[var(--accent)] font-semibold" : ""
             }`}
-            style={screen !== tab.key || currentNote ? { color: "var(--text-secondary)" } : undefined}
+            style={
+              screen !== tab.key || currentNote ? { color: "var(--text-secondary)" } : undefined
+            }
           >
             {tab.icon} {tab.label}
           </button>

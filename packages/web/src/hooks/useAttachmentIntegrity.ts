@@ -24,8 +24,7 @@ export function useAttachmentIntegrity() {
             if (blob === null) {
               missing.push(id);
             }
-          } catch {
-          }
+          } catch {}
         }
         setResult({ missingAttachments: missing, checked: true });
       } catch {

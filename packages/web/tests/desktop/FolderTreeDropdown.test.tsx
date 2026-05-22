@@ -25,12 +25,26 @@ vi.mock("../../src/hooks", () => ({
   useFolderTree: () => ({
     tree: [
       {
-        folder: { id: "f1", name: "Work", parentId: null, sortOrder: 0, createdAt: 1, updatedAt: 1 },
+        folder: {
+          id: "f1",
+          name: "Work",
+          parentId: null,
+          sortOrder: 0,
+          createdAt: 1,
+          updatedAt: 1,
+        },
         children: [],
         expanded: false,
       },
       {
-        folder: { id: "f2", name: "Personal", parentId: null, sortOrder: 1, createdAt: 1, updatedAt: 1 },
+        folder: {
+          id: "f2",
+          name: "Personal",
+          parentId: null,
+          sortOrder: 1,
+          createdAt: 1,
+          updatedAt: 1,
+        },
         children: [],
         expanded: false,
       },
@@ -43,7 +57,9 @@ vi.mock("@radix-ui/react-popover", () => ({
   Trigger: ({ children, asChild }: any) => <div data-testid="popover-trigger">{children}</div>,
   Portal: ({ children }: any) => children,
   Content: ({ children, className, align, sideOffset }: any) => (
-    <div data-testid="popover-content" className={className}>{children}</div>
+    <div data-testid="popover-content" className={className}>
+      {children}
+    </div>
   ),
   Anchor: ({ children }: any) => children,
   Close: ({ children }: any) => children,

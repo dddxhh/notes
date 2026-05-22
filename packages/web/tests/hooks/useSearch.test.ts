@@ -87,7 +87,12 @@ describe("useSearch", () => {
 
   it("loading is true during search, false after", async () => {
     let resolveSearch: (r: SearchResult) => void;
-    mockSearchNotes.mockImplementation(() => new Promise<SearchResult>((resolve) => { resolveSearch = resolve; }));
+    mockSearchNotes.mockImplementation(
+      () =>
+        new Promise<SearchResult>((resolve) => {
+          resolveSearch = resolve;
+        }),
+    );
     const { result } = renderHook(() => useSearch());
     act(() => {
       result.current.executeSearch({ query: "slow" });

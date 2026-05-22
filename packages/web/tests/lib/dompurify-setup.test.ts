@@ -99,7 +99,7 @@ describe("DOMPurify XSS protection", () => {
 
     it("should preserve tables", () => {
       const result = sanitizeHtml(
-        "<table><thead><tr><th>H</th></tr></thead><tbody><tr><td>D</td></tr></tbody></table>"
+        "<table><thead><tr><th>H</th></tr></thead><tbody><tr><td>D</td></tr></tbody></table>",
       );
       expect(result).toContain("<table>");
       expect(result).toContain("<th>");

@@ -31,9 +31,12 @@ describe("MarkdownEditor", () => {
     render(<MarkdownEditor content="" onUpdate={onUpdate} />);
     const textarea = screen.getByPlaceholderText("开始编写 Markdown...");
     await user.type(textarea, "hello");
-    await waitFor(() => {
-      expect(onUpdate).toHaveBeenCalledWith("hello");
-    }, { timeout: 2000 });
+    await waitFor(
+      () => {
+        expect(onUpdate).toHaveBeenCalledWith("hello");
+      },
+      { timeout: 2000 },
+    );
   });
 
   it("displays value prop in textarea", () => {

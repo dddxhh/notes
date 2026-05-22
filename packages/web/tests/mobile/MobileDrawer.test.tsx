@@ -20,7 +20,12 @@ vi.mock("../../src/stores", () => ({
     return selector ? selector(state) : state;
   },
   useFoldersStore: (selector?: any) => {
-    const state = { folders: mockFolders, currentFolderId: null, setCurrentFolderId: vi.fn(), setFolders: vi.fn() };
+    const state = {
+      folders: mockFolders,
+      currentFolderId: null,
+      setCurrentFolderId: vi.fn(),
+      setFolders: vi.fn(),
+    };
     return selector ? selector(state) : state;
   },
   useTagsStore: (selector?: any) => {
@@ -28,7 +33,16 @@ vi.mock("../../src/stores", () => ({
     return selector ? selector(state) : state;
   },
   useUIStore: (selector?: any) => {
-    const state = { theme: "light", editorMode: "wysiwyg", sidebarOpen: true, isMobile: true, setEditorMode: vi.fn(), setTheme: vi.fn(), setSidebarOpen: vi.fn(), setIsMobile: vi.fn() };
+    const state = {
+      theme: "light",
+      editorMode: "wysiwyg",
+      sidebarOpen: true,
+      isMobile: true,
+      setEditorMode: vi.fn(),
+      setTheme: vi.fn(),
+      setSidebarOpen: vi.fn(),
+      setIsMobile: vi.fn(),
+    };
     return selector ? selector(state) : state;
   },
   useSlashCommandStore: (selector?: any) => {
@@ -55,9 +69,13 @@ vi.mock("../../src/hooks", () => ({
 vi.mock("../../src/components/desktop/FolderTree", () => ({
   default: (props: any) => (
     <div data-testid="folder-tree">
-      <div data-all-notes onClick={() => props.onSelectFolder(null)}>全部笔记</div>
+      <div data-all-notes onClick={() => props.onSelectFolder(null)}>
+        全部笔记
+      </div>
       {mockFolders.map((f) => (
-        <div key={f.id} data-folder-id={f.id} onClick={() => props.onSelectFolder(f.id)}>{f.name}</div>
+        <div key={f.id} data-folder-id={f.id} onClick={() => props.onSelectFolder(f.id)}>
+          {f.name}
+        </div>
       ))}
     </div>
   ),
@@ -73,7 +91,9 @@ vi.mock("@radix-ui/react-dialog", () => ({
   Portal: ({ children }: any) => children,
   Overlay: ({ children }: any) => <div data-testid="dialog-overlay">{children}</div>,
   Content: ({ children, className }: any) => (
-    <div data-testid="dialog-content" className={className}>{children}</div>
+    <div data-testid="dialog-content" className={className}>
+      {children}
+    </div>
   ),
   Close: ({ children }: any) => <div data-testid="dialog-close">{children}</div>,
   Title: ({ children }: any) => <div data-testid="dialog-title">{children}</div>,

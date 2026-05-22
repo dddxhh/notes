@@ -18,7 +18,7 @@ describe("SQLite WASM 基础功能", () => {
       "SELECT name FROM sqlite_master WHERE type='table' AND name='folders'",
       (row) => {
         tables.push(row[0] as string);
-      }
+      },
     );
     expect(tables).toContain("folders");
     await closeSQLite(sqliteDB);
@@ -32,7 +32,7 @@ describe("SQLite WASM 基础功能", () => {
       "SELECT name FROM sqlite_master WHERE type='table' AND name='notes'",
       (row) => {
         tables.push(row[0] as string);
-      }
+      },
     );
     expect(tables).toContain("notes");
     await closeSQLite(sqliteDB);
@@ -48,7 +48,7 @@ describe("SQLite FTS5（依赖 WASM FTS5 支持）", () => {
       "SELECT name FROM sqlite_master WHERE type='table' AND name='notes_fts'",
       (row) => {
         tables.push(row[0] as string);
-      }
+      },
     );
     await closeSQLite(sqliteDB);
     if (tables.length === 0) return;

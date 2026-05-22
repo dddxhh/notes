@@ -20,11 +20,24 @@ vi.mock("../src/stores", () => ({
     return selector ? selector(state) : state;
   },
   useFoldersStore: (selector?: any) => {
-    const state = { folders: [], setFolders: vi.fn(), currentFolderId: null, setCurrentFolderId: vi.fn() };
+    const state = {
+      folders: [],
+      setFolders: vi.fn(),
+      currentFolderId: null,
+      setCurrentFolderId: vi.fn(),
+    };
     return selector ? selector(state) : state;
   },
   useUIStore: (selector?: any) => {
-    const state = { editorMode: "wysiwyg", isMobile: false, sidebarOpen: mockSidebarOpen, setSidebarOpen: mockSetSidebarOpen, setIsMobile: vi.fn(), setEditorMode: vi.fn(), setTheme: vi.fn() };
+    const state = {
+      editorMode: "wysiwyg",
+      isMobile: false,
+      sidebarOpen: mockSidebarOpen,
+      setSidebarOpen: mockSetSidebarOpen,
+      setIsMobile: vi.fn(),
+      setEditorMode: vi.fn(),
+      setTheme: vi.fn(),
+    };
     return selector ? selector(state) : state;
   },
   useSlashCommandStore: (selector?: any) => {

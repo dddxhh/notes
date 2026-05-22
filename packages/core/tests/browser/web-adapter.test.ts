@@ -35,8 +35,8 @@ describe("WebStorageAdapter CRUD", () => {
         expect(updated.title).toBe("更新标题");
         expect(updated.mdText).toBe("# 内容");
         expect(updated.version).toBe(2);
-      } catch (e: any) {
-        if (e.message?.includes("notes_fts")) {
+      } catch (e: unknown) {
+        if ((e as Error).message?.includes("notes_fts")) {
           return;
         }
         throw e;
@@ -49,8 +49,8 @@ describe("WebStorageAdapter CRUD", () => {
         await adapter.deleteNote(note.id);
         const deleted = await adapter.getNote(note.id);
         expect(deleted!.deletedAt).not.toBeNull();
-      } catch (e: any) {
-        if (e.message?.includes("notes_fts")) {
+      } catch (e: unknown) {
+        if ((e as Error).message?.includes("notes_fts")) {
           return;
         }
         throw e;

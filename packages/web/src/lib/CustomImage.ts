@@ -45,10 +45,12 @@ export const CustomImage = Node.create<CustomImageOptions>({
       setCustomImage:
         (options: { src: string; alt?: string; title?: string }) =>
         ({ chain }) => {
-          return chain().insertContent({
-            type: this.name,
-            attrs: options,
-          }).run();
+          return chain()
+            .insertContent({
+              type: this.name,
+              attrs: options,
+            })
+            .run();
         },
     };
   },

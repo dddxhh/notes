@@ -10,7 +10,10 @@
     "test": "vitest run",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "lint": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src tests e2e",
+    "format": "prettier --write src tests e2e",
+    "format:check": "prettier --check src tests e2e"
   },
   "dependencies": {
     "@notes/core": "workspace:*",

@@ -25,7 +25,7 @@ export const SlashCommand = Extension.create({
                 items: props.items,
                 onClick: (item) => {
                   props.command(item);
-if (popup) popup.hide();
+                  if (popup) popup.hide();
                 },
               });
 

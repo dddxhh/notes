@@ -1,9 +1,15 @@
 import {
-  Note, CreateNoteInput, UpdateNoteInput,
-  Folder, CreateFolderInput, UpdateFolderInput,
-  Attachment, AttachmentType,
+  Note,
+  CreateNoteInput,
+  UpdateNoteInput,
+  Folder,
+  CreateFolderInput,
+  UpdateFolderInput,
+  Attachment,
+  AttachmentType,
   Tag,
-  SearchInput, SearchResult,
+  SearchInput,
+  SearchResult,
 } from "../models";
 
 export interface StorageAdapter {

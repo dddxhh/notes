@@ -21,9 +21,12 @@ export default function NoteListMobile() {
 
   const activeNotes = notes.filter((n) => n.deletedAt === null);
 
-  const handleTagFilter = useCallback((tagId: string) => {
-    setSelectedTagId(selectedTagId === tagId ? null : tagId);
-  }, [selectedTagId]);
+  const handleTagFilter = useCallback(
+    (tagId: string) => {
+      setSelectedTagId(selectedTagId === tagId ? null : tagId);
+    },
+    [selectedTagId],
+  );
 
   const parentRef = useRef<HTMLDivElement>(null);
   const virtualizer = useVirtualizer({
@@ -36,10 +39,15 @@ export default function NoteListMobile() {
   return (
     <div className="flex flex-col h-full">
       <div className="p-3 border-b" style={{ borderColor: "var(--border-color)" }}>
-        <h2 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>← 全部笔记</h2>
+        <h2 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>
+          ← 全部笔记
+        </h2>
       </div>
 
-      <div className="flex items-center gap-1 px-3 py-2 overflow-x-auto border-b" style={{ borderColor: "var(--border-color)" }}>
+      <div
+        className="flex items-center gap-1 px-3 py-2 overflow-x-auto border-b"
+        style={{ borderColor: "var(--border-color)" }}
+      >
         {tags.map((tag) => (
           <TagBadge key={tag.id} name={tag.name} onClick={() => handleTagFilter(tag.id)} />
         ))}
@@ -58,7 +66,9 @@ export default function NoteListMobile() {
       <MobileDrawer open={drawerOpen} onOpenChange={setDrawerOpen} />
 
       <div ref={parentRef} className="flex-1 overflow-auto">
-        <div style={{ height: `${virtualizer.getTotalSize()}px`, width: "100%", position: "relative" }}>
+        <div
+          style={{ height: `${virtualizer.getTotalSize()}px`, width: "100%", position: "relative" }}
+        >
           {virtualizer.getVirtualItems().map((virtualItem) => {
             const note = activeNotes[virtualItem.index];
             return (

@@ -28,7 +28,9 @@ describe("SlashCommandPanel", () => {
   });
 
   it("renders filtered items based on query", () => {
-    panel.updateProps({ items: mockItems.filter((i) => i.title.toLowerCase().startsWith("heading")) });
+    panel.updateProps({
+      items: mockItems.filter((i) => i.title.toLowerCase().startsWith("heading")),
+    });
     expect(panel.element.querySelectorAll(".slash-command-item").length).toBe(2);
     expect(panel.element.textContent).toContain("Heading 1");
     expect(panel.element.textContent).toContain("Heading 2");

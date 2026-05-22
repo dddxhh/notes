@@ -20,7 +20,10 @@ export default function MobileSearch({ onSelectNote }: MobileSearchProps) {
   };
 
   return (
-    <div className="flex flex-col h-screen" style={{ backgroundColor: "var(--bg-primary)", color: "var(--text-primary)" }}>
+    <div
+      className="flex flex-col h-screen"
+      style={{ backgroundColor: "var(--bg-primary)", color: "var(--text-primary)" }}
+    >
       <div className="p-3 space-y-2">
         <h2 className="text-lg font-bold">搜索</h2>
         <SearchBar
@@ -48,7 +51,10 @@ export default function MobileSearch({ onSelectNote }: MobileSearchProps) {
           loading={loading}
           onSelectNote={handleSelectNote}
           onLoadMore={() => {
-            executeSearch({ ...searchInput, offset: (searchInput.offset || 0) + (searchInput.limit || 20) });
+            executeSearch({
+              ...searchInput,
+              offset: (searchInput.offset || 0) + (searchInput.limit || 20),
+            });
           }}
         />
       </div>

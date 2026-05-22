@@ -16,7 +16,10 @@ export default function App() {
     initStorage().then(() => setReady(true));
   }, []);
 
-  if (!ready) return <div className="flex items-center justify-center h-screen text-gray-500">正在初始化...</div>;
+  if (!ready)
+    return (
+      <div className="flex items-center justify-center h-screen text-gray-500">正在初始化...</div>
+    );
 
   return (
     <>

@@ -10,9 +10,9 @@ const mockOnAddTag = vi.fn();
 const mockOnRename = vi.fn();
 const mockOnCopyMarkdown = vi.fn();
 
-let confirmOpen = false;
-let renameOpen = false;
-let moveOpen = false;
+const confirmOpen = false;
+const renameOpen = false;
+const moveOpen = false;
 
 vi.mock("../../src/components/shared/ConfirmDialog", () => ({
   default: ({ open, onOpenChange, title, confirmLabel, variant, onConfirm }: any) =>
@@ -21,8 +21,18 @@ vi.mock("../../src/components/shared/ConfirmDialog", () => ({
         <span data-testid="confirm-title">{title}</span>
         <span data-testid="confirm-label">{confirmLabel}</span>
         <span data-testid="confirm-variant">{variant}</span>
-        <button data-testid="confirm-action" onClick={() => { onConfirm(); onOpenChange(false); }}>{confirmLabel}</button>
-        <button data-testid="confirm-cancel" onClick={() => onOpenChange(false)}>取消</button>
+        <button
+          data-testid="confirm-action"
+          onClick={() => {
+            onConfirm();
+            onOpenChange(false);
+          }}
+        >
+          {confirmLabel}
+        </button>
+        <button data-testid="confirm-cancel" onClick={() => onOpenChange(false)}>
+          取消
+        </button>
       </div>
     ) : null,
 }));
@@ -33,8 +43,18 @@ vi.mock("../../src/components/shared/RenameDialog", () => ({
       <div data-testid="rename-dialog">
         <span data-testid="rename-current">{currentName}</span>
         <input data-testid="rename-input" defaultValue={currentName} onChange={(e: any) => {}} />
-        <button data-testid="rename-confirm" onClick={() => { onRename("New Name"); onOpenChange(false); }}>确认</button>
-        <button data-testid="rename-cancel" onClick={() => onOpenChange(false)}>取消</button>
+        <button
+          data-testid="rename-confirm"
+          onClick={() => {
+            onRename("New Name");
+            onOpenChange(false);
+          }}
+        >
+          确认
+        </button>
+        <button data-testid="rename-cancel" onClick={() => onOpenChange(false)}>
+          取消
+        </button>
       </div>
     ) : null,
 }));
@@ -45,8 +65,18 @@ vi.mock("../../src/components/shared/MoveNoteDialog", () => ({
       <div data-testid="move-dialog">
         <span data-testid="move-note-id">{noteId}</span>
         <span data-testid="move-current-folder">{currentFolderId}</span>
-        <button data-testid="move-confirm" onClick={() => { onMove("target-folder"); onOpenChange(false); }}>确认</button>
-        <button data-testid="move-cancel" onClick={() => onOpenChange(false)}>取消</button>
+        <button
+          data-testid="move-confirm"
+          onClick={() => {
+            onMove("target-folder");
+            onOpenChange(false);
+          }}
+        >
+          确认
+        </button>
+        <button data-testid="move-cancel" onClick={() => onOpenChange(false)}>
+          取消
+        </button>
       </div>
     ) : null,
 }));
@@ -60,9 +90,19 @@ describe("ContextMenu", () => {
 
   it("renders children as trigger content", () => {
     render(
-      <ContextMenu itemId="note-1" itemType="note" currentName="My Note" currentFolderId="f1" onDelete={mockOnDelete} onMoveToFolder={mockOnMoveToFolder} onAddTag={mockOnAddTag} onRename={mockOnRename} onCopyMarkdown={mockOnCopyMarkdown}>
+      <ContextMenu
+        itemId="note-1"
+        itemType="note"
+        currentName="My Note"
+        currentFolderId="f1"
+        onDelete={mockOnDelete}
+        onMoveToFolder={mockOnMoveToFolder}
+        onAddTag={mockOnAddTag}
+        onRename={mockOnRename}
+        onCopyMarkdown={mockOnCopyMarkdown}
+      >
         <div>Note Content</div>
-      </ContextMenu>
+      </ContextMenu>,
     );
     expect(screen.getByText("Note Content")).toBeTruthy();
   });
@@ -70,9 +110,19 @@ describe("ContextMenu", () => {
   it("shows menu items after right-click for notes", async () => {
     const user = userEvent.setup();
     render(
-      <ContextMenu itemId="note-1" itemType="note" currentName="My Note" currentFolderId="f1" onDelete={mockOnDelete} onMoveToFolder={mockOnMoveToFolder} onAddTag={mockOnAddTag} onRename={mockOnRename} onCopyMarkdown={mockOnCopyMarkdown}>
+      <ContextMenu
+        itemId="note-1"
+        itemType="note"
+        currentName="My Note"
+        currentFolderId="f1"
+        onDelete={mockOnDelete}
+        onMoveToFolder={mockOnMoveToFolder}
+        onAddTag={mockOnAddTag}
+        onRename={mockOnRename}
+        onCopyMarkdown={mockOnCopyMarkdown}
+      >
         <div>Note Content</div>
-      </ContextMenu>
+      </ContextMenu>,
     );
     const trigger = screen.getByText("Note Content");
     await user.pointer({ keys: "[MouseRight]", target: trigger });
@@ -86,9 +136,18 @@ describe("ContextMenu", () => {
   it("shows '删除文件夹' for itemType='folder'", async () => {
     const user = userEvent.setup();
     render(
-      <ContextMenu itemId="f1" itemType="folder" currentName="My Folder" onDelete={mockOnDelete} onMoveToFolder={mockOnMoveToFolder} onAddTag={mockOnAddTag} onRename={mockOnRename} onCopyMarkdown={mockOnCopyMarkdown}>
+      <ContextMenu
+        itemId="f1"
+        itemType="folder"
+        currentName="My Folder"
+        onDelete={mockOnDelete}
+        onMoveToFolder={mockOnMoveToFolder}
+        onAddTag={mockOnAddTag}
+        onRename={mockOnRename}
+        onCopyMarkdown={mockOnCopyMarkdown}
+      >
         <div>Folder Content</div>
-      </ContextMenu>
+      </ContextMenu>,
     );
     const trigger = screen.getByText("Folder Content");
     await user.pointer({ keys: "[MouseRight]", target: trigger });
@@ -99,9 +158,19 @@ describe("ContextMenu", () => {
   it("clicking 重命名 opens RenameDialog", async () => {
     const user = userEvent.setup();
     render(
-      <ContextMenu itemId="note-1" itemType="note" currentName="My Note" currentFolderId="f1" onDelete={mockOnDelete} onMoveToFolder={mockOnMoveToFolder} onAddTag={mockOnAddTag} onRename={mockOnRename} onCopyMarkdown={mockOnCopyMarkdown}>
+      <ContextMenu
+        itemId="note-1"
+        itemType="note"
+        currentName="My Note"
+        currentFolderId="f1"
+        onDelete={mockOnDelete}
+        onMoveToFolder={mockOnMoveToFolder}
+        onAddTag={mockOnAddTag}
+        onRename={mockOnRename}
+        onCopyMarkdown={mockOnCopyMarkdown}
+      >
         <div>Note Content</div>
-      </ContextMenu>
+      </ContextMenu>,
     );
     const trigger = screen.getByText("Note Content");
     await user.pointer({ keys: "[MouseRight]", target: trigger });
@@ -113,9 +182,19 @@ describe("ContextMenu", () => {
   it("clicking 删除笔记 opens ConfirmDialog", async () => {
     const user = userEvent.setup();
     render(
-      <ContextMenu itemId="note-1" itemType="note" currentName="My Note" currentFolderId="f1" onDelete={mockOnDelete} onMoveToFolder={mockOnMoveToFolder} onAddTag={mockOnAddTag} onRename={mockOnRename} onCopyMarkdown={mockOnCopyMarkdown}>
+      <ContextMenu
+        itemId="note-1"
+        itemType="note"
+        currentName="My Note"
+        currentFolderId="f1"
+        onDelete={mockOnDelete}
+        onMoveToFolder={mockOnMoveToFolder}
+        onAddTag={mockOnAddTag}
+        onRename={mockOnRename}
+        onCopyMarkdown={mockOnCopyMarkdown}
+      >
         <div>Note Content</div>
-      </ContextMenu>
+      </ContextMenu>,
     );
     const trigger = screen.getByText("Note Content");
     await user.pointer({ keys: "[MouseRight]", target: trigger });
@@ -128,9 +207,19 @@ describe("ContextMenu", () => {
   it("clicking 移动到文件夹 opens MoveNoteDialog", async () => {
     const user = userEvent.setup();
     render(
-      <ContextMenu itemId="note-2" itemType="note" currentName="My Note" currentFolderId="f1" onDelete={mockOnDelete} onMoveToFolder={mockOnMoveToFolder} onAddTag={mockOnAddTag} onRename={mockOnRename} onCopyMarkdown={mockOnCopyMarkdown}>
+      <ContextMenu
+        itemId="note-2"
+        itemType="note"
+        currentName="My Note"
+        currentFolderId="f1"
+        onDelete={mockOnDelete}
+        onMoveToFolder={mockOnMoveToFolder}
+        onAddTag={mockOnAddTag}
+        onRename={mockOnRename}
+        onCopyMarkdown={mockOnCopyMarkdown}
+      >
         <div>Note Content</div>
-      </ContextMenu>
+      </ContextMenu>,
     );
     const trigger = screen.getByText("Note Content");
     await user.pointer({ keys: "[MouseRight]", target: trigger });
@@ -142,9 +231,18 @@ describe("ContextMenu", () => {
   it("clicking 添加标签 calls onAddTag with itemId", async () => {
     const user = userEvent.setup();
     render(
-      <ContextMenu itemId="note-3" itemType="note" currentName="Note 3" onDelete={mockOnDelete} onMoveToFolder={mockOnMoveToFolder} onAddTag={mockOnAddTag} onRename={mockOnRename} onCopyMarkdown={mockOnCopyMarkdown}>
+      <ContextMenu
+        itemId="note-3"
+        itemType="note"
+        currentName="Note 3"
+        onDelete={mockOnDelete}
+        onMoveToFolder={mockOnMoveToFolder}
+        onAddTag={mockOnAddTag}
+        onRename={mockOnRename}
+        onCopyMarkdown={mockOnCopyMarkdown}
+      >
         <div>Note Content</div>
-      </ContextMenu>
+      </ContextMenu>,
     );
     const trigger = screen.getByText("Note Content");
     await user.pointer({ keys: "[MouseRight]", target: trigger });
@@ -155,9 +253,19 @@ describe("ContextMenu", () => {
   it("clicking 复制 Markdown calls onCopyMarkdown with itemId", async () => {
     const user = userEvent.setup();
     render(
-      <ContextMenu itemId="note-1" itemType="note" currentName="My Note" currentFolderId="f1" onDelete={mockOnDelete} onMoveToFolder={mockOnMoveToFolder} onAddTag={mockOnAddTag} onRename={mockOnRename} onCopyMarkdown={mockOnCopyMarkdown}>
+      <ContextMenu
+        itemId="note-1"
+        itemType="note"
+        currentName="My Note"
+        currentFolderId="f1"
+        onDelete={mockOnDelete}
+        onMoveToFolder={mockOnMoveToFolder}
+        onAddTag={mockOnAddTag}
+        onRename={mockOnRename}
+        onCopyMarkdown={mockOnCopyMarkdown}
+      >
         <div>Note Content</div>
-      </ContextMenu>
+      </ContextMenu>,
     );
     const trigger = screen.getByText("Note Content");
     await user.pointer({ keys: "[MouseRight]", target: trigger });
@@ -168,9 +276,19 @@ describe("ContextMenu", () => {
   it("confirming delete in ConfirmDialog calls onDelete with itemId", async () => {
     const user = userEvent.setup();
     render(
-      <ContextMenu itemId="note-1" itemType="note" currentName="My Note" currentFolderId="f1" onDelete={mockOnDelete} onMoveToFolder={mockOnMoveToFolder} onAddTag={mockOnAddTag} onRename={mockOnRename} onCopyMarkdown={mockOnCopyMarkdown}>
+      <ContextMenu
+        itemId="note-1"
+        itemType="note"
+        currentName="My Note"
+        currentFolderId="f1"
+        onDelete={mockOnDelete}
+        onMoveToFolder={mockOnMoveToFolder}
+        onAddTag={mockOnAddTag}
+        onRename={mockOnRename}
+        onCopyMarkdown={mockOnCopyMarkdown}
+      >
         <div>Note Content</div>
-      </ContextMenu>
+      </ContextMenu>,
     );
     const trigger = screen.getByText("Note Content");
     await user.pointer({ keys: "[MouseRight]", target: trigger });
@@ -183,9 +301,19 @@ describe("ContextMenu", () => {
   it("confirming rename in RenameDialog calls onRename with itemId and newName", async () => {
     const user = userEvent.setup();
     render(
-      <ContextMenu itemId="note-1" itemType="note" currentName="My Note" currentFolderId="f1" onDelete={mockOnDelete} onMoveToFolder={mockOnMoveToFolder} onAddTag={mockOnAddTag} onRename={mockOnRename} onCopyMarkdown={mockOnCopyMarkdown}>
+      <ContextMenu
+        itemId="note-1"
+        itemType="note"
+        currentName="My Note"
+        currentFolderId="f1"
+        onDelete={mockOnDelete}
+        onMoveToFolder={mockOnMoveToFolder}
+        onAddTag={mockOnAddTag}
+        onRename={mockOnRename}
+        onCopyMarkdown={mockOnCopyMarkdown}
+      >
         <div>Note Content</div>
-      </ContextMenu>
+      </ContextMenu>,
     );
     const trigger = screen.getByText("Note Content");
     await user.pointer({ keys: "[MouseRight]", target: trigger });
@@ -197,9 +325,19 @@ describe("ContextMenu", () => {
   it("confirming move in MoveNoteDialog calls onMoveToFolder with itemId and targetFolderId", async () => {
     const user = userEvent.setup();
     render(
-      <ContextMenu itemId="note-1" itemType="note" currentName="My Note" currentFolderId="f1" onDelete={mockOnDelete} onMoveToFolder={mockOnMoveToFolder} onAddTag={mockOnAddTag} onRename={mockOnRename} onCopyMarkdown={mockOnCopyMarkdown}>
+      <ContextMenu
+        itemId="note-1"
+        itemType="note"
+        currentName="My Note"
+        currentFolderId="f1"
+        onDelete={mockOnDelete}
+        onMoveToFolder={mockOnMoveToFolder}
+        onAddTag={mockOnAddTag}
+        onRename={mockOnRename}
+        onCopyMarkdown={mockOnCopyMarkdown}
+      >
         <div>Note Content</div>
-      </ContextMenu>
+      </ContextMenu>,
     );
     const trigger = screen.getByText("Note Content");
     await user.pointer({ keys: "[MouseRight]", target: trigger });
@@ -211,9 +349,18 @@ describe("ContextMenu", () => {
   it("does not show 复制 Markdown for folders", async () => {
     const user = userEvent.setup();
     render(
-      <ContextMenu itemId="f1" itemType="folder" currentName="My Folder" onDelete={mockOnDelete} onMoveToFolder={mockOnMoveToFolder} onAddTag={mockOnAddTag} onRename={mockOnRename} onCopyMarkdown={mockOnCopyMarkdown}>
+      <ContextMenu
+        itemId="f1"
+        itemType="folder"
+        currentName="My Folder"
+        onDelete={mockOnDelete}
+        onMoveToFolder={mockOnMoveToFolder}
+        onAddTag={mockOnAddTag}
+        onRename={mockOnRename}
+        onCopyMarkdown={mockOnCopyMarkdown}
+      >
         <div>Folder Content</div>
-      </ContextMenu>
+      </ContextMenu>,
     );
     const trigger = screen.getByText("Folder Content");
     await user.pointer({ keys: "[MouseRight]", target: trigger });
@@ -223,9 +370,18 @@ describe("ContextMenu", () => {
   it("does not show 添加标签 for folders", async () => {
     const user = userEvent.setup();
     render(
-      <ContextMenu itemId="f1" itemType="folder" currentName="My Folder" onDelete={mockOnDelete} onMoveToFolder={mockOnMoveToFolder} onAddTag={mockOnAddTag} onRename={mockOnRename} onCopyMarkdown={mockOnCopyMarkdown}>
+      <ContextMenu
+        itemId="f1"
+        itemType="folder"
+        currentName="My Folder"
+        onDelete={mockOnDelete}
+        onMoveToFolder={mockOnMoveToFolder}
+        onAddTag={mockOnAddTag}
+        onRename={mockOnRename}
+        onCopyMarkdown={mockOnCopyMarkdown}
+      >
         <div>Folder Content</div>
-      </ContextMenu>
+      </ContextMenu>,
     );
     const trigger = screen.getByText("Folder Content");
     await user.pointer({ keys: "[MouseRight]", target: trigger });
@@ -235,9 +391,18 @@ describe("ContextMenu", () => {
   it("does not show 移动到文件夹 for folders", async () => {
     const user = userEvent.setup();
     render(
-      <ContextMenu itemId="f1" itemType="folder" currentName="My Folder" onDelete={mockOnDelete} onMoveToFolder={mockOnMoveToFolder} onAddTag={mockOnAddTag} onRename={mockOnRename} onCopyMarkdown={mockOnCopyMarkdown}>
+      <ContextMenu
+        itemId="f1"
+        itemType="folder"
+        currentName="My Folder"
+        onDelete={mockOnDelete}
+        onMoveToFolder={mockOnMoveToFolder}
+        onAddTag={mockOnAddTag}
+        onRename={mockOnRename}
+        onCopyMarkdown={mockOnCopyMarkdown}
+      >
         <div>Folder Content</div>
-      </ContextMenu>
+      </ContextMenu>,
     );
     const trigger = screen.getByText("Folder Content");
     await user.pointer({ keys: "[MouseRight]", target: trigger });

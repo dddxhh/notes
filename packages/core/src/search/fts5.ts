@@ -29,18 +29,24 @@ export async function searchNotes(db: SQLiteDB, input: SearchInput): Promise<Sea
   if (input.tagIds && input.tagIds.length > 0) {
     if (input.tagMode === "intersection") {
       for (const tagId of input.tagIds) {
-        conditions.push("EXISTS(SELECT 1 FROM note_tags WHERE note_tags.note_id=notes.id AND note_tags.tag_id=?)");
+        conditions.push(
+          "EXISTS(SELECT 1 FROM note_tags WHERE note_tags.note_id=notes.id AND note_tags.tag_id=?)",
+        );
         params.push(tagId);
       }
     } else {
       const placeholders = input.tagIds.map(() => "?").join(",");
-      conditions.push(`EXISTS(SELECT 1 FROM note_tags WHERE note_tags.note_id=notes.id AND note_tags.tag_id IN (${placeholders}))`);
+      conditions.push(
+        `EXISTS(SELECT 1 FROM note_tags WHERE note_tags.note_id=notes.id AND note_tags.tag_id IN (${placeholders}))`,
+      );
       params.push(...input.tagIds);
     }
   }
 
   if (input.hasAttachment) {
-    conditions.push("EXISTS(SELECT 1 FROM attachments WHERE attachments.note_id=notes.id AND attachments.type=?)");
+    conditions.push(
+      "EXISTS(SELECT 1 FROM attachments WHERE attachments.note_id=notes.id AND attachments.type=?)",
+    );
     params.push(input.hasAttachment);
   }
 
@@ -66,7 +72,12 @@ export async function searchNotes(db: SQLiteDB, input: SearchInput): Promise<Sea
 
   const sortBy = input.sortBy ?? "updated_at";
   const sortOrder = input.sortOrder ?? "desc";
-  const orderCol = sortBy === "title" ? "notes.title" : sortBy === "created_at" ? "notes.created_at" : "notes.updated_at";
+  const orderCol =
+    sortBy === "title"
+      ? "notes.title"
+      : sortBy === "created_at"
+        ? "notes.created_at"
+        : "notes.updated_at";
   const limit = input.limit ?? 50;
   const offset = input.offset ?? 0;
 

@@ -25,7 +25,12 @@ vi.mock("../src/stores", () => ({
     return selector ? selector(state) : state;
   },
   useFoldersStore: (selector?: any) => {
-    const state = { folders: [], currentFolderId: null, setCurrentFolderId: vi.fn(), setFolders: vi.fn() };
+    const state = {
+      folders: [],
+      currentFolderId: null,
+      setCurrentFolderId: vi.fn(),
+      setFolders: vi.fn(),
+    };
     return selector ? selector(state) : state;
   },
   useTagsStore: (selector?: any) => {
@@ -33,7 +38,15 @@ vi.mock("../src/stores", () => ({
     return selector ? selector(state) : state;
   },
   useUIStore: (selector?: any) => {
-    const state = { editorMode: "wysiwyg", isMobile: true, sidebarOpen: mockSidebarOpen, setSidebarOpen: mockSetSidebarOpen, setIsMobile: vi.fn(), setEditorMode: vi.fn(), setTheme: vi.fn() };
+    const state = {
+      editorMode: "wysiwyg",
+      isMobile: true,
+      sidebarOpen: mockSidebarOpen,
+      setSidebarOpen: mockSetSidebarOpen,
+      setIsMobile: vi.fn(),
+      setEditorMode: vi.fn(),
+      setTheme: vi.fn(),
+    };
     return selector ? selector(state) : state;
   },
   useSlashCommandStore: (selector?: any) => {
@@ -52,7 +65,18 @@ vi.mock("../src/hooks", () => ({
     listFolders: vi.fn().mockResolvedValue([]),
     listTags: vi.fn().mockResolvedValue([]),
     updateNote: vi.fn(),
-    createNote: vi.fn().mockResolvedValue({ id: "new1", title: "新笔记", contentJson: "", mdText: "", folderId: null, type: "rich", createdAt: 1, updatedAt: 1, deletedAt: null, version: 1 }),
+    createNote: vi.fn().mockResolvedValue({
+      id: "new1",
+      title: "新笔记",
+      contentJson: "",
+      mdText: "",
+      folderId: null,
+      type: "rich",
+      createdAt: 1,
+      updatedAt: 1,
+      deletedAt: null,
+      version: 1,
+    }),
     addTagsToNote: vi.fn(),
     createTag: vi.fn(),
   }),
@@ -64,7 +88,7 @@ vi.mock("../src/hooks", () => ({
     updateFilter: vi.fn(),
     clearSearch: vi.fn(),
   }),
-useAttachmentUpload: () => ({ uploadFile: vi.fn() }),
+  useAttachmentUpload: () => ({ uploadFile: vi.fn() }),
   useFolderTree: () => ({ tree: [] }),
   useToast: () => ({ showToast: vi.fn() }),
 }));
@@ -216,7 +240,9 @@ describe("MobileLayout", () => {
     const user = userEvent.setup();
     const { container } = render(<MobileLayout />);
     const buttons = Array.from(container.querySelectorAll("[class*='justify-around'] button"));
-    const noteTab = buttons.find((b) => b.textContent?.includes("笔记") && !b.textContent?.includes("快速"));
+    const noteTab = buttons.find(
+      (b) => b.textContent?.includes("笔记") && !b.textContent?.includes("快速"),
+    );
     await user.click(noteTab!);
     expect(screen.getByTestId("note-list-mobile")).toBeTruthy();
   });
@@ -271,7 +297,9 @@ describe("MobileLayout", () => {
     const { container } = render(<MobileLayout />);
     expect(screen.getByTestId("quick-note")).toBeTruthy();
     const buttons = Array.from(container.querySelectorAll("[class*='justify-around'] button"));
-    const noteTab = buttons.find((b) => b.textContent?.includes("笔记") && !b.textContent?.includes("快速"));
+    const noteTab = buttons.find(
+      (b) => b.textContent?.includes("笔记") && !b.textContent?.includes("快速"),
+    );
     await user.click(noteTab!);
     expect(screen.getByTestId("note-list-mobile")).toBeTruthy();
     const searchTab = buttons.find((b) => b.textContent?.includes("搜索"));

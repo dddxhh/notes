@@ -16,7 +16,13 @@ interface EditorProps {
   onFileUpload?: (file: File) => Promise<UploadResult | undefined>;
 }
 
-export default function Editor({ content, currentNoteId, onUpdate, isMobile, onFileUpload }: EditorProps) {
+export default function Editor({
+  content,
+  currentNoteId,
+  onUpdate,
+  isMobile,
+  onFileUpload,
+}: EditorProps) {
   const editorMode = useUIStore((s) => s.editorMode);
   const isMobileDefault = useUIStore((s) => s.isMobile);
   const mobile = isMobile ?? isMobileDefault;
@@ -136,8 +142,20 @@ export default function Editor({ content, currentNoteId, onUpdate, isMobile, onF
     <div className="editor-container">
       {!mobile && <EditorToolbar editor={editor} />}
       <EditorContent editor={editor} />
-      <input ref={imageInputRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleImageUpload} />
-      <input ref={videoInputRef} type="file" accept="video/*" style={{ display: "none" }} onChange={handleVideoUpload} />
+      <input
+        ref={imageInputRef}
+        type="file"
+        accept="image/*"
+        style={{ display: "none" }}
+        onChange={handleImageUpload}
+      />
+      <input
+        ref={videoInputRef}
+        type="file"
+        accept="video/*"
+        style={{ display: "none" }}
+        onChange={handleVideoUpload}
+      />
     </div>
   );
 }

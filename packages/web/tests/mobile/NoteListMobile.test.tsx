@@ -16,29 +16,38 @@ let mockTags: { id: string; name: string }[] = [];
 let mockFolders: any[] = [];
 
 vi.mock("../../src/stores", () => ({
-  useNotesStore: (selector?: any) => selector ? selector({
-    notes: mockNotes,
-    currentNote: null,
-    setNotes: mockSetNotes,
-    addNote: vi.fn(),
-    setCurrentNote: mockSetCurrentNote,
-  }) : { notes: mockNotes },
-  useFoldersStore: (selector?: any) => selector ? selector({
-    folders: mockFolders,
-    currentFolderId: null,
-    setFolders: mockSetFolders,
-    addFolder: vi.fn(),
-    removeFolder: vi.fn(),
-    setCurrentFolderId: mockSetCurrentFolderId,
-  }) : { folders: mockFolders },
-  useTagsStore: (selector?: any) => selector ? selector({
-    tags: mockTags,
-    setTags: vi.fn(),
-    addTag: vi.fn(),
-    removeTag: vi.fn(),
-    loading: false,
-    setLoading: vi.fn(),
-  }) : { tags: mockTags },
+  useNotesStore: (selector?: any) =>
+    selector
+      ? selector({
+          notes: mockNotes,
+          currentNote: null,
+          setNotes: mockSetNotes,
+          addNote: vi.fn(),
+          setCurrentNote: mockSetCurrentNote,
+        })
+      : { notes: mockNotes },
+  useFoldersStore: (selector?: any) =>
+    selector
+      ? selector({
+          folders: mockFolders,
+          currentFolderId: null,
+          setFolders: mockSetFolders,
+          addFolder: vi.fn(),
+          removeFolder: vi.fn(),
+          setCurrentFolderId: mockSetCurrentFolderId,
+        })
+      : { folders: mockFolders },
+  useTagsStore: (selector?: any) =>
+    selector
+      ? selector({
+          tags: mockTags,
+          setTags: vi.fn(),
+          addTag: vi.fn(),
+          removeTag: vi.fn(),
+          loading: false,
+          setLoading: vi.fn(),
+        })
+      : { tags: mockTags },
 }));
 
 vi.mock("../../src/hooks", () => ({
@@ -50,33 +59,41 @@ vi.mock("../../src/hooks", () => ({
 
 vi.mock("../../src/components/shared/NoteCard", () => ({
   default: ({ note, onClick }: any) => (
-    <div data-testid="note-card" onClick={() => onClick(note)}>{note.title}</div>
+    <div data-testid="note-card" onClick={() => onClick(note)}>
+      {note.title}
+    </div>
   ),
 }));
 
 vi.mock("../../src/components/shared/TagBadge", () => ({
   default: ({ name, onClick }: any) => (
-    <button data-testid="tag-filter-btn" onClick={onClick}>#{name}</button>
+    <button data-testid="tag-filter-btn" onClick={onClick}>
+      #{name}
+    </button>
   ),
 }));
 
 vi.mock("@tanstack/react-virtual", () => ({
   useVirtualizer: ({ count }: any) => ({
-    getVirtualItems: () => Array.from({ length: Math.min(count, 20) }, (_, i) => ({
-      index: i,
-      key: `virtual-${i}`,
-      start: i * 50,
-      size: 50,
-    })),
+    getVirtualItems: () =>
+      Array.from({ length: Math.min(count, 20) }, (_, i) => ({
+        index: i,
+        key: `virtual-${i}`,
+        start: i * 50,
+        size: 50,
+      })),
     getTotalSize: () => count * 50,
     measureElement: vi.fn(),
   }),
 }));
 
 vi.mock("../../src/components/mobile/MobileDrawer", () => ({
-  default: ({ open, onOpenChange }: any) => (
-    open ? <div data-testid="mobile-drawer"><button onClick={() => onOpenChange?.(false)}>✕</button></div> : null
-  ),
+  default: ({ open, onOpenChange }: any) =>
+    open ? (
+      <div data-testid="mobile-drawer">
+        <button onClick={() => onOpenChange?.(false)}>✕</button>
+      </div>
+    ) : null,
 }));
 
 import NoteListMobile from "../../src/components/mobile/NoteListMobile";
@@ -85,8 +102,30 @@ describe("NoteListMobile", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockNotes = [
-      { id: "n1", title: "Note 1", contentJson: "", mdText: "", folderId: null, type: "rich", createdAt: Date.now(), updatedAt: Date.now(), deletedAt: null, version: 1 },
-      { id: "n2", title: "Note 2", contentJson: "", mdText: "", folderId: null, type: "rich", createdAt: Date.now(), updatedAt: Date.now(), deletedAt: null, version: 1 },
+      {
+        id: "n1",
+        title: "Note 1",
+        contentJson: "",
+        mdText: "",
+        folderId: null,
+        type: "rich",
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        deletedAt: null,
+        version: 1,
+      },
+      {
+        id: "n2",
+        title: "Note 2",
+        contentJson: "",
+        mdText: "",
+        folderId: null,
+        type: "rich",
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        deletedAt: null,
+        version: 1,
+      },
     ];
     mockTags = [
       { id: "t1", name: "work" },
@@ -132,8 +171,16 @@ describe("NoteListMobile", () => {
 
   it("uses virtual scrolling for note list rendering", () => {
     mockNotes = Array.from({ length: 50 }, (_, i) => ({
-      id: `n${i}`, title: `Note ${i}`, contentJson: "", mdText: "", folderId: null, type: "rich",
-      createdAt: Date.now(), updatedAt: Date.now(), deletedAt: null, version: 1,
+      id: `n${i}`,
+      title: `Note ${i}`,
+      contentJson: "",
+      mdText: "",
+      folderId: null,
+      type: "rich",
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      deletedAt: null,
+      version: 1,
     }));
     render(<NoteListMobile />);
     const cards = screen.getAllByTestId("note-card");

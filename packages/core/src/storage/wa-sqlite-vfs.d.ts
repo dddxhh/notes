@@ -1,5 +1,5 @@
-declare module 'wa-sqlite/src/examples/IDBBatchAtomicVFS.js' {
-  import type { SQLiteVFS } from 'wa-sqlite';
+declare module "wa-sqlite/src/examples/IDBBatchAtomicVFS.js" {
+  import type { SQLiteVFS } from "wa-sqlite";
   type VFSOptions = {
     durability?: "default" | "strict" | "relaxed";
     purge?: "deferred" | "manual";

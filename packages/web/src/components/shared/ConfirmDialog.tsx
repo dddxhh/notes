@@ -25,9 +25,7 @@ export default function ConfirmDialog({
   };
 
   const confirmStyle =
-    variant === "danger"
-      ? { color: "var(--danger)" }
-      : { color: "var(--text-primary)" };
+    variant === "danger" ? { color: "var(--danger)" } : { color: "var(--text-primary)" };
 
   return (
     <AlertDialog.Root open={open} onOpenChange={onOpenChange}>
@@ -37,12 +35,8 @@ export default function ConfirmDialog({
           className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 rounded-lg p-6 shadow-lg"
           style={{ backgroundColor: "var(--bg-secondary)", color: "var(--text-primary)" }}
         >
-          <AlertDialog.Title className="text-lg font-bold mb-2">
-            {title}
-          </AlertDialog.Title>
-          <AlertDialog.Description className="text-sm mb-4">
-            {description}
-          </AlertDialog.Description>
+          <AlertDialog.Title className="text-lg font-bold mb-2">{title}</AlertDialog.Title>
+          <AlertDialog.Description className="text-sm mb-4">{description}</AlertDialog.Description>
           <div className="flex justify-end gap-2">
             <AlertDialog.Cancel asChild>
               <button

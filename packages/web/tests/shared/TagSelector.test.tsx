@@ -18,7 +18,15 @@ const mockOnCreateTag = vi.fn();
 let mockStoreTags: Tag[] = mockTags;
 
 vi.mock("../../src/stores/tagsStore", () => ({
-  useTagsStore: (selector: any) => selector({ tags: mockStoreTags, loading: false, setTags: vi.fn(), addTag: vi.fn(), removeTag: vi.fn(), setLoading: vi.fn() }),
+  useTagsStore: (selector: any) =>
+    selector({
+      tags: mockStoreTags,
+      loading: false,
+      setTags: vi.fn(),
+      addTag: vi.fn(),
+      removeTag: vi.fn(),
+      setLoading: vi.fn(),
+    }),
 }));
 
 vi.mock("../../src/components/shared/TagCreateDialog", () => ({
@@ -34,14 +42,28 @@ describe("TagSelector", () => {
   });
 
   it("renders list of available tags", () => {
-    render(<TagSelector selectedTagIds={[]} onAdd={mockOnAdd} onRemove={mockOnRemove} onCreateTag={mockOnCreateTag} />);
+    render(
+      <TagSelector
+        selectedTagIds={[]}
+        onAdd={mockOnAdd}
+        onRemove={mockOnRemove}
+        onCreateTag={mockOnCreateTag}
+      />,
+    );
     expect(screen.getByText("work")).toBeTruthy();
     expect(screen.getByText("personal")).toBeTruthy();
     expect(screen.getByText("important")).toBeTruthy();
   });
 
   it("selected tags are highlighted/checked", () => {
-    render(<TagSelector selectedTagIds={["id1"]} onAdd={mockOnAdd} onRemove={mockOnRemove} onCreateTag={mockOnCreateTag} />);
+    render(
+      <TagSelector
+        selectedTagIds={["id1"]}
+        onAdd={mockOnAdd}
+        onRemove={mockOnRemove}
+        onCreateTag={mockOnCreateTag}
+      />,
+    );
     const workItem = screen.getByText("work").closest("div")!;
     expect(workItem.className).toContain("bg-blue-500");
     const personalItem = screen.getByText("personal").closest("div")!;
@@ -50,21 +72,42 @@ describe("TagSelector", () => {
 
   it("clicking an unselected tag calls onAdd", async () => {
     const user = userEvent.setup();
-    render(<TagSelector selectedTagIds={[]} onAdd={mockOnAdd} onRemove={mockOnRemove} onCreateTag={mockOnCreateTag} />);
+    render(
+      <TagSelector
+        selectedTagIds={[]}
+        onAdd={mockOnAdd}
+        onRemove={mockOnRemove}
+        onCreateTag={mockOnCreateTag}
+      />,
+    );
     await user.click(screen.getByText("work"));
     expect(mockOnAdd).toHaveBeenCalledWith("id1");
   });
 
   it("clicking a selected tag calls onRemove", async () => {
     const user = userEvent.setup();
-    render(<TagSelector selectedTagIds={["id1"]} onAdd={mockOnAdd} onRemove={mockOnRemove} onCreateTag={mockOnCreateTag} />);
+    render(
+      <TagSelector
+        selectedTagIds={["id1"]}
+        onAdd={mockOnAdd}
+        onRemove={mockOnRemove}
+        onCreateTag={mockOnCreateTag}
+      />,
+    );
     await user.click(screen.getByText("work"));
     expect(mockOnRemove).toHaveBeenCalledWith("id1");
   });
 
   it("search input filters tag list by name", async () => {
     const user = userEvent.setup();
-    render(<TagSelector selectedTagIds={[]} onAdd={mockOnAdd} onRemove={mockOnRemove} onCreateTag={mockOnCreateTag} />);
+    render(
+      <TagSelector
+        selectedTagIds={[]}
+        onAdd={mockOnAdd}
+        onRemove={mockOnRemove}
+        onCreateTag={mockOnCreateTag}
+      />,
+    );
     const searchInput = screen.getByPlaceholderText("搜索标签...");
     await user.type(searchInput, "work");
     expect(screen.getByText("work")).toBeTruthy();
@@ -73,7 +116,14 @@ describe("TagSelector", () => {
   });
 
   it("新建标签 button is present", () => {
-    render(<TagSelector selectedTagIds={[]} onAdd={mockOnAdd} onRemove={mockOnRemove} onCreateTag={mockOnCreateTag} />);
+    render(
+      <TagSelector
+        selectedTagIds={[]}
+        onAdd={mockOnAdd}
+        onRemove={mockOnRemove}
+        onCreateTag={mockOnCreateTag}
+      />,
+    );
     expect(screen.getByText("新建标签")).toBeTruthy();
   });
 });

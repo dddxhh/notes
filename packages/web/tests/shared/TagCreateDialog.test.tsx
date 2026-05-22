@@ -8,14 +8,18 @@ const mockOnClose = vi.fn();
 const mockOnCreate = vi.fn();
 
 vi.mock("@radix-ui/react-dialog", () => ({
-  Root: ({ open, onOpenChange, children }: any) => open ? children : null,
+  Root: ({ open, onOpenChange, children }: any) => (open ? children : null),
   Trigger: ({ children }: any) => children,
   Portal: ({ children }: any) => children,
   Overlay: ({ children, className }: any) => <div className={className}>{children}</div>,
   Content: ({ children, className }: any) => <div className={className}>{children}</div>,
   Title: ({ children, className }: any) => <h2 className={className}>{children}</h2>,
   Description: ({ children }: any) => <p>{children}</p>,
-  Close: ({ children, className }: any) => <button className={className} onClick={() => mockOnClose()}>{children}</button>,
+  Close: ({ children, className }: any) => (
+    <button className={className} onClick={() => mockOnClose()}>
+      {children}
+    </button>
+  ),
 }));
 
 import TagCreateDialog from "../../src/components/shared/TagCreateDialog";

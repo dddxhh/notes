@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { createDefaultNote, NoteType } from "../../src/models/note";
+import { createDefaultNote } from "../../src/models/note";
 
 describe("Note 模型", () => {
   it("createDefaultNote 应生成默认值", () => {

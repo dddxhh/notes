@@ -17,7 +17,7 @@ export function parseAttachmentId(src: string): string | null {
 
 export async function resolveAttachmentSrc(
   src: string,
-  getBlob: (id: string) => Promise<Blob | null>
+  getBlob: (id: string) => Promise<Blob | null>,
 ): Promise<string | null> {
   if (!isAttachmentSrc(src)) return src;
 

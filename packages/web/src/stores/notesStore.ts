@@ -5,7 +5,11 @@ import { getStorage } from "../lib/sqlite-init";
 interface NotesState {
   notes: Note[];
   currentNote: Note | null;
-  searchResult: { notes: { id: string; title: string; updatedAt: number }[]; total: number; hasMore: boolean } | null;
+  searchResult: {
+    notes: { id: string; title: string; updatedAt: number }[];
+    total: number;
+    hasMore: boolean;
+  } | null;
   loading: boolean;
   deletedNotes: Note[];
   setNotes: (notes: Note[]) => void;
@@ -13,7 +17,13 @@ interface NotesState {
   addNote: (note: Note) => void;
   updateNoteInList: (id: string, note: Partial<Note> & { id: string }) => void;
   removeNoteFromList: (id: string) => void;
-  setSearchResult: (result: { notes: { id: string; title: string; updatedAt: number }[]; total: number; hasMore: boolean } | null) => void;
+  setSearchResult: (
+    result: {
+      notes: { id: string; title: string; updatedAt: number }[];
+      total: number;
+      hasMore: boolean;
+    } | null,
+  ) => void;
   setLoading: (loading: boolean) => void;
   setDeletedNotes: (notes: Note[]) => void;
   loadDeletedNotes: () => Promise<void>;
@@ -53,7 +63,10 @@ export const useNotesStore = create<NotesState>((set, get) => ({
         deletedFromSearch.push(full);
       }
     }
-    const combined = [...deleted, ...deletedFromSearch.filter((n) => !deleted.some((d) => d.id === n.id))];
+    const combined = [
+      ...deleted,
+      ...deletedFromSearch.filter((n) => !deleted.some((d) => d.id === n.id)),
+    ];
     set({ deletedNotes: combined });
   },
   restoreNote: async (id) => {

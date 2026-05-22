@@ -47,9 +47,7 @@ describe("sqlite-init fallback", () => {
   it("should use SharedWorker connection when SharedWorker is available", async () => {
     isAvailableMock.mockReturnValue(true);
 
-    const { initStorage, getConnectionMode } = await import(
-      "../../src/lib/sqlite-init"
-    );
+    const { initStorage, getConnectionMode } = await import("../../src/lib/sqlite-init");
     await initStorage();
     expect(getConnectionMode()).toBe("shared-worker");
   });
@@ -57,9 +55,7 @@ describe("sqlite-init fallback", () => {
   it("should fall back to direct connection when SharedWorker unavailable", async () => {
     isAvailableMock.mockReturnValue(false);
 
-    const { initStorage, getConnectionMode } = await import(
-      "../../src/lib/sqlite-init"
-    );
+    const { initStorage, getConnectionMode } = await import("../../src/lib/sqlite-init");
     await initStorage();
     expect(getConnectionMode()).toBe("direct");
   });

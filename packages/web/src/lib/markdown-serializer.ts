@@ -56,7 +56,10 @@ const parserTokens: Record<string, any> = {
     getAttrs: (token: any) => ({ level: getHeadingLevel(token) }),
   },
   bullet_list: { block: "bulletList" },
-  ordered_list: { block: "orderedList", getAttrs: (token: any) => ({ start: token.attrGet("start") || 1 }) },
+  ordered_list: {
+    block: "orderedList",
+    getAttrs: (token: any) => ({ start: token.attrGet("start") || 1 }),
+  },
   list_item: { block: "listItem" },
   fence: {
     block: "codeBlock",
@@ -214,7 +217,7 @@ function postprocessTaskItems(json: any): any {
           item.content[0]?.content &&
           item.content[0]?.content[0]?.type === "text" &&
           typeof item.content[0]?.content[0]?.text === "string" &&
-          /^\[[ xX]\]/.test(item.content[0].content[0].text)
+          /^\[[ xX]\]/.test(item.content[0].content[0].text),
       );
 
       if (allTaskItems) {
@@ -389,7 +392,7 @@ const customSerializer = new MarkdownSerializer(
       state.write(`<video src="${node.attrs.src}" controls></video>`);
       state.closeBlock(node);
     },
-hardBreak(state: any, node: any) {
+    hardBreak(state: any, node: any) {
       state.write("\\\n");
     },
     text(state: any, node: any) {
@@ -408,7 +411,7 @@ hardBreak(state: any, node: any) {
     },
     code: { open: "`", close: "`", escape: false },
   },
-  { hardBreakNodeName: "hardBreak" }
+  { hardBreakNodeName: "hardBreak" },
 );
 
 export function proseMirrorJSONToMarkdown(jsonStr: string): string {

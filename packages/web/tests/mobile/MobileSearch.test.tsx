@@ -39,11 +39,26 @@ vi.mock("../../src/stores", () => ({
     return selector ? selector(state) : state;
   },
   useTagsStore: (selector?: any) => {
-    const state = { tags: [{ id: "t1", name: "work" }, { id: "t2", name: "personal" }], setTags: vi.fn() };
+    const state = {
+      tags: [
+        { id: "t1", name: "work" },
+        { id: "t2", name: "personal" },
+      ],
+      setTags: vi.fn(),
+    };
     return selector ? selector(state) : state;
   },
   useUIStore: (selector?: any) => {
-    const state = { theme: "light", editorMode: "wysiwyg", sidebarOpen: true, isMobile: true, setEditorMode: vi.fn(), setTheme: vi.fn(), setSidebarOpen: vi.fn(), setIsMobile: vi.fn() };
+    const state = {
+      theme: "light",
+      editorMode: "wysiwyg",
+      sidebarOpen: true,
+      isMobile: true,
+      setEditorMode: vi.fn(),
+      setTheme: vi.fn(),
+      setSidebarOpen: vi.fn(),
+      setIsMobile: vi.fn(),
+    };
     return selector ? selector(state) : state;
   },
   useSlashCommandStore: (selector?: any) => {
@@ -59,23 +74,29 @@ vi.mock("../../src/stores", () => ({
 vi.mock("../../src/components/shared/SearchBar", () => ({
   default: (props: any) => (
     <div data-testid="search-bar">
-      <input data-testid="search-input" value={props.query} onChange={(e) => props.onQueryChange(e.target.value)} />
-      <button data-testid="filter-toggle" onClick={props.onToggleFilter}>{props.showFilter ? "▲筛选" : "▼筛选"}</button>
+      <input
+        data-testid="search-input"
+        value={props.query}
+        onChange={(e) => props.onQueryChange(e.target.value)}
+      />
+      <button data-testid="filter-toggle" onClick={props.onToggleFilter}>
+        {props.showFilter ? "▲筛选" : "▼筛选"}
+      </button>
     </div>
   ),
 }));
 
 vi.mock("../../src/components/shared/SearchFilterPanel", () => ({
-  default: (props: any) => (
-    <div data-testid="search-filter-panel">SearchFilterPanel</div>
-  ),
+  default: (props: any) => <div data-testid="search-filter-panel">SearchFilterPanel</div>,
 }));
 
 vi.mock("../../src/components/shared/SearchResultList", () => ({
   default: (props: any) => (
     <div data-testid="search-result-list">
       {props.result?.notes?.map((n: any) => (
-        <button key={n.id} onClick={() => props.onSelectNote(n.id)}>{n.title}</button>
+        <button key={n.id} onClick={() => props.onSelectNote(n.id)}>
+          {n.title}
+        </button>
       ))}
     </div>
   ),

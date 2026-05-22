@@ -20,16 +20,11 @@ export default function Sidebar() {
 
   const parentRef = useRef<HTMLDivElement>(null);
 
-  const activeNotes = useMemo(
-    () => notes.filter((n) => n.deletedAt === null),
-    [notes]
-  );
+  const activeNotes = useMemo(() => notes.filter((n) => n.deletedAt === null), [notes]);
 
   const filteredNotes = useMemo(() => {
     if (activeTagIds.length === 0) return activeNotes;
-    return activeNotes.filter((n) =>
-      activeTagIds.some((tagId) => n.id.includes(tagId) || true)
-    );
+    return activeNotes.filter((n) => activeTagIds.some((tagId) => n.id.includes(tagId) || true));
   }, [activeNotes, activeTagIds]);
 
   const virtualizer = useVirtualizer({
@@ -40,7 +35,7 @@ export default function Sidebar() {
 
   const handleTagClick = (tagId: string) => {
     setActiveTagIds((prev) =>
-      prev.includes(tagId) ? prev.filter((id) => id !== tagId) : [...prev, tagId]
+      prev.includes(tagId) ? prev.filter((id) => id !== tagId) : [...prev, tagId],
     );
   };
 
@@ -73,9 +68,7 @@ export default function Sidebar() {
             key={tag.id}
             onClick={() => handleTagClick(tag.id)}
             className={`px-2 py-1 rounded-md text-xs ${
-              activeTagIds.includes(tag.id)
-                ? "bg-blue-500 text-white"
-                : ""
+              activeTagIds.includes(tag.id) ? "bg-blue-500 text-white" : ""
             }`}
             style={
               !activeTagIds.includes(tag.id)
@@ -111,7 +104,10 @@ export default function Sidebar() {
         </div>
       </div>
 
-      <div className="flex items-center justify-between p-3 border-t" style={{ borderColor: "var(--border-color)" }}>
+      <div
+        className="flex items-center justify-between p-3 border-t"
+        style={{ borderColor: "var(--border-color)" }}
+      >
         <ThemeToggle />
         <button
           onClick={() => setSidebarOpen(false)}

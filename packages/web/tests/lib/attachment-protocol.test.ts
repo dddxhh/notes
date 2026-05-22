@@ -32,7 +32,7 @@ describe("attachment:// 协议", () => {
 
     it("应保留原始 ID 不做修改", () => {
       expect(createAttachmentSrc("blob-id-with-special_chars-123")).toBe(
-        "attachment://blob-id-with-special_chars-123"
+        "attachment://blob-id-with-special_chars-123",
       );
     });
   });

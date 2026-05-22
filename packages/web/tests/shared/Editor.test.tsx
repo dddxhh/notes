@@ -13,7 +13,8 @@ const { editorConfigCapture } = vi.hoisted(() => ({
 
 vi.mock("../../src/stores", () => ({
   useUIStore: (selector: any) => selector({ editorMode: "wysiwyg", isMobile: false }),
-  useSlashCommandStore: (selector: any) => selector({ pendingUpload: mockPendingUpload, setPendingUpload: mockSetPendingUpload }),
+  useSlashCommandStore: (selector: any) =>
+    selector({ pendingUpload: mockPendingUpload, setPendingUpload: mockSetPendingUpload }),
   useAttachmentsStore: (selector: any) => selector({ addAttachment: vi.fn() }),
 }));
 
@@ -63,9 +64,7 @@ describe("Editor", () => {
 
   it("accepts currentNoteId prop for setContent control", () => {
     const onUpdate = vi.fn();
-    const { rerender } = render(
-      <Editor content="" currentNoteId="note-1" onUpdate={onUpdate} />
-    );
+    const { rerender } = render(<Editor content="" currentNoteId="note-1" onUpdate={onUpdate} />);
     rerender(<Editor content="" currentNoteId="note-2" onUpdate={onUpdate} />);
     expect(onUpdate).not.toHaveBeenCalled();
   });
@@ -84,7 +83,9 @@ describe("Editor", () => {
 
   it("accepts currentNoteId and onFileUpload together", () => {
     const onFileUpload = vi.fn();
-    render(<Editor content="" currentNoteId="note-1" onUpdate={vi.fn()} onFileUpload={onFileUpload} />);
+    render(
+      <Editor content="" currentNoteId="note-1" onUpdate={vi.fn()} onFileUpload={onFileUpload} />,
+    );
     expect(onFileUpload).not.toHaveBeenCalled();
   });
 });

@@ -6,11 +6,22 @@ afterEach(cleanup);
 
 vi.mock("../../src/stores", () => ({
   useNotesStore: (selector?: any) => {
-    const state = { notes: [], currentNote: null, setCurrentNote: vi.fn(), setNotes: vi.fn(), addNote: vi.fn() };
+    const state = {
+      notes: [],
+      currentNote: null,
+      setCurrentNote: vi.fn(),
+      setNotes: vi.fn(),
+      addNote: vi.fn(),
+    };
     return selector ? selector(state) : state;
   },
   useFoldersStore: (selector?: any) => {
-    const state = { folders: [], currentFolderId: null, setCurrentFolderId: vi.fn(), setFolders: vi.fn() };
+    const state = {
+      folders: [],
+      currentFolderId: null,
+      setCurrentFolderId: vi.fn(),
+      setFolders: vi.fn(),
+    };
     return selector ? selector(state) : state;
   },
   useTagsStore: (selector?: any) => {
@@ -18,7 +29,16 @@ vi.mock("../../src/stores", () => ({
     return selector ? selector(state) : state;
   },
   useUIStore: (selector?: any) => {
-    const state = { theme: "light", editorMode: "wysiwyg", sidebarOpen: true, isMobile: true, setEditorMode: vi.fn(), setTheme: vi.fn(), setSidebarOpen: vi.fn(), setIsMobile: vi.fn() };
+    const state = {
+      theme: "light",
+      editorMode: "wysiwyg",
+      sidebarOpen: true,
+      isMobile: true,
+      setEditorMode: vi.fn(),
+      setTheme: vi.fn(),
+      setSidebarOpen: vi.fn(),
+      setIsMobile: vi.fn(),
+    };
     return selector ? selector(state) : state;
   },
   useSlashCommandStore: (selector?: any) => {
@@ -34,7 +54,18 @@ vi.mock("../../src/stores", () => ({
 vi.mock("../../src/hooks", () => ({
   useStorage: () => ({
     listNotes: vi.fn().mockResolvedValue([]),
-    createNote: vi.fn().mockResolvedValue({ id: "new1", title: "新笔记", contentJson: "", mdText: "", folderId: null, type: "rich", createdAt: 1, updatedAt: 1, deletedAt: null, version: 1 }),
+    createNote: vi.fn().mockResolvedValue({
+      id: "new1",
+      title: "新笔记",
+      contentJson: "",
+      mdText: "",
+      folderId: null,
+      type: "rich",
+      createdAt: 1,
+      updatedAt: 1,
+      deletedAt: null,
+      version: 1,
+    }),
   }),
   useAttachmentUpload: () => ({ uploadFile: vi.fn() }),
 }));

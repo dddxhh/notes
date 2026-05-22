@@ -73,7 +73,9 @@ describe("CustomVideo TipTap Node", () => {
   describe("renderHTML", () => {
     it("should render video element with controls", () => {
       const mockThis = { options: { HTMLAttributes: {} } };
-      const result = node.config.renderHTML.call(mockThis, { HTMLAttributes: { src: "attachment://abc123" } });
+      const result = node.config.renderHTML.call(mockThis, {
+        HTMLAttributes: { src: "attachment://abc123" },
+      });
       expect(result[0]).toBe("video");
       expect(result[1].controls).toBe("true");
       expect(result[1].src).toBe("attachment://abc123");
@@ -99,7 +101,10 @@ describe("CustomVideo TipTap Node", () => {
         insertContent: vi.fn().mockReturnThis(),
         run: vi.fn().mockReturnValue(true),
       };
-      const setCustomVideo = commands.setCustomVideo({ src: "attachment://vid1", title: "My Video" });
+      const setCustomVideo = commands.setCustomVideo({
+        src: "attachment://vid1",
+        title: "My Video",
+      });
       setCustomVideo({ chain: () => mockChain });
       expect(mockChain.insertContent).toHaveBeenCalledWith({
         type: "customVideo",

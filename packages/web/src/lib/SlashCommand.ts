@@ -48,7 +48,12 @@ export const SlashCommandItems: SlashCommandItem[] = [
     title: "表格",
     description: "Insert a 3×3 table",
     command: ({ editor, range }) => {
-      editor.chain().focus().deleteRange(range).insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
+      editor
+        .chain()
+        .focus()
+        .deleteRange(range)
+        .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
+        .run();
     },
   },
   {
@@ -95,6 +100,6 @@ export function filterItems({ query }: { query: string }): SlashCommandItem[] {
   return SlashCommandItems.filter(
     (item) =>
       item.title.toLowerCase().includes(query.toLowerCase()) ||
-      item.description.toLowerCase().includes(query.toLowerCase())
+      item.description.toLowerCase().includes(query.toLowerCase()),
   );
 }

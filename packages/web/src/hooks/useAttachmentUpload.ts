@@ -38,7 +38,7 @@ export function useAttachmentUpload(noteId: string) {
         return { success: false, error: `上传失败: ${e}` };
       }
     },
-    [noteId, addAttachment]
+    [noteId, addAttachment],
   );
 
   return { uploadFile };

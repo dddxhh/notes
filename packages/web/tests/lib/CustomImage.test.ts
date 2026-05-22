@@ -78,7 +78,9 @@ describe("CustomImage TipTap Node", () => {
 
   describe("renderHTML", () => {
     it("should render img element with attributes", () => {
-      const result = node.config.renderHTML.call(node, { HTMLAttributes: { src: "attachment://abc123" } });
+      const result = node.config.renderHTML.call(node, {
+        HTMLAttributes: { src: "attachment://abc123" },
+      });
       expect(result[0]).toBe("img");
       expect(result[1].src).toBe("attachment://abc123");
     });

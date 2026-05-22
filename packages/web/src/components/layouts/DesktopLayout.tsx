@@ -10,14 +10,17 @@ export default function DesktopLayout() {
   const setSidebarOpen = useUIStore((s) => s.setSidebarOpen);
 
   return (
-    <div className="flex h-screen" style={{ backgroundColor: "var(--bg-primary)", color: "var(--text-primary)" }}>
+    <div
+      className="flex h-screen"
+      style={{ backgroundColor: "var(--bg-primary)", color: "var(--text-primary)" }}
+    >
       {sidebarOpen && <Sidebar />}
 
-      <div
-        data-testid="main-area"
-        className="flex-1 h-full flex flex-col overflow-hidden"
-      >
-        <div className="flex items-center p-2 border-b" style={{ borderColor: "var(--border-color)" }}>
+      <div data-testid="main-area" className="flex-1 h-full flex flex-col overflow-hidden">
+        <div
+          className="flex items-center p-2 border-b"
+          style={{ borderColor: "var(--border-color)" }}
+        >
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
             aria-label="展开侧栏"

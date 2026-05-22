@@ -23,7 +23,10 @@ export default function MobileFAB({ onNewNote, onUpload }: MobileFABProps) {
   };
 
   return (
-    <div data-testid="mobile-fab" className="fixed bottom-20 right-4 z-30 flex flex-col items-end gap-2">
+    <div
+      data-testid="mobile-fab"
+      className="fixed bottom-20 right-4 z-30 flex flex-col items-end gap-2"
+    >
       {expanded && (
         <div className="flex flex-col gap-2 mb-2 animate-fade-in">
           <button

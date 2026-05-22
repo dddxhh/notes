@@ -5,8 +5,7 @@ const mockSetTheme = vi.fn();
 let mockTheme: "light" | "dark" = "light";
 
 vi.mock("../../src/stores", () => ({
-  useUIStore: (selector: any) =>
-    selector({ theme: mockTheme, setTheme: mockSetTheme }),
+  useUIStore: (selector: any) => selector({ theme: mockTheme, setTheme: mockSetTheme }),
 }));
 
 import { useTheme } from "../../src/hooks/useTheme";

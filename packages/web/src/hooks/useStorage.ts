@@ -1,10 +1,14 @@
 import { useCallback } from "react";
 import { getStorage } from "../lib";
 import {
-  Note, CreateNoteInput, UpdateNoteInput,
-  Folder, CreateFolderInput,
+  Note,
+  CreateNoteInput,
+  UpdateNoteInput,
+  Folder,
+  CreateFolderInput,
   Tag,
-  SearchInput, SearchResult,
+  SearchInput,
+  SearchResult,
 } from "@notes/core";
 
 export function useStorage() {
@@ -53,9 +57,16 @@ export function useStorage() {
   }, []);
 
   return {
-    createNote, updateNote, deleteNote, getNote, listNotes,
-    createFolder, listFolders,
-    createTag, addTagsToNote, listTags,
+    createNote,
+    updateNote,
+    deleteNote,
+    getNote,
+    listNotes,
+    createFolder,
+    listFolders,
+    createTag,
+    addTagsToNote,
+    listTags,
     searchNotes,
   };
 }

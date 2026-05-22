@@ -89,10 +89,7 @@ export async function deleteBlob(id: string): Promise<void> {
   });
 }
 
-export async function generateImageThumbnail(
-  blob: Blob,
-  maxWidth: number = 200
-): Promise<Blob> {
+export async function generateImageThumbnail(blob: Blob, maxWidth: number = 200): Promise<Blob> {
   const imageBitmap = await createImageBitmap(blob);
   const ratio = maxWidth / imageBitmap.width;
   const width = maxWidth;

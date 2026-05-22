@@ -229,29 +229,78 @@ body {
   pointer-events: none;
 }
 
-.ProseMirror pre code .hljs-keyword { color: var(--hljs-keyword); }
-.ProseMirror pre code .hljs-string { color: var(--hljs-string); }
-.ProseMirror pre code .hljs-number { color: var(--hljs-number); }
-.ProseMirror pre code .hljs-comment { color: var(--hljs-comment); font-style: italic; }
-.ProseMirror pre code .hljs-function { color: var(--hljs-function); }
-.ProseMirror pre code .hljs-title { color: var(--hljs-title); }
-.ProseMirror pre code .hljs-params { color: var(--hljs-params); }
-.ProseMirror pre code .hljs-built_in { color: var(--hljs-built_in); }
-.ProseMirror pre code .hljs-literal { color: var(--hljs-literal); }
-.ProseMirror pre code .hljs-type { color: var(--hljs-type); }
-.ProseMirror pre code .hljs-attr { color: var(--hljs-attr); }
-.ProseMirror pre code .hljs-tag { color: var(--hljs-tag); }
-.ProseMirror pre code .hljs-name { color: var(--hljs-name); }
-.ProseMirror pre code .hljs-selector-tag { color: var(--hljs-selector-tag); }
-.ProseMirror pre code .hljs-selector-class { color: var(--hljs-selector-class); }
-.ProseMirror pre code .hljs-selector-id { color: var(--hljs-selector-id); }
-.ProseMirror pre code .hljs-variable { color: var(--hljs-variable); }
-.ProseMirror pre code .hljs-template-variable { color: var(--hljs-template-variable); }
-.ProseMirror pre code .hljs-regexp { color: var(--hljs-regexp); }
-.ProseMirror pre code .hljs-symbol { color: var(--hljs-symbol); }
-.ProseMirror pre code .hljs-meta { color: var(--hljs-meta); }
-.ProseMirror pre code .hljs-deletion { color: var(--hljs-deletion); background-color: var(--hljs-deletion-bg); }
-.ProseMirror pre code .hljs-addition { color: var(--hljs-addition); background-color: var(--hljs-addition-bg); }
+.ProseMirror pre code .hljs-keyword {
+  color: var(--hljs-keyword);
+}
+.ProseMirror pre code .hljs-string {
+  color: var(--hljs-string);
+}
+.ProseMirror pre code .hljs-number {
+  color: var(--hljs-number);
+}
+.ProseMirror pre code .hljs-comment {
+  color: var(--hljs-comment);
+  font-style: italic;
+}
+.ProseMirror pre code .hljs-function {
+  color: var(--hljs-function);
+}
+.ProseMirror pre code .hljs-title {
+  color: var(--hljs-title);
+}
+.ProseMirror pre code .hljs-params {
+  color: var(--hljs-params);
+}
+.ProseMirror pre code .hljs-built_in {
+  color: var(--hljs-built_in);
+}
+.ProseMirror pre code .hljs-literal {
+  color: var(--hljs-literal);
+}
+.ProseMirror pre code .hljs-type {
+  color: var(--hljs-type);
+}
+.ProseMirror pre code .hljs-attr {
+  color: var(--hljs-attr);
+}
+.ProseMirror pre code .hljs-tag {
+  color: var(--hljs-tag);
+}
+.ProseMirror pre code .hljs-name {
+  color: var(--hljs-name);
+}
+.ProseMirror pre code .hljs-selector-tag {
+  color: var(--hljs-selector-tag);
+}
+.ProseMirror pre code .hljs-selector-class {
+  color: var(--hljs-selector-class);
+}
+.ProseMirror pre code .hljs-selector-id {
+  color: var(--hljs-selector-id);
+}
+.ProseMirror pre code .hljs-variable {
+  color: var(--hljs-variable);
+}
+.ProseMirror pre code .hljs-template-variable {
+  color: var(--hljs-template-variable);
+}
+.ProseMirror pre code .hljs-regexp {
+  color: var(--hljs-regexp);
+}
+.ProseMirror pre code .hljs-symbol {
+  color: var(--hljs-symbol);
+}
+.ProseMirror pre code .hljs-meta {
+  color: var(--hljs-meta);
+}
+.ProseMirror pre code .hljs-deletion {
+  color: var(--hljs-deletion);
+  background-color: var(--hljs-deletion-bg);
+}
+.ProseMirror pre code .hljs-addition {
+  color: var(--hljs-addition);
+  background-color: var(--hljs-addition-bg);
+}
 
 /* Custom Image node */
 .ProseMirror img.custom-image {
@@ -396,7 +445,9 @@ body {
   color: var(--text-secondary);
   cursor: pointer;
   font-size: 0.875rem;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
 }
 
 .upload-toolbar-btn:hover {

@@ -4,7 +4,7 @@ import { useNotesStore } from "../stores";
 export function useAutoSave(
   noteId: string,
   content: { contentJson: string; mdText: string; title: string },
-  debounceMs: number = 500
+  debounceMs: number = 500,
 ) {
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const updateNoteInList = useNotesStore((s) => s.updateNoteInList);

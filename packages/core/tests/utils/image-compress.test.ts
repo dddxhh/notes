@@ -26,23 +26,26 @@ describe("shouldCompressImage", () => {
 
 describe("compressImage", () => {
   beforeEach(() => {
-    vi.stubGlobal("createImageBitmap", vi.fn().mockResolvedValue({
-      width: 3000,
-      height: 2000,
-      close: vi.fn(),
-    }));
+    vi.stubGlobal(
+      "createImageBitmap",
+      vi.fn().mockResolvedValue({
+        width: 3000,
+        height: 2000,
+        close: vi.fn(),
+      }),
+    );
 
-    vi.stubGlobal("OffscreenCanvas", vi.fn().mockImplementation((width, height) => ({
-      width,
-      height,
-      getContext: vi.fn().mockReturnValue({
-        drawImage: vi.fn(),
-      },
-      ),
-      convertToBlob: vi.fn().mockResolvedValue(
-        new Blob(["compressed"], { type: "image/webp" }),
-      ),
-    })));
+    vi.stubGlobal(
+      "OffscreenCanvas",
+      vi.fn().mockImplementation((width, height) => ({
+        width,
+        height,
+        getContext: vi.fn().mockReturnValue({
+          drawImage: vi.fn(),
+        }),
+        convertToBlob: vi.fn().mockResolvedValue(new Blob(["compressed"], { type: "image/webp" })),
+      })),
+    );
   });
 
   it("应压缩大尺寸图片", async () => {

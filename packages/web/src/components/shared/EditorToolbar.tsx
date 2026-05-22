@@ -11,9 +11,9 @@ interface EditorToolbarProps {
 }
 
 export default function EditorToolbar({ editor, noteId = "" }: EditorToolbarProps) {
-  if (!editor) return null;
-
   const { uploadFile } = useAttachmentUpload(noteId);
+
+  if (!editor) return null;
 
   const handleImageUpload = async (file: File) => {
     const result = await uploadFile(file);
@@ -34,7 +34,9 @@ export default function EditorToolbar({ editor, noteId = "" }: EditorToolbarProp
       <button
         onClick={() => editor.chain().focus().toggleBold().run()}
         className={`px-2 py-1 rounded text-sm font-bold ${
-          editor.isActive("bold") ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+          editor.isActive("bold")
+            ? "bg-blue-500 text-white"
+            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
         }`}
         title="粗体"
       >
@@ -43,7 +45,9 @@ export default function EditorToolbar({ editor, noteId = "" }: EditorToolbarProp
       <button
         onClick={() => editor.chain().focus().toggleItalic().run()}
         className={`px-2 py-1 rounded text-sm italic ${
-          editor.isActive("italic") ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+          editor.isActive("italic")
+            ? "bg-blue-500 text-white"
+            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
         }`}
         title="斜体"
       >
@@ -52,7 +56,9 @@ export default function EditorToolbar({ editor, noteId = "" }: EditorToolbarProp
       <button
         onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
         className={`px-2 py-1 rounded text-sm ${
-          editor.isActive("heading", { level: 1 }) ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+          editor.isActive("heading", { level: 1 })
+            ? "bg-blue-500 text-white"
+            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
         }`}
         title="标题1"
       >
@@ -61,7 +67,9 @@ export default function EditorToolbar({ editor, noteId = "" }: EditorToolbarProp
       <button
         onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
         className={`px-2 py-1 rounded text-sm ${
-          editor.isActive("heading", { level: 2 }) ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+          editor.isActive("heading", { level: 2 })
+            ? "bg-blue-500 text-white"
+            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
         }`}
         title="标题2"
       >
@@ -70,7 +78,9 @@ export default function EditorToolbar({ editor, noteId = "" }: EditorToolbarProp
       <button
         onClick={() => editor.chain().focus().toggleBulletList().run()}
         className={`px-2 py-1 rounded text-sm ${
-          editor.isActive("bulletList") ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+          editor.isActive("bulletList")
+            ? "bg-blue-500 text-white"
+            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
         }`}
         title="无序列表"
       >
@@ -79,7 +89,9 @@ export default function EditorToolbar({ editor, noteId = "" }: EditorToolbarProp
       <button
         onClick={() => editor.chain().focus().toggleOrderedList().run()}
         className={`px-2 py-1 rounded text-sm ${
-          editor.isActive("orderedList") ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+          editor.isActive("orderedList")
+            ? "bg-blue-500 text-white"
+            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
         }`}
         title="有序列表"
       >
@@ -88,16 +100,22 @@ export default function EditorToolbar({ editor, noteId = "" }: EditorToolbarProp
       <button
         onClick={() => editor.chain().focus().toggleTaskList().run()}
         className={`px-2 py-1 rounded text-sm ${
-          editor.isActive("taskList") ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+          editor.isActive("taskList")
+            ? "bg-blue-500 text-white"
+            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
         }`}
         title="任务列表"
       >
         ☑ 任务
       </button>
       <button
-        onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
+        onClick={() =>
+          editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
+        }
         className={`px-2 py-1 rounded text-sm ${
-          editor.isActive("table") ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+          editor.isActive("table")
+            ? "bg-blue-500 text-white"
+            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
         }`}
         title="插入表格"
       >
@@ -106,7 +124,9 @@ export default function EditorToolbar({ editor, noteId = "" }: EditorToolbarProp
       <button
         onClick={() => editor.chain().focus().toggleCodeBlock().run()}
         className={`px-2 py-1 rounded text-sm ${
-          editor.isActive("codeBlock") ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+          editor.isActive("codeBlock")
+            ? "bg-blue-500 text-white"
+            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
         }`}
         title="代码块"
       >
@@ -119,14 +139,18 @@ export default function EditorToolbar({ editor, noteId = "" }: EditorToolbarProp
           editor.chain().focus().updateAttributes("codeBlock", { language: lang }).run();
         }}
         className={`px-1 py-1 rounded text-sm border ${
-          editor.isActive("codeBlock") ? "border-blue-300" : "border-gray-300 bg-white text-gray-500"
+          editor.isActive("codeBlock")
+            ? "border-blue-300"
+            : "border-gray-300 bg-white text-gray-500"
         }`}
         title="代码语言"
         disabled={!editor.isActive("codeBlock")}
       >
         <option value="">自动</option>
         {HIGHLIGHT_LANGUAGES.map((lang) => (
-          <option key={lang} value={lang}>{lang}</option>
+          <option key={lang} value={lang}>
+            {lang}
+          </option>
         ))}
       </select>
       <ImageUploadButton onFileSelected={handleImageUpload} />

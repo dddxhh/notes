@@ -39,7 +39,12 @@ describe("useAttachmentUpload", () => {
 
   it("returns validation failure when file is invalid", async () => {
     const file = new File(["data"], "bad.exe", { type: "application/x-executable" });
-    (validateFile as any).mockReturnValue({ valid: false, error: "Unsupported file type", type: null, needsCompress: false });
+    (validateFile as any).mockReturnValue({
+      valid: false,
+      error: "Unsupported file type",
+      type: null,
+      needsCompress: false,
+    });
 
     const { result } = renderHook(() => useAttachmentUpload("note-1"));
     let uploadResult: any;

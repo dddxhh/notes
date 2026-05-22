@@ -8,7 +8,11 @@ import ModeToggle from "./shared/ModeToggle";
 import TagBadge from "./shared/TagBadge";
 import TagSelector from "./shared/TagSelector";
 import ContextMenu from "./shared/ContextMenu";
-import { markdownToProseMirrorJSON, proseMirrorJSONToMarkdown, extractTitleFromContent } from "../lib/markdown-serializer";
+import {
+  markdownToProseMirrorJSON,
+  proseMirrorJSONToMarkdown,
+  extractTitleFromContent,
+} from "../lib/markdown-serializer";
 import { Note } from "@notes/core";
 import type { UploadResult } from "../hooks";
 
@@ -22,7 +26,7 @@ export default function NoteView({ note, onBack, initialTagIds }: NoteViewProps)
   const editorMode = useUIStore((s) => s.editorMode);
   const isMobile = useUIStore((s) => s.isMobile);
   const tags = useTagsStore((s) => s.tags);
-  const { updateNote, addTagsToNote } = useStorage();
+  const { updateNote, addTagsToNote, createTag } = useStorage();
   const { uploadFile } = useAttachmentUpload(note.id);
   const { showToast } = useToast();
   const [contentJson, setContentJson] = useState(note.contentJson);
@@ -30,7 +34,9 @@ export default function NoteView({ note, onBack, initialTagIds }: NoteViewProps)
   const [noteTagIds, setNoteTagIds] = useState<string[]>(initialTagIds ?? []);
   const [showTagSelector, setShowTagSelector] = useState(false);
   const noteIdRef = useRef(note.id);
-  useEffect(() => { noteIdRef.current = note.id; }, [note.id]);
+  useEffect(() => {
+    noteIdRef.current = note.id;
+  }, [note.id]);
 
   useEffect(() => {
     setContentJson(note.contentJson);
@@ -52,25 +58,19 @@ export default function NoteView({ note, onBack, initialTagIds }: NoteViewProps)
       }
       return result;
     },
-    [uploadFile, showToast]
+    [uploadFile, showToast],
   );
 
-  const handleWysiwygUpdate = useCallback(
-    (newJson: string, newMd: string) => {
-      setContentJson(newJson);
-      setMdText(newMd);
-    },
-    []
-  );
+  const handleWysiwygUpdate = useCallback((newJson: string, newMd: string) => {
+    setContentJson(newJson);
+    setMdText(newMd);
+  }, []);
 
-  const handleMarkdownUpdate = useCallback(
-    (newMd: string) => {
-      setMdText(newMd);
-      const newJson = markdownToProseMirrorJSON(newMd);
-      setContentJson(newJson);
-    },
-    []
-  );
+  const handleMarkdownUpdate = useCallback((newMd: string) => {
+    setMdText(newMd);
+    const newJson = markdownToProseMirrorJSON(newMd);
+    setContentJson(newJson);
+  }, []);
 
   useEffect(() => {
     const timeout = setTimeout(async () => {
@@ -81,65 +81,88 @@ export default function NoteView({ note, onBack, initialTagIds }: NoteViewProps)
           contentJson,
           mdText,
         });
-      } catch {
-      }
+      } catch {}
     }, 500);
     return () => clearTimeout(timeout);
   }, [contentJson, mdText, updateNote]);
 
-  const handleAddTag = useCallback(async (tagId: string) => {
-    if (noteTagIds.includes(tagId)) {
-      setNoteTagIds((prev) => prev.filter((id) => id !== tagId));
-    } else {
-      setNoteTagIds((prev) => [...prev, tagId]);
-      try {
-        await addTagsToNote(noteIdRef.current, [tagId]);
-      } catch {}
-    }
-  }, [noteTagIds, addTagsToNote]);
+  const handleAddTag = useCallback(
+    async (tagId: string) => {
+      if (noteTagIds.includes(tagId)) {
+        setNoteTagIds((prev) => prev.filter((id) => id !== tagId));
+      } else {
+        setNoteTagIds((prev) => [...prev, tagId]);
+        try {
+          await addTagsToNote(noteIdRef.current, [tagId]);
+        } catch {}
+      }
+    },
+    [noteTagIds, addTagsToNote],
+  );
 
   const handleRemoveTag = useCallback((tagId: string) => {
     setNoteTagIds((prev) => prev.filter((id) => id !== tagId));
   }, []);
 
-  const handleCreateTag = useCallback(async (name: string) => {
-    const { createTag } = useStorage();
-    const tag = await createTag(name);
-    setNoteTagIds((prev) => [...prev, tag.id]);
-    try {
-      await addTagsToNote(noteIdRef.current, [tag.id]);
-    } catch {}
-  }, [addTagsToNote]);
+  const handleCreateTag = useCallback(
+    async (name: string) => {
+      const tag = await createTag(name);
+      setNoteTagIds((prev) => [...prev, tag.id]);
+      try {
+        await addTagsToNote(noteIdRef.current, [tag.id]);
+      } catch {}
+    },
+    [addTagsToNote],
+  );
 
   const noteTags = tags.filter((t) => noteTagIds.includes(t.id));
 
   const handleContextMenuDelete = useCallback((_id: string) => {}, []);
-  const handleContextMenuMoveToFolder = useCallback((_id: string, _targetFolderId: string) => {}, []);
+  const handleContextMenuMoveToFolder = useCallback(
+    (_id: string, _targetFolderId: string) => {},
+    [],
+  );
   const handleContextMenuAddTag = useCallback((_id: string) => {
     setShowTagSelector(true);
   }, []);
   const handleContextMenuRename = useCallback((_id: string, _newName: string) => {}, []);
-  const handleContextMenuCopyMarkdown = useCallback((_id: string) => {
-    navigator.clipboard.writeText(mdText);
-  }, [mdText]);
+  const handleContextMenuCopyMarkdown = useCallback(
+    (_id: string) => {
+      navigator.clipboard.writeText(mdText);
+    },
+    [mdText],
+  );
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between p-2 border-b" style={{ borderColor: "var(--border-color)" }}>
+      <div
+        className="flex items-center justify-between p-2 border-b"
+        style={{ borderColor: "var(--border-color)" }}
+      >
         {isMobile && onBack && (
           <button onClick={onBack} className="px-2 py-1 text-sm" style={{ color: "var(--accent)" }}>
             ← 返回
           </button>
         )}
-        <h2 className="text-lg font-semibold truncate" style={{ color: "var(--text-primary)" }}>{note.title}</h2>
+        <h2 className="text-lg font-semibold truncate" style={{ color: "var(--text-primary)" }}>
+          {note.title}
+        </h2>
         <div className="flex items-center gap-2">
           <ModeToggle />
         </div>
       </div>
 
-      <div className="flex items-center gap-2 px-4 py-1 border-b" style={{ borderColor: "var(--border-color)" }}>
+      <div
+        className="flex items-center gap-2 px-4 py-1 border-b"
+        style={{ borderColor: "var(--border-color)" }}
+      >
         {noteTags.map((tag) => (
-          <TagBadge key={tag.id} name={tag.name} removable onRemove={() => handleRemoveTag(tag.id)} />
+          <TagBadge
+            key={tag.id}
+            name={tag.name}
+            removable
+            onRemove={() => handleRemoveTag(tag.id)}
+          />
         ))}
         <button
           onClick={() => setShowTagSelector(!showTagSelector)}
@@ -171,14 +194,23 @@ export default function NoteView({ note, onBack, initialTagIds }: NoteViewProps)
       >
         <div className="flex-1 overflow-auto p-4">
           {editorMode === "wysiwyg" ? (
-            <Editor content={contentJson} currentNoteId={note.id} onUpdate={handleWysiwygUpdate} isMobile={isMobile} onFileUpload={handleFileUpload} />
+            <Editor
+              content={contentJson}
+              currentNoteId={note.id}
+              onUpdate={handleWysiwygUpdate}
+              isMobile={isMobile}
+              onFileUpload={handleFileUpload}
+            />
           ) : (
             <MarkdownEditor content={mdText} onUpdate={handleMarkdownUpdate} />
           )}
         </div>
       </ContextMenu>
 
-      <div className="p-2 text-xs border-t" style={{ color: "var(--text-secondary)", borderColor: "var(--border-color)" }}>
+      <div
+        className="p-2 text-xs border-t"
+        style={{ color: "var(--text-secondary)", borderColor: "var(--border-color)" }}
+      >
         {new Date(note.updatedAt).toLocaleDateString("zh-CN")} · 自动保存 ✓
       </div>
     </div>

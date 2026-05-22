@@ -9,7 +9,10 @@
     "build": "tsc",
     "test": "vitest run",
     "test:browser": "vitest run --config vitest.config.browser.ts",
-    "lint": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src tests",
+    "format": "prettier --write src tests",
+    "format:check": "prettier --check src tests"
   },
   "devDependencies": {
     "@types/uuid": "^9",

@@ -44,16 +44,22 @@ export default function QuickNote() {
         setCurrentQuickNoteId(note.id);
       }
     },
-    [currentQuickNoteId, createNote, addNote]
+    [currentQuickNoteId, createNote, addNote],
   );
 
-  const handleNoteClick = useCallback((note: any) => {
-    setCurrentNote(note);
-  }, [setCurrentNote]);
+  const handleNoteClick = useCallback(
+    (note: any) => {
+      setCurrentNote(note);
+    },
+    [setCurrentNote],
+  );
 
-  const handleTagFilter = useCallback((tagId: string) => {
-    setSelectedTagId(selectedTagId === tagId ? null : tagId);
-  }, [selectedTagId]);
+  const handleTagFilter = useCallback(
+    (tagId: string) => {
+      setSelectedTagId(selectedTagId === tagId ? null : tagId);
+    },
+    [selectedTagId],
+  );
 
   const filteredNotes = selectedTagId
     ? notes.filter((n) => n.deletedAt === null)
@@ -64,8 +70,12 @@ export default function QuickNote() {
   return (
     <div className="flex flex-col h-full p-4 max-w-2xl mx-auto">
       <div className="text-center mb-4">
-        <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>⚡ 快速笔记</h1>
-        <p className="text-sm" style={{ color: "var(--text-secondary)" }}>开始输入 — 自动保存</p>
+        <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>
+          ⚡ 快速笔记
+        </h1>
+        <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+          开始输入 — 自动保存
+        </p>
       </div>
 
       <textarea
@@ -104,15 +114,13 @@ export default function QuickNote() {
 
       <div className="mt-4">
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>最近笔记</h3>
+          <h3 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
+            最近笔记
+          </h3>
           {tags.length > 0 && (
             <div className="flex items-center gap-1 overflow-x-auto">
               {tags.map((tag) => (
-                <TagBadge
-                  key={tag.id}
-                  name={tag.name}
-                  onClick={() => handleTagFilter(tag.id)}
-                />
+                <TagBadge key={tag.id} name={tag.name} onClick={() => handleTagFilter(tag.id)} />
               ))}
             </div>
           )}
