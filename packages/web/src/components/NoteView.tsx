@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useUIStore } from "../stores";
 import { useStorage } from "../hooks";
 import Editor from "./shared/Editor";
@@ -18,6 +18,8 @@ export default function NoteView({ note, onBack }: NoteViewProps) {
   const { updateNote } = useStorage();
   const [contentJson, setContentJson] = useState(note.contentJson);
   const [mdText, setMdText] = useState(note.mdText);
+  const noteIdRef = useRef(note.id);
+  useEffect(() => { noteIdRef.current = note.id; }, [note.id]);
 
   useEffect(() => {
     setContentJson(note.contentJson);
@@ -45,7 +47,7 @@ export default function NoteView({ note, onBack }: NoteViewProps) {
     const timeout = setTimeout(async () => {
       const title = extractTitleFromContent(mdText);
       try {
-        await updateNote(note.id, {
+        await updateNote(noteIdRef.current, {
           title: title !== note.title ? title : undefined,
           contentJson,
           mdText,
@@ -54,7 +56,7 @@ export default function NoteView({ note, onBack }: NoteViewProps) {
       }
     }, 500);
     return () => clearTimeout(timeout);
-  }, [contentJson, mdText]);
+  }, [contentJson, mdText, updateNote]);
 
   return (
     <div className="flex flex-col h-full">
