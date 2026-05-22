@@ -4,3 +4,5 @@ export type { DeviceType, ResponsiveState } from "./useResponsive";
 export { useSearch } from "./useSearch";
 export { useStorage } from "./useStorage";
 export { useTheme } from "./useTheme";
+export { useAttachmentRenderer } from "./useAttachmentRenderer";
+export { useAttachmentRenderer, useThumbnailRenderer } from "./useAttachmentRenderer";
