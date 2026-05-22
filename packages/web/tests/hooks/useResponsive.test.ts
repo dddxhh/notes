@@ -1,27 +1,64 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { renderHook, act } from "@testing-library/react";
 
-describe("useResponsive 工具", () => {
-  it("DeviceType 应包含 mobile、tablet、desktop", () => {
-    const types = ["mobile", "tablet", "desktop"];
-    expect(types).toHaveLength(3);
+const mockSetIsMobile = vi.fn();
+
+vi.mock("../../src/stores", () => ({
+  useUIStore: () => mockSetIsMobile,
+}));
+
+import { useResponsive } from "../../src/hooks/useResponsive";
+
+describe("useResponsive", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
   });
 
-  it("768px 以下应判定为 mobile", () => {
-    const width = 320;
-    const device = width < 768 ? "mobile" : width < 1024 ? "tablet" : "desktop";
-    expect(device).toBe("mobile");
-    expect(width < 768).toBe(true);
+  it("returns mobile for width < 768", () => {
+    vi.spyOn(window, "innerWidth", "get").mockReturnValue(320);
+    const { result } = renderHook(() => useResponsive());
+    expect(result.current.device).toBe("mobile");
+    expect(result.current.isMobile).toBe(true);
   });
 
-  it("768-1024px 应判定为 tablet", () => {
-    const width = 900;
-    const device = width < 768 ? "mobile" : width < 1024 ? "tablet" : "desktop";
-    expect(device).toBe("tablet");
+  it("returns tablet for width between 768 and 1024", () => {
+    vi.spyOn(window, "innerWidth", "get").mockReturnValue(900);
+    const { result } = renderHook(() => useResponsive());
+    expect(result.current.device).toBe("tablet");
+    expect(result.current.isTablet).toBe(true);
+    expect(result.current.isMobile).toBe(false);
   });
 
-  it("1024px 以上应判定为 desktop", () => {
-    const width = 1200;
-    const device = width < 768 ? "mobile" : width < 1024 ? "tablet" : "desktop";
-    expect(device).toBe("desktop");
+  it("returns desktop for width >= 1024", () => {
+    vi.spyOn(window, "innerWidth", "get").mockReturnValue(1200);
+    const { result } = renderHook(() => useResponsive());
+    expect(result.current.device).toBe("desktop");
+    expect(result.current.isDesktop).toBe(true);
+  });
+
+  it("calls setIsMobile on resize", () => {
+    vi.spyOn(window, "innerWidth", "get").mockReturnValue(1200);
+    const { result } = renderHook(() => useResponsive());
+    expect(mockSetIsMobile).toHaveBeenCalledWith(false);
+  });
+
+  it("uses 768 as mobile breakpoint (not 640)", () => {
+    vi.spyOn(window, "innerWidth", "get").mockReturnValue(768);
+    const { result } = renderHook(() => useResponsive());
+    expect(result.current.isMobile).toBe(false);
+    expect(result.current.device).toBe("tablet");
+  });
+
+  it("updates on window resize", () => {
+    const widthSpy = vi.spyOn(window, "innerWidth", "get").mockReturnValue(1200);
+    const { result } = renderHook(() => useResponsive());
+    expect(result.current.isDesktop).toBe(true);
+
+    widthSpy.mockReturnValue(500);
+    act(() => {
+      window.dispatchEvent(new Event("resize"));
+    });
+    expect(result.current.isMobile).toBe(true);
+    expect(mockSetIsMobile).toHaveBeenCalledWith(true);
   });
 });
