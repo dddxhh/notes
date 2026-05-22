@@ -5,7 +5,7 @@ import { extractTitleFromContent } from "../lib/markdown-serializer";
 import NoteCard from "./shared/NoteCard";
 
 export default function QuickNote() {
-  const { createNote, listNotes } = useStorage();
+  const { createNote, updateNote, listNotes } = useStorage();
   const { notes, setNotes, addNote, setCurrentNote } = useNotesStore();
   const isMobile = useUIStore((s) => s.isMobile);
   const [inputValue, setInputValue] = useState("");
@@ -14,6 +14,15 @@ export default function QuickNote() {
   useEffect(() => {
     listNotes().then(setNotes);
   }, []);
+
+  useEffect(() => {
+    if (!currentQuickNoteId || !inputValue.trim()) return;
+    const timeout = setTimeout(async () => {
+      const title = extractTitleFromContent(inputValue);
+      await updateNote(currentQuickNoteId, { title, mdText: inputValue });
+    }, 500);
+    return () => clearTimeout(timeout);
+  }, [inputValue, currentQuickNoteId, updateNote]);
 
   const handleInputChange = useCallback(
     async (e: React.ChangeEvent<HTMLTextAreaElement>) => {
