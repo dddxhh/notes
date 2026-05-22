@@ -1,7 +1,9 @@
 import SQLiteESMFactory from "wa-sqlite/dist/wa-sqlite-async.mjs";
 import * as SQLite from "wa-sqlite";
+import { IDBBatchAtomicVFS } from "wa-sqlite/src/examples/IDBBatchAtomicVFS.js";
 
 const DB_NAME = "notes";
+const VFS_NAME = "notes-vfs";
 
 const DDL = `
 CREATE TABLE IF NOT EXISTS folders (
@@ -70,19 +72,25 @@ type SQLiteCompatibleType = number | string | Uint8Array | Array<number> | bigin
 
 let globalDb: number | null = null;
 let globalApi: SQLiteAPI | null = null;
+let globalVfs: IDBBatchAtomicVFS | null = null;
 
 export interface SQLiteDB {
   sqlite3: SQLiteAPI;
   db: number;
+  vfs: IDBBatchAtomicVFS;
 }
 
 export async function initSQLite(dbName?: string): Promise<SQLiteDB> {
   const module = await SQLiteESMFactory();
   const sqlite3 = SQLite.Factory(module);
 
+  const vfs = new IDBBatchAtomicVFS(VFS_NAME);
+  sqlite3.vfs_register(vfs as unknown as SQLiteVFS, true);
+
   const db = await sqlite3.open_v2(
     dbName ?? DB_NAME,
-    SQLite.SQLITE_OPEN_CREATE | SQLite.SQLITE_OPEN_READWRITE
+    SQLite.SQLITE_OPEN_CREATE | SQLite.SQLITE_OPEN_READWRITE,
+    VFS_NAME
   );
 
   await sqlite3.exec(db, DDL);
@@ -93,17 +101,21 @@ export async function initSQLite(dbName?: string): Promise<SQLiteDB> {
 
   globalDb = db;
   globalApi = sqlite3;
+  globalVfs = vfs;
 
-  return { sqlite3, db };
+  return { sqlite3, db, vfs };
 }
 
 export async function closeSQLite(sqliteDB?: SQLiteDB): Promise<void> {
   if (sqliteDB) {
     await sqliteDB.sqlite3.close(sqliteDB.db);
+    await sqliteDB.vfs.close();
   } else if (globalDb !== null && globalApi !== null) {
     await globalApi.close(globalDb);
+    if (globalVfs) await globalVfs.close();
     globalDb = null;
     globalApi = null;
+    globalVfs = null;
   }
 }
 

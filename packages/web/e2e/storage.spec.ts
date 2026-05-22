@@ -17,4 +17,18 @@ test.describe('存储层 E2E', () => {
     await page.waitForTimeout(1000);
     await expect(page.getByRole('button', { name: /^数据库测试笔记/ }).first()).toBeVisible({ timeout: 10000 });
   });
+
+  test('IndexedDB VFS 数据应在页面刷新后持久保存', async ({ page, context }) => {
+    await page.goto('/');
+    const textarea = page.getByPlaceholder('想写点什么？');
+    await expect(textarea).toBeVisible({ timeout: 15000 });
+
+    await textarea.fill('持久化测试笔记');
+    await page.waitForTimeout(1000);
+    await expect(page.getByRole('button', { name: /^持久化测试笔记/ }).first()).toBeVisible({ timeout: 10000 });
+
+    await page.reload();
+    await expect(page.getByText('快速笔记')).toBeVisible({ timeout: 15000 });
+    await expect(page.getByRole('button', { name: /^持久化测试笔记/ }).first()).toBeVisible({ timeout: 10000 });
+  });
 });
