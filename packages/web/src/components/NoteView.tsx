@@ -74,7 +74,7 @@ export default function NoteView({ note, onBack }: NoteViewProps) {
 
       <div className="flex-1 overflow-auto p-4">
         {editorMode === "wysiwyg" ? (
-          <Editor content={contentJson} onUpdate={handleWysiwygUpdate} isMobile={isMobile} />
+          <Editor content={contentJson} currentNoteId={note.id} onUpdate={handleWysiwygUpdate} isMobile={isMobile} />
         ) : (
           <MarkdownEditor content={mdText} onUpdate={handleMarkdownUpdate} />
         )}
