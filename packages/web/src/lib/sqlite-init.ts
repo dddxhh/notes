@@ -1,26 +1,59 @@
 import { WebStorageAdapter } from "@notes/core";
+import type { StorageAdapter } from "@notes/core";
+import {
+  SharedWorkerSQLiteClient,
+  SharedWorkerStorageAdapter,
+} from "./sqlite-shared-worker";
 
-let adapter: WebStorageAdapter | null = null;
-let initPromise: Promise<WebStorageAdapter> | null = null;
+type ConnectionMode = "shared-worker" | "direct";
 
-export async function initStorage(): Promise<WebStorageAdapter> {
+let adapter: StorageAdapter | null = null;
+let initPromise: Promise<StorageAdapter> | null = null;
+let connectionMode: ConnectionMode = "direct";
+
+export async function initStorage(): Promise<StorageAdapter> {
   if (adapter) return adapter;
   if (initPromise) return initPromise;
-  const newAdapter = new WebStorageAdapter();
-  initPromise = newAdapter.init().then(() => {
-    adapter = newAdapter;
-    initPromise = null;
+
+  initPromise = (async () => {
+    try {
+      if (SharedWorkerSQLiteClient.isAvailable()) {
+        const client = new SharedWorkerSQLiteClient();
+        const swAdapter = new SharedWorkerStorageAdapter(client);
+        await swAdapter.init();
+        connectionMode = "shared-worker";
+        adapter = swAdapter;
+        return adapter;
+      }
+    } catch {
+      connectionMode = "direct";
+    }
+
+    const directAdapter = new WebStorageAdapter();
+    await directAdapter.init();
+    connectionMode = "direct";
+    adapter = directAdapter;
     return adapter;
-  }).catch((e) => {
-    initPromise = null;
-    throw e;
-  });
+  })()
+    .then((a) => {
+      initPromise = null;
+      return a;
+    })
+    .catch((e) => {
+      initPromise = null;
+      throw e;
+    });
+
   return initPromise;
 }
 
-export function getStorage(): WebStorageAdapter {
+export function getStorage(): StorageAdapter {
   if (!adapter) throw new Error("存储未初始化，请先调用 initStorage()");
   return adapter;
+}
+
+export function getConnectionMode(): ConnectionMode {
+  return connectionMode;
 }
 
 export async function closeStorage(): Promise<void> {
