@@ -1,13 +1,11 @@
-import { NodeViewWrapper } from "@tiptap/react";
+import { NodeViewWrapper, type NodeViewProps } from "@tiptap/react";
 import { useAttachmentRenderer } from "../../hooks/useAttachmentRenderer";
 
-interface AttachmentRendererProps {
-  node: { attrs: { src: string; alt?: string; title?: string } };
-}
-
-export default function AttachmentRenderer({ node }: AttachmentRendererProps) {
-  const { src, alt, title } = node.attrs;
-  const { resolvedSrc, error } = useAttachmentRenderer(src);
+export default function AttachmentRenderer({ node }: NodeViewProps) {
+  const src = node.attrs.src as string | null;
+  const alt = node.attrs.alt as string | null;
+  const title = node.attrs.title as string | null;
+  const { resolvedSrc, error } = useAttachmentRenderer(src ?? "");
 
   if (error) {
     return (

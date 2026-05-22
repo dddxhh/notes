@@ -108,15 +108,16 @@ describe("CustomImage TipTap Node", () => {
 
     it("setCustomImage should insert content with correct type and attrs", () => {
       const commands = node.config.addCommands();
-      const mockCommands = {
-        insertContent: vi.fn(),
+      const mockChain = {
+        insertContent: vi.fn().mockReturnThis(),
+        run: vi.fn().mockReturnValue(true),
       };
       const setCustomImage = commands.setCustomImage({
         src: "attachment://img1",
         alt: "My Image",
       });
-      setCustomImage(mockCommands);
-      expect(mockCommands.insertContent).toHaveBeenCalledWith({
+      setCustomImage({ chain: () => mockChain });
+      expect(mockChain.insertContent).toHaveBeenCalledWith({
         type: "customImage",
         attrs: { src: "attachment://img1", alt: "My Image" },
       });
@@ -124,12 +125,13 @@ describe("CustomImage TipTap Node", () => {
 
     it("setCustomImage should work with only src", () => {
       const commands = node.config.addCommands();
-      const mockCommands = {
-        insertContent: vi.fn(),
+      const mockChain = {
+        insertContent: vi.fn().mockReturnThis(),
+        run: vi.fn().mockReturnValue(true),
       };
       const setCustomImage = commands.setCustomImage({ src: "attachment://img2" });
-      setCustomImage(mockCommands);
-      expect(mockCommands.insertContent).toHaveBeenCalledWith({
+      setCustomImage({ chain: () => mockChain });
+      expect(mockChain.insertContent).toHaveBeenCalledWith({
         type: "customImage",
         attrs: { src: "attachment://img2" },
       });
@@ -137,16 +139,17 @@ describe("CustomImage TipTap Node", () => {
 
     it("setCustomImage should work with src, alt, and title", () => {
       const commands = node.config.addCommands();
-      const mockCommands = {
-        insertContent: vi.fn(),
+      const mockChain = {
+        insertContent: vi.fn().mockReturnThis(),
+        run: vi.fn().mockReturnValue(true),
       };
       const setCustomImage = commands.setCustomImage({
         src: "attachment://img3",
         alt: "description",
         title: "Image Title",
       });
-      setCustomImage(mockCommands);
-      expect(mockCommands.insertContent).toHaveBeenCalledWith({
+      setCustomImage({ chain: () => mockChain });
+      expect(mockChain.insertContent).toHaveBeenCalledWith({
         type: "customImage",
         attrs: { src: "attachment://img3", alt: "description", title: "Image Title" },
       });

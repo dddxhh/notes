@@ -95,12 +95,13 @@ describe("CustomVideo TipTap Node", () => {
 
     it("setCustomVideo should insert content with correct type and attrs", () => {
       const commands = node.config.addCommands();
-      const mockCommands = {
-        insertContent: vi.fn(),
+      const mockChain = {
+        insertContent: vi.fn().mockReturnThis(),
+        run: vi.fn().mockReturnValue(true),
       };
       const setCustomVideo = commands.setCustomVideo({ src: "attachment://vid1", title: "My Video" });
-      setCustomVideo(mockCommands);
-      expect(mockCommands.insertContent).toHaveBeenCalledWith({
+      setCustomVideo({ chain: () => mockChain });
+      expect(mockChain.insertContent).toHaveBeenCalledWith({
         type: "customVideo",
         attrs: { src: "attachment://vid1", title: "My Video" },
       });
@@ -108,12 +109,13 @@ describe("CustomVideo TipTap Node", () => {
 
     it("setCustomVideo should work with only src", () => {
       const commands = node.config.addCommands();
-      const mockCommands = {
-        insertContent: vi.fn(),
+      const mockChain = {
+        insertContent: vi.fn().mockReturnThis(),
+        run: vi.fn().mockReturnValue(true),
       };
       const setCustomVideo = commands.setCustomVideo({ src: "attachment://vid2" });
-      setCustomVideo(mockCommands);
-      expect(mockCommands.insertContent).toHaveBeenCalledWith({
+      setCustomVideo({ chain: () => mockChain });
+      expect(mockChain.insertContent).toHaveBeenCalledWith({
         type: "customVideo",
         attrs: { src: "attachment://vid2" },
       });

@@ -42,12 +42,12 @@ export const CustomVideo = Node.create<CustomVideoOptions>({
   addCommands() {
     return {
       setCustomVideo:
-        (options) =>
-        (commands) => {
-          return commands.insertContent({
+        (options: { src: string; title?: string }) =>
+        ({ chain }) => {
+          return chain().insertContent({
             type: this.name,
             attrs: options,
-          });
+          }).run();
         },
     };
   },

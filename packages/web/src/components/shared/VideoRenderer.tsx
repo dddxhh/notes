@@ -1,13 +1,10 @@
-import { NodeViewWrapper } from "@tiptap/react";
+import { NodeViewWrapper, type NodeViewProps } from "@tiptap/react";
 import { useAttachmentRenderer } from "../../hooks/useAttachmentRenderer";
 
-interface VideoRendererProps {
-  node: { attrs: { src: string; title?: string } };
-}
-
-export default function VideoRenderer({ node }: VideoRendererProps) {
-  const { src, title } = node.attrs;
-  const { resolvedSrc, error } = useAttachmentRenderer(src);
+export default function VideoRenderer({ node }: NodeViewProps) {
+  const src = node.attrs.src as string | null;
+  const title = node.attrs.title as string | null;
+  const { resolvedSrc, error } = useAttachmentRenderer(src ?? "");
 
   if (error) {
     return (

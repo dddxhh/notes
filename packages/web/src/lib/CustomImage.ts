@@ -43,12 +43,12 @@ export const CustomImage = Node.create<CustomImageOptions>({
   addCommands() {
     return {
       setCustomImage:
-        (options) =>
-        (commands) => {
-          return commands.insertContent({
+        (options: { src: string; alt?: string; title?: string }) =>
+        ({ chain }) => {
+          return chain().insertContent({
             type: this.name,
             attrs: options,
-          });
+          }).run();
         },
     };
   },
