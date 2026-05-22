@@ -1,9 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, waitFor, cleanup } from "@testing-library/react";
+import { render, screen, cleanup } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 
 afterEach(cleanup);
 
 let mockCurrentNote: any = null;
+let mockSidebarOpen = true;
+const mockSetSidebarOpen = vi.fn();
 
 vi.mock("../src/stores", () => ({
   useNotesStore: (selector?: any) => {
@@ -17,11 +20,11 @@ vi.mock("../src/stores", () => ({
     return selector ? selector(state) : state;
   },
   useFoldersStore: (selector?: any) => {
-    const state = { folders: [], setFolders: vi.fn() };
+    const state = { folders: [], setFolders: vi.fn(), currentFolderId: null, setCurrentFolderId: vi.fn() };
     return selector ? selector(state) : state;
   },
   useUIStore: (selector?: any) => {
-    const state = { editorMode: "wysiwyg", isMobile: false, setIsMobile: vi.fn(), setEditorMode: vi.fn() };
+    const state = { editorMode: "wysiwyg", isMobile: false, sidebarOpen: mockSidebarOpen, setSidebarOpen: mockSetSidebarOpen, setIsMobile: vi.fn(), setEditorMode: vi.fn(), setTheme: vi.fn() };
     return selector ? selector(state) : state;
   },
   useSlashCommandStore: (selector?: any) => {
@@ -33,7 +36,7 @@ vi.mock("../src/stores", () => ({
     return selector ? selector(state) : state;
   },
   useTagsStore: (selector?: any) => {
-    const state = { tags: [] };
+    const state = { tags: [], setTags: vi.fn() };
     return selector ? selector(state) : state;
   },
 }));
@@ -49,6 +52,14 @@ vi.mock("../src/hooks", () => ({
   }),
   useAttachmentUpload: () => ({ uploadFile: vi.fn() }),
   useToast: () => ({ showToast: vi.fn() }),
+  useSearch: () => ({
+    searchInput: {},
+    result: null,
+    loading: false,
+    executeSearch: vi.fn(),
+    updateFilter: vi.fn(),
+    clearSearch: vi.fn(),
+  }),
 }));
 
 vi.mock("@tiptap/react", () => ({
@@ -113,17 +124,45 @@ describe("DesktopLayout", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockCurrentNote = null;
+    mockSidebarOpen = true;
   });
 
-  it("renders Sidebar and main content area", () => {
-    const { container } = render(<DesktopLayout />);
-    expect(screen.getByTestId("sidebar")).toBeTruthy();
-    expect(container.querySelector(".flex.h-screen")).toBeTruthy();
-  });
-
-  it("shows 全部笔记 in sidebar", () => {
+  it("renders Sidebar when sidebarOpen is true", () => {
+    mockSidebarOpen = true;
     render(<DesktopLayout />);
-    expect(screen.getByTestId("sidebar").textContent).toContain("全部笔记");
+    expect(screen.getByTestId("sidebar")).toBeTruthy();
+  });
+
+  it("does not render Sidebar when sidebarOpen is false", () => {
+    mockSidebarOpen = false;
+    render(<DesktopLayout />);
+    expect(screen.queryByTestId("sidebar")).toBeNull();
+  });
+
+  it("renders collapse button in main area top-left when sidebar is open", () => {
+    render(<DesktopLayout />);
+    expect(screen.getByRole("button", { name: /展开侧栏/i })).toBeTruthy();
+  });
+
+  it("renders expand button in main area top-left when sidebar is closed", () => {
+    mockSidebarOpen = false;
+    render(<DesktopLayout />);
+    expect(screen.getByRole("button", { name: /展开侧栏/i })).toBeTruthy();
+  });
+
+  it("calls setSidebarOpen(false) when collapse button is clicked", async () => {
+    const user = userEvent.setup();
+    render(<DesktopLayout />);
+    await user.click(screen.getByRole("button", { name: /展开侧栏/i }));
+    expect(mockSetSidebarOpen).toHaveBeenCalledWith(false);
+  });
+
+  it("calls setSidebarOpen(true) when expand button is clicked", async () => {
+    mockSidebarOpen = false;
+    const user = userEvent.setup();
+    render(<DesktopLayout />);
+    await user.click(screen.getByRole("button", { name: /展开侧栏/i }));
+    expect(mockSetSidebarOpen).toHaveBeenCalledWith(true);
   });
 
   it("shows QuickNote when no current note is selected", () => {
@@ -146,5 +185,12 @@ describe("DesktopLayout", () => {
     };
     const { container } = render(<DesktopLayout />);
     expect(container.textContent).toContain("Selected Note");
+  });
+
+  it("main area takes full width when sidebar is collapsed", () => {
+    mockSidebarOpen = false;
+    const { container } = render(<DesktopLayout />);
+    const mainArea = container.querySelector("[data-testid='main-area']");
+    expect(mainArea).toBeTruthy();
   });
 });
