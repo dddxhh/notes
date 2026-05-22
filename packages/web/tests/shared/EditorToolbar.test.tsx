@@ -33,9 +33,28 @@ vi.mock("../../src/components/shared/VideoUploadButton", () => ({
   ),
 }));
 
+vi.mock("../../src/lib/highlight-languages", () => ({
+  lowlight: { highlight: vi.fn() },
+  HIGHLIGHT_LANGUAGES: ["javascript", "python"],
+}));
+
 const mockEditor = {
-  chain: () => ({ focus: () => ({ run: vi.fn() }) }),
+  chain: () => ({
+    focus: () => ({
+      toggleTaskList: () => ({ run: vi.fn() }),
+      insertTable: () => ({ run: vi.fn() }),
+      toggleCodeBlock: () => ({ run: vi.fn() }),
+      updateAttributes: () => ({ run: vi.fn() }),
+      toggleBold: () => ({ run: vi.fn() }),
+      toggleItalic: () => ({ run: vi.fn() }),
+      toggleHeading: () => ({ run: vi.fn() }),
+      toggleBulletList: () => ({ run: vi.fn() }),
+      toggleOrderedList: () => ({ run: vi.fn() }),
+      run: vi.fn(),
+    }),
+  }),
   isActive: () => false,
+  getAttributes: () => ({}),
   commands: { setCustomImage: mockSetCustomImage, setCustomVideo: mockSetCustomVideo },
   storage: { characterCount: { characters: () => 0 } },
 } as any;

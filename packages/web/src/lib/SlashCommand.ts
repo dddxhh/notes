@@ -38,8 +38,22 @@ export const SlashCommandItems: SlashCommandItem[] = [
     },
   },
   {
-    title: "Code Block",
-    description: "Insert code block",
+    title: "任务列表",
+    description: "Create a task list with checkboxes",
+    command: ({ editor, range }) => {
+      editor.chain().focus().deleteRange(range).toggleTaskList().run();
+    },
+  },
+  {
+    title: "表格",
+    description: "Insert a 3×3 table",
+    command: ({ editor, range }) => {
+      editor.chain().focus().deleteRange(range).insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
+    },
+  },
+  {
+    title: "代码块",
+    description: "Insert code block with syntax highlighting",
     command: ({ editor, range }) => {
       editor.chain().focus().deleteRange(range).toggleCodeBlock().run();
     },

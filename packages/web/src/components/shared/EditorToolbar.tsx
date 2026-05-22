@@ -3,6 +3,7 @@ import ImageUploadButton from "./ImageUploadButton";
 import VideoUploadButton from "./VideoUploadButton";
 import { useAttachmentUpload } from "../../hooks/useAttachmentUpload";
 import { createAttachmentSrc } from "../../lib/attachment-protocol";
+import { HIGHLIGHT_LANGUAGES } from "../../lib/highlight-languages";
 
 interface EditorToolbarProps {
   editor: Editor;
@@ -85,6 +86,24 @@ export default function EditorToolbar({ editor, noteId = "" }: EditorToolbarProp
         1. 列表
       </button>
       <button
+        onClick={() => editor.chain().focus().toggleTaskList().run()}
+        className={`px-2 py-1 rounded text-sm ${
+          editor.isActive("taskList") ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+        }`}
+        title="任务列表"
+      >
+        ☑ 任务
+      </button>
+      <button
+        onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
+        className={`px-2 py-1 rounded text-sm ${
+          editor.isActive("table") ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+        }`}
+        title="插入表格"
+      >
+        ⊞ 表格
+      </button>
+      <button
         onClick={() => editor.chain().focus().toggleCodeBlock().run()}
         className={`px-2 py-1 rounded text-sm ${
           editor.isActive("codeBlock") ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
@@ -93,6 +112,23 @@ export default function EditorToolbar({ editor, noteId = "" }: EditorToolbarProp
       >
         {"{}"}代码
       </button>
+      <select
+        value={editor.getAttributes("codeBlock").language || ""}
+        onChange={(e) => {
+          const lang = e.target.value;
+          editor.chain().focus().updateAttributes("codeBlock", { language: lang }).run();
+        }}
+        className={`px-1 py-1 rounded text-sm border ${
+          editor.isActive("codeBlock") ? "border-blue-300" : "border-gray-300 bg-white text-gray-500"
+        }`}
+        title="代码语言"
+        disabled={!editor.isActive("codeBlock")}
+      >
+        <option value="">自动</option>
+        {HIGHLIGHT_LANGUAGES.map((lang) => (
+          <option key={lang} value={lang}>{lang}</option>
+        ))}
+      </select>
       <ImageUploadButton onFileSelected={handleImageUpload} />
       <VideoUploadButton onFileSelected={handleVideoUpload} />
       <div className="ml-auto flex items-center gap-2">
