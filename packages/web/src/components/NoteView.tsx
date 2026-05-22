@@ -114,11 +114,11 @@ export default function NoteView({ note, onBack, initialTagIds }: NoteViewProps)
   const noteTags = tags.filter((t) => noteTagIds.includes(t.id));
 
   const handleContextMenuDelete = useCallback((_id: string) => {}, []);
-  const handleContextMenuMoveToFolder = useCallback((_id: string) => {}, []);
+  const handleContextMenuMoveToFolder = useCallback((_id: string, _targetFolderId: string) => {}, []);
   const handleContextMenuAddTag = useCallback((_id: string) => {
     setShowTagSelector(true);
   }, []);
-  const handleContextMenuRename = useCallback((_id: string) => {}, []);
+  const handleContextMenuRename = useCallback((_id: string, _newName: string) => {}, []);
   const handleContextMenuCopyMarkdown = useCallback((_id: string) => {
     navigator.clipboard.writeText(mdText);
   }, [mdText]);
@@ -161,6 +161,8 @@ export default function NoteView({ note, onBack, initialTagIds }: NoteViewProps)
       <ContextMenu
         itemId={note.id}
         itemType="note"
+        currentName={note.title}
+        currentFolderId={note.folderId}
         onDelete={handleContextMenuDelete}
         onMoveToFolder={handleContextMenuMoveToFolder}
         onAddTag={handleContextMenuAddTag}
