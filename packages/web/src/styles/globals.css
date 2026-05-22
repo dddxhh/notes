@@ -12,11 +12,37 @@
   --border-color: #e2e8f0;
   --accent: #3b82f6;
   --accent-hover: #2563eb;
+  --accent-alpha: rgba(59, 130, 246, 0.1);
   --danger: #ef4444;
   --code-bg: #f1f5f9;
   --sidebar-bg: #ffffff;
   --card-bg: #ffffff;
   --hover-bg: #f1f5f9;
+  --hljs-keyword: #c678dd;
+  --hljs-string: #98c379;
+  --hljs-number: #d19a66;
+  --hljs-comment: #5c6370;
+  --hljs-function: #61afef;
+  --hljs-title: #61afef;
+  --hljs-params: #abb2bf;
+  --hljs-built_in: #e5c07b;
+  --hljs-literal: #56b6c2;
+  --hljs-type: #e5c07b;
+  --hljs-attr: #d19a66;
+  --hljs-tag: #e06c75;
+  --hljs-name: #e06c75;
+  --hljs-selector-tag: #e06c75;
+  --hljs-selector-class: #d19a66;
+  --hljs-selector-id: #61afef;
+  --hljs-variable: #e06c75;
+  --hljs-template-variable: #e06c75;
+  --hljs-regexp: #98c379;
+  --hljs-symbol: #56b6c2;
+  --hljs-meta: #61afef;
+  --hljs-deletion: #e06c75;
+  --hljs-deletion-bg: rgba(224, 108, 117, 0.1);
+  --hljs-addition: #98c379;
+  --hljs-addition-bg: rgba(152, 195, 121, 0.1);
 }
 
 .dark {
@@ -29,11 +55,37 @@
   --border-color: #334155;
   --accent: #3b82f6;
   --accent-hover: #60a5fa;
+  --accent-alpha: rgba(59, 130, 246, 0.1);
   --danger: #f87171;
   --code-bg: #334155;
   --sidebar-bg: #1e293b;
   --card-bg: #1e293b;
   --hover-bg: #334155;
+  --hljs-keyword: #c678dd;
+  --hljs-string: #98c379;
+  --hljs-number: #d19a66;
+  --hljs-comment: #5c6370;
+  --hljs-function: #61afef;
+  --hljs-title: #61afef;
+  --hljs-params: #abb2bf;
+  --hljs-built_in: #e5c07b;
+  --hljs-literal: #56b6c2;
+  --hljs-type: #e5c07b;
+  --hljs-attr: #d19a66;
+  --hljs-tag: #e06c75;
+  --hljs-name: #e06c75;
+  --hljs-selector-tag: #e06c75;
+  --hljs-selector-class: #d19a66;
+  --hljs-selector-id: #61afef;
+  --hljs-variable: #e06c75;
+  --hljs-template-variable: #e06c75;
+  --hljs-regexp: #98c379;
+  --hljs-symbol: #56b6c2;
+  --hljs-meta: #61afef;
+  --hljs-deletion: #e06c75;
+  --hljs-deletion-bg: rgba(224, 108, 117, 0.1);
+  --hljs-addition: #98c379;
+  --hljs-addition-bg: rgba(152, 195, 121, 0.1);
 }
 
 body {
@@ -41,6 +93,7 @@ body {
   margin: 0;
   background-color: var(--bg-primary);
   color: var(--text-primary);
+  touch-action: manipulation;
 }
 
 /* TipTap / ProseMirror 编辑器样式 */
@@ -163,7 +216,7 @@ body {
 }
 
 .ProseMirror table .selectedCell {
-  background-color: rgba(59, 130, 246, 0.1);
+  background-color: var(--accent-alpha);
 }
 
 .ProseMirror table .column-resize-handle {
@@ -176,26 +229,26 @@ body {
   pointer-events: none;
 }
 
-.ProseMirror pre code .hljs-keyword { color: #c678dd; }
-.ProseMirror pre code .hljs-string { color: #98c379; }
-.ProseMirror pre code .hljs-number { color: #d19a66; }
-.ProseMirror pre code .hljs-comment { color: #5c6370; font-style: italic; }
-.ProseMirror pre code .hljs-function { color: #61afef; }
-.ProseMirror pre code .hljs-title { color: #61afef; }
-.ProseMirror pre code .hljs-params { color: #abb2bf; }
-.ProseMirror pre code .hljs-built_in { color: #e5c07b; }
-.ProseMirror pre code .hljs-literal { color: #56b6c2; }
-.ProseMirror pre code .hljs-type { color: #e5c07b; }
-.ProseMirror pre code .hljs-attr { color: #d19a66; }
-.ProseMirror pre code .hljs-tag { color: #e06c75; }
-.ProseMirror pre code .hljs-name { color: #e06c75; }
-.ProseMirror pre code .hljs-selector-tag { color: #e06c75; }
-.ProseMirror pre code .hljs-selector-class { color: #d19a66; }
-.ProseMirror pre code .hljs-selector-id { color: #61afef; }
-.ProseMirror pre code .hljs-variable { color: #e06c75; }
-.ProseMirror pre code .hljs-template-variable { color: #e06c75; }
-.ProseMirror pre code .hljs-regexp { color: #98c379; }
-.ProseMirror pre code .hljs-symbol { color: #56b6c2; }
-.ProseMirror pre code .hljs-meta { color: #61afef; }
-.ProseMirror pre code .hljs-deletion { color: #e06c75; background-color: rgba(224, 108, 117, 0.1); }
-.ProseMirror pre code .hljs-addition { color: #98c379; background-color: rgba(152, 195, 121, 0.1); }
+.ProseMirror pre code .hljs-keyword { color: var(--hljs-keyword); }
+.ProseMirror pre code .hljs-string { color: var(--hljs-string); }
+.ProseMirror pre code .hljs-number { color: var(--hljs-number); }
+.ProseMirror pre code .hljs-comment { color: var(--hljs-comment); font-style: italic; }
+.ProseMirror pre code .hljs-function { color: var(--hljs-function); }
+.ProseMirror pre code .hljs-title { color: var(--hljs-title); }
+.ProseMirror pre code .hljs-params { color: var(--hljs-params); }
+.ProseMirror pre code .hljs-built_in { color: var(--hljs-built_in); }
+.ProseMirror pre code .hljs-literal { color: var(--hljs-literal); }
+.ProseMirror pre code .hljs-type { color: var(--hljs-type); }
+.ProseMirror pre code .hljs-attr { color: var(--hljs-attr); }
+.ProseMirror pre code .hljs-tag { color: var(--hljs-tag); }
+.ProseMirror pre code .hljs-name { color: var(--hljs-name); }
+.ProseMirror pre code .hljs-selector-tag { color: var(--hljs-selector-tag); }
+.ProseMirror pre code .hljs-selector-class { color: var(--hljs-selector-class); }
+.ProseMirror pre code .hljs-selector-id { color: var(--hljs-selector-id); }
+.ProseMirror pre code .hljs-variable { color: var(--hljs-variable); }
+.ProseMirror pre code .hljs-template-variable { color: var(--hljs-template-variable); }
+.ProseMirror pre code .hljs-regexp { color: var(--hljs-regexp); }
+.ProseMirror pre code .hljs-symbol { color: var(--hljs-symbol); }
+.ProseMirror pre code .hljs-meta { color: var(--hljs-meta); }
+.ProseMirror pre code .hljs-deletion { color: var(--hljs-deletion); background-color: var(--hljs-deletion-bg); }
+.ProseMirror pre code .hljs-addition { color: var(--hljs-addition); background-color: var(--hljs-addition-bg); }

@@ -61,4 +61,81 @@ describe("useResponsive", () => {
     expect(result.current.isMobile).toBe(true);
     expect(mockSetIsMobile).toHaveBeenCalledWith(true);
   });
+
+  describe("isKeyboardVisible", () => {
+    it("returns isKeyboardVisible false by default", () => {
+      vi.spyOn(window, "innerWidth", "get").mockReturnValue(1200);
+      const { result } = renderHook(() => useResponsive());
+      expect(result.current.isKeyboardVisible).toBe(false);
+    });
+
+    it("sets isKeyboardVisible true when visualViewport height shrinks significantly", () => {
+      vi.spyOn(window, "innerWidth", "get").mockReturnValue(375);
+      vi.spyOn(window, "innerHeight", "get").mockReturnValue(812);
+      const mockVisualViewport = {
+        height: 400,
+        width: 375,
+        offsetTop: 0,
+        offsetLeft: 0,
+        scale: 1,
+        onresize: null,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+      };
+      (window as any).visualViewport = mockVisualViewport;
+      const { result } = renderHook(() => useResponsive());
+      expect(result.current.isKeyboardVisible).toBe(true);
+    });
+
+    it("sets isKeyboardVisible false when visualViewport height is close to window height", () => {
+      vi.spyOn(window, "innerWidth", "get").mockReturnValue(375);
+      vi.spyOn(window, "innerHeight", "get").mockReturnValue(812);
+      const mockVisualViewport = {
+        height: 780,
+        width: 375,
+        offsetTop: 0,
+        offsetLeft: 0,
+        scale: 1,
+        onresize: null,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+      };
+      (window as any).visualViewport = mockVisualViewport;
+      const { result } = renderHook(() => useResponsive());
+      expect(result.current.isKeyboardVisible).toBe(false);
+    });
+
+    it("updates isKeyboardVisible on visualViewport resize event", () => {
+      vi.spyOn(window, "innerWidth", "get").mockReturnValue(375);
+      vi.spyOn(window, "innerHeight", "get").mockReturnValue(812);
+      const resizeListeners: Function[] = [];
+      let vvHeight = 780;
+      const mockVisualViewport = {
+        height: vvHeight,
+        width: 375,
+        offsetTop: 0,
+        offsetLeft: 0,
+        scale: 1,
+        addEventListener: vi.fn((event: string, cb: Function) => { resizeListeners.push(cb); }),
+        removeEventListener: vi.fn(),
+      };
+      Object.defineProperty(mockVisualViewport, 'height', { get: () => vvHeight });
+      (window as any).visualViewport = mockVisualViewport;
+      const { result } = renderHook(() => useResponsive());
+      expect(result.current.isKeyboardVisible).toBe(false);
+
+      vvHeight = 300;
+      act(() => {
+        resizeListeners.forEach((cb) => cb());
+      });
+      expect(result.current.isKeyboardVisible).toBe(true);
+    });
+
+    it("handles missing visualViewport gracefully", () => {
+      vi.spyOn(window, "innerWidth", "get").mockReturnValue(375);
+      (window as any).visualViewport = undefined;
+      const { result } = renderHook(() => useResponsive());
+      expect(result.current.isKeyboardVisible).toBe(false);
+    });
+  });
 });
