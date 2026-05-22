@@ -25,6 +25,7 @@ export interface StorageAdapter {
   getAttachmentBlob(id: string): Promise<Blob | null>;
   getAttachmentThumbnail(id: string): Promise<Blob | null>;
   deleteAttachment(id: string): Promise<void>;
+  listAttachmentIds(): Promise<string[]>;
 
   searchNotes(input: SearchInput): Promise<SearchResult>;
 

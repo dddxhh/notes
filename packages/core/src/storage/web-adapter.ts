@@ -241,6 +241,12 @@ export class WebStorageAdapter implements StorageAdapter {
     await deleteBlob(id);
   }
 
+  async listAttachmentIds(): Promise<string[]> {
+    const db = this.getDB();
+    const rows = await querySQL<Row>(db, `SELECT id FROM attachments`);
+    return rows.map((r) => r.id as string);
+  }
+
   async searchNotes(input: SearchInput): Promise<SearchResult> {
     return searchNotes(this.getDB(), input);
   }

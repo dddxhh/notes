@@ -547,6 +547,13 @@ export class SharedWorkerStorageAdapter implements StorageAdapter {
     await deleteBlob(id);
   }
 
+  async listAttachmentIds(): Promise<string[]> {
+    const rows = await this.client.query<Row>(
+      `SELECT id FROM attachments`
+    );
+    return rows.map((r) => r.id as string);
+  }
+
   async searchNotes(input: SearchInput): Promise<SearchResult> {
     const conditions: string[] = [];
     const params: (string | number | null)[] = [];
