@@ -12,7 +12,7 @@ export async function searchNotes(db: SQLiteDB, input: SearchInput): Promise<Sea
   }
 
   if (input.query) {
-    conditions.push("notes.id IN (SELECT rowid FROM notes_fts WHERE notes_fts MATCH ?)");
+    conditions.push("notes.rowid IN (SELECT rowid FROM notes_fts WHERE notes_fts MATCH ?)");
     params.push(input.query);
   }
 

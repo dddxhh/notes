@@ -53,8 +53,7 @@ CREATE VIRTUAL TABLE IF NOT EXISTS notes_fts USING fts5(
   title,
   content_json,
   md_text,
-  content=notes,
-  content_rowid=id
+  content=notes
 );
 
 CREATE INDEX IF NOT EXISTS idx_notes_folder_id ON notes(folder_id);
