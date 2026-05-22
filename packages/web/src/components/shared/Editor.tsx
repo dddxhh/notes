@@ -3,8 +3,9 @@ import { useEffect, useRef } from "react";
 import { getEditorExtensions } from "../../lib/tiptap-setup";
 import { proseMirrorJSONToMarkdown } from "../../lib/markdown-serializer";
 import { useUIStore, useSlashCommandStore } from "../../stores";
-import { useAttachmentUpload } from "../../hooks";
+import { useAttachmentUpload, type UploadResult } from "../../hooks";
 import { createAttachmentSrc } from "../../lib/attachment-protocol";
+import type { Attachment } from "@notes/core";
 import EditorToolbar from "./EditorToolbar";
 
 interface EditorProps {
@@ -12,7 +13,7 @@ interface EditorProps {
   currentNoteId?: string;
   onUpdate: (contentJson: string, mdText: string) => void;
   isMobile?: boolean;
-  onFileUpload?: (file: File) => void;
+  onFileUpload?: (file: File) => Promise<UploadResult | undefined>;
 }
 
 export default function Editor({ content, currentNoteId, onUpdate, isMobile, onFileUpload }: EditorProps) {
@@ -27,6 +28,32 @@ export default function Editor({ content, currentNoteId, onUpdate, isMobile, onF
   const imageInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
 
+  const insertAttachmentNode = (attachment: Attachment, file: File) => {
+    if (!editor) return;
+    const src = createAttachmentSrc(attachment.id);
+    if (attachment.type === "image" || file.type.startsWith("image/")) {
+      editor.commands.setCustomImage({ src });
+    } else if (attachment.type === "video" || file.type.startsWith("video/")) {
+      editor.commands.setCustomVideo({ src });
+    }
+  };
+
+  const handleFilesFromTransfer = async (files: FileList | File[]) => {
+    for (const file of Array.from(files)) {
+      if (onFileUpload) {
+        const result = await onFileUpload(file);
+        if (result?.success && result?.attachment) {
+          insertAttachmentNode(result.attachment, file);
+        }
+      } else {
+        const result = await uploadFile(file);
+        if (result.success && result.attachment) {
+          insertAttachmentNode(result.attachment, file);
+        }
+      }
+    }
+  };
+
   const editor = useEditor({
     extensions: getEditorExtensions(mobile),
     content: content || "",
@@ -40,6 +67,20 @@ export default function Editor({ content, currentNoteId, onUpdate, isMobile, onF
         class: mobile
           ? "prose prose-sm max-w-none focus:outline-none min-h-[200px]"
           : "prose prose-lg max-w-none focus:outline-none min-h-[300px]",
+      },
+      handleDrop: (_view: any, event: any, _slice: any, _moved: boolean) => {
+        const files = event.dataTransfer?.files;
+        if (!files || files.length === 0) return false;
+        event.preventDefault();
+        handleFilesFromTransfer(files);
+        return true;
+      },
+      handlePaste: (_view: any, event: any, _slice: any) => {
+        const files = event.clipboardData?.files;
+        if (!files || files.length === 0) return false;
+        event.preventDefault();
+        handleFilesFromTransfer(files);
+        return true;
       },
     },
   });

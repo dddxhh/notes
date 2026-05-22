@@ -32,6 +32,10 @@ vi.mock("../src/stores", () => ({
     const state = { attachments: [], addAttachment: vi.fn() };
     return selector ? selector(state) : state;
   },
+  useTagsStore: (selector?: any) => {
+    const state = { tags: [] };
+    return selector ? selector(state) : state;
+  },
 }));
 
 vi.mock("../src/hooks", () => ({
@@ -40,8 +44,11 @@ vi.mock("../src/hooks", () => ({
     listFolders: vi.fn().mockResolvedValue([]),
     updateNote: vi.fn(),
     createNote: vi.fn(),
+    addTagsToNote: vi.fn(),
+    createTag: vi.fn(),
   }),
   useAttachmentUpload: () => ({ uploadFile: vi.fn() }),
+  useToast: () => ({ showToast: vi.fn() }),
 }));
 
 vi.mock("@tiptap/react", () => ({
@@ -66,12 +73,30 @@ vi.mock("../src/hooks/useAttachmentUpload", () => ({
   useAttachmentUpload: () => ({ uploadFile: vi.fn() }),
 }));
 
-vi.mock("../src/lib/attachment-protocol", () => ({
-  createAttachmentSrc: (id: string) => `attachment://${id}`,
-}));
-
 vi.mock("../src/components/shared/EditorToolbar", () => ({
   default: () => <div data-testid="editor-toolbar">Toolbar Mock</div>,
+}));
+
+vi.mock("../src/components/shared/TagBadge", () => ({
+  default: ({ name }: any) => <span>#{name}</span>,
+}));
+
+vi.mock("../src/components/shared/TagSelector", () => ({
+  default: () => <div data-testid="tag-selector">TagSelector Mock</div>,
+}));
+
+vi.mock("../src/components/shared/ContextMenu", () => ({
+  default: ({ children }: any) => <div>{children}</div>,
+}));
+
+vi.mock("../src/hooks/useToast", () => ({
+  useToast: () => ({ showToast: vi.fn() }),
+  useToastStore: () => ({ toasts: [], addToast: vi.fn(), removeToast: vi.fn() }),
+}));
+
+vi.mock("../src/lib/attachment-protocol", () => ({
+  createAttachmentSrc: (id: string) => `attachment://${id}`,
+  revokeAllObjectUrls: vi.fn(),
 }));
 
 vi.mock("../src/components/QuickNote", () => ({
