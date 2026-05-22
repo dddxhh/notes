@@ -1,9 +1,7 @@
 import SQLiteESMFactory from "wa-sqlite/dist/wa-sqlite-async.mjs";
 import * as SQLite from "wa-sqlite";
-import { IDBMinimalVFS } from "wa-sqlite/src/examples/IDBMinimalVFS.js";
 
 const DB_NAME = "notes";
-const VFS_NAME = "idb_vfs";
 
 const DDL = `
 CREATE TABLE IF NOT EXISTS folders (
@@ -80,13 +78,12 @@ export async function initSQLite(dbName?: string): Promise<SQLiteDB> {
   const module = await SQLiteESMFactory();
   const sqlite3 = SQLite.Factory(module);
 
-  const vfs = new IDBMinimalVFS(dbName ?? DB_NAME);
-  sqlite3.vfs_register(vfs as any, true);
-
+  // TODO: Use IDBBatchAtomicVFS for IndexedDB persistence once wa-sqlite provides
+  // a reliable async VFS. Currently using default in-memory VFS as IDBMinimalVFS
+  // is incompatible with the async build.
   const db = await sqlite3.open_v2(
     dbName ?? DB_NAME,
-    SQLite.SQLITE_OPEN_CREATE | SQLite.SQLITE_OPEN_READWRITE,
-    VFS_NAME
+    SQLite.SQLITE_OPEN_CREATE | SQLite.SQLITE_OPEN_READWRITE
   );
 
   await sqlite3.exec(db, DDL);
