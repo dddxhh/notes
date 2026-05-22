@@ -1,11 +1,32 @@
 import { type Editor } from "@tiptap/react";
+import ImageUploadButton from "./ImageUploadButton";
+import VideoUploadButton from "./VideoUploadButton";
+import { useAttachmentUpload } from "../../hooks/useAttachmentUpload";
+import { createAttachmentSrc } from "../../lib/attachment-protocol";
 
 interface EditorToolbarProps {
   editor: Editor;
+  noteId?: string;
 }
 
-export default function EditorToolbar({ editor }: EditorToolbarProps) {
+export default function EditorToolbar({ editor, noteId = "" }: EditorToolbarProps) {
   if (!editor) return null;
+
+  const { uploadFile } = useAttachmentUpload(noteId);
+
+  const handleImageUpload = async (file: File) => {
+    const result = await uploadFile(file);
+    if (result.success && result.attachment) {
+      editor.commands.setCustomImage({ src: createAttachmentSrc(result.attachment.id) });
+    }
+  };
+
+  const handleVideoUpload = async (file: File) => {
+    const result = await uploadFile(file);
+    if (result.success && result.attachment) {
+      editor.commands.setCustomVideo({ src: createAttachmentSrc(result.attachment.id) });
+    }
+  };
 
   return (
     <div className="flex items-center gap-1 p-2 border-b border-gray-200 bg-gray-50 rounded-t-lg">
@@ -72,6 +93,8 @@ export default function EditorToolbar({ editor }: EditorToolbarProps) {
       >
         {"{}"}代码
       </button>
+      <ImageUploadButton onFileSelected={handleImageUpload} />
+      <VideoUploadButton onFileSelected={handleVideoUpload} />
       <div className="ml-auto flex items-center gap-2">
         <span className="text-xs text-gray-500">
           {editor.storage.characterCount?.characters() ?? 0} 字

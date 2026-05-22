@@ -1,11 +1,24 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, cleanup } from "@testing-library/react";
-import { afterEach } from "vitest";
 
 afterEach(cleanup);
 
+const mockSetPendingUpload = vi.fn();
+let mockPendingUpload: string | null = null;
+const mockUploadFile = vi.fn();
+
 vi.mock("../../src/stores", () => ({
-  useUIStore: () => ({ editorMode: "wysiwyg", isMobile: false }),
+  useUIStore: (selector: any) => selector({ editorMode: "wysiwyg", isMobile: false }),
+  useSlashCommandStore: (selector: any) => selector({ pendingUpload: mockPendingUpload, setPendingUpload: mockSetPendingUpload }),
+  useAttachmentsStore: (selector: any) => selector({ addAttachment: vi.fn() }),
+}));
+
+vi.mock("../../src/hooks/useAttachmentUpload", () => ({
+  useAttachmentUpload: () => ({ uploadFile: mockUploadFile }),
+}));
+
+vi.mock("../../src/lib/attachment-protocol", () => ({
+  createAttachmentSrc: (id: string) => `attachment://${id}`,
 }));
 
 vi.mock("../../src/lib/tiptap-setup", () => ({
@@ -24,6 +37,11 @@ vi.mock("../../src/lib/markdown-serializer", () => ({
 import Editor from "../../src/components/shared/Editor";
 
 describe("Editor", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockPendingUpload = null;
+  });
+
   it("renders nothing when editor is null (TipTap init)", () => {
     const { container } = render(<Editor content="" onUpdate={vi.fn()} />);
     expect(container.innerHTML).toBe("");
@@ -48,5 +66,17 @@ describe("Editor", () => {
     const onUpdate = vi.fn();
     render(<Editor content="" onUpdate={onUpdate} />);
     expect(onUpdate).not.toHaveBeenCalled();
+  });
+
+  it("accepts onFileUpload prop", () => {
+    const onFileUpload = vi.fn();
+    render(<Editor content="" onUpdate={vi.fn()} onFileUpload={onFileUpload} />);
+    expect(onFileUpload).not.toHaveBeenCalled();
+  });
+
+  it("accepts currentNoteId and onFileUpload together", () => {
+    const onFileUpload = vi.fn();
+    render(<Editor content="" currentNoteId="note-1" onUpdate={vi.fn()} onFileUpload={onFileUpload} />);
+    expect(onFileUpload).not.toHaveBeenCalled();
   });
 });

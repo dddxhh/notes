@@ -22,6 +22,14 @@ vi.mock("../src/stores", () => ({
     const state = { editorMode: "wysiwyg", isMobile: true, setIsMobile: vi.fn(), setEditorMode: vi.fn() };
     return selector ? selector(state) : state;
   },
+  useSlashCommandStore: (selector?: any) => {
+    const state = { pendingUpload: null, setPendingUpload: vi.fn() };
+    return selector ? selector(state) : state;
+  },
+  useAttachmentsStore: (selector?: any) => {
+    const state = { attachments: [], addAttachment: vi.fn() };
+    return selector ? selector(state) : state;
+  },
 }));
 
 vi.mock("../src/hooks", () => ({
@@ -30,6 +38,7 @@ vi.mock("../src/hooks", () => ({
     updateNote: vi.fn(),
     createNote: vi.fn(),
   }),
+  useAttachmentUpload: () => ({ uploadFile: vi.fn() }),
 }));
 
 vi.mock("../src/lib/markdown-serializer", () => ({
@@ -48,6 +57,14 @@ vi.mock("@tiptap/react", () => ({
 
 vi.mock("../src/lib/tiptap-setup", () => ({
   getEditorExtensions: vi.fn(),
+}));
+
+vi.mock("../src/hooks/useAttachmentUpload", () => ({
+  useAttachmentUpload: () => ({ uploadFile: vi.fn() }),
+}));
+
+vi.mock("../src/lib/attachment-protocol", () => ({
+  createAttachmentSrc: (id: string) => `attachment://${id}`,
 }));
 
 vi.mock("../src/components/shared/EditorToolbar", () => ({

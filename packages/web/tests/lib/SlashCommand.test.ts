@@ -17,7 +17,7 @@ describe("SlashCommandItems", () => {
   });
 
   it("contains code block command", () => {
-    const code = SlashCommandItems.find((i) => i.title === "Code Block");
+    const code = SlashCommandItems.find((i) => i.title === "代码块");
     expect(code).toBeDefined();
     expect(code!.description).toBeTruthy();
   });

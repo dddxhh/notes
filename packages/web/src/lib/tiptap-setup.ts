@@ -1,6 +1,9 @@
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
 import CharacterCount from "@tiptap/extension-character-count";
+import { CustomImage } from "./CustomImage";
+import { CustomVideo } from "./CustomVideo";
+import { SlashCommand } from "./SlashCommandExtension";
 
 export function getEditorExtensions(isMobile: boolean) {
   const extensions = [
@@ -13,6 +16,9 @@ export function getEditorExtensions(isMobile: boolean) {
       placeholder: isMobile ? "开始记录..." : "想写点什么？",
     }),
     CharacterCount,
+    CustomImage,
+    CustomVideo,
+    SlashCommand,
   ];
   return extensions;
 }

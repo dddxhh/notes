@@ -12,10 +12,19 @@ vi.mock("../../src/stores", () => ({
   useUIStore: (selector: any) =>
     selector({ editorMode: mockEditorMode, setEditorMode: vi.fn(), isMobile: mockIsMobile, setIsMobile: vi.fn() }),
   useNotesStore: () => ({ notes: [], currentNote: null }),
+  useSlashCommandStore: (selector: any) =>
+    selector({ pendingUpload: null, setPendingUpload: vi.fn() }),
+  useAttachmentsStore: (selector: any) =>
+    selector({ attachments: [], addAttachment: vi.fn() }),
 }));
 
 vi.mock("../../src/hooks", () => ({
   useStorage: () => ({ updateNote: mockUpdateNote, createNote: vi.fn(), listNotes: vi.fn() }),
+  useAttachmentUpload: () => ({ uploadFile: vi.fn() }),
+}));
+
+vi.mock("../../src/hooks/useAttachmentUpload", () => ({
+  useAttachmentUpload: () => ({ uploadFile: vi.fn() }),
 }));
 
 vi.mock("@tiptap/react", () => ({
@@ -34,6 +43,14 @@ vi.mock("../../src/lib/markdown-serializer", () => ({
   proseMirrorJSONToMarkdown: vi.fn(() => "mock md"),
   markdownToProseMirrorJSON: vi.fn(() => JSON.stringify({ type: "doc", content: [] })),
   extractTitleFromContent: vi.fn(() => "Mock Title"),
+}));
+
+vi.mock("../../src/hooks/useAttachmentUpload", () => ({
+  useAttachmentUpload: () => ({ uploadFile: vi.fn() }),
+}));
+
+vi.mock("../../src/lib/attachment-protocol", () => ({
+  createAttachmentSrc: (id: string) => `attachment://${id}`,
 }));
 
 vi.mock("../../src/components/shared/EditorToolbar", () => ({
