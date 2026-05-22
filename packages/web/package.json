@@ -15,7 +15,17 @@
     "react": "^18",
     "react-dom": "^18",
     "zustand": "^4",
-    "uuid": "^9"
+    "uuid": "^9",
+    "@tiptap/react": "^2",
+    "@tiptap/starter-kit": "^2",
+    "@tiptap/pm": "^2",
+    "@tiptap/extension-placeholder": "^2",
+    "@tiptap/extension-character-count": "^2",
+    "prosemirror-markdown": "^1",
+    "dompurify": "^3",
+    "@testing-library/react": "^16",
+    "@testing-library/jest-dom": "^6",
+    "@testing-library/user-event": "^14"
   },
   "devDependencies": {
     "@types/react": "^18",
