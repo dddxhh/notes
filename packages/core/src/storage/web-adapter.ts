@@ -105,6 +105,14 @@ export class WebStorageAdapter implements StorageAdapter {
     await runSQL(db, `INSERT INTO notes_fts(notes_fts) VALUES('rebuild')`);
   }
 
+  async permanentlyDeleteNote(id: string): Promise<void> {
+    const db = this.getDB();
+    await runSQL(db, `DELETE FROM note_tags WHERE note_id=?`, [id]);
+    await runSQL(db, `DELETE FROM attachments WHERE note_id=?`, [id]);
+    await runSQL(db, `DELETE FROM notes WHERE id=?`, [id]);
+    await runSQL(db, `INSERT INTO notes_fts(notes_fts) VALUES('rebuild')`);
+  }
+
   async getNote(id: string): Promise<Note | null> {
     const db = this.getDB();
     const rows = await querySQL<Row>(db, `SELECT * FROM notes WHERE id=?`, [id]);

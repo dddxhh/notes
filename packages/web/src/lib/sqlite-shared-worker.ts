@@ -402,6 +402,24 @@ export class SharedWorkerStorageAdapter implements StorageAdapter {
     );
   }
 
+  async permanentlyDeleteNote(id: string): Promise<void> {
+    await this.client.run(
+      `DELETE FROM note_tags WHERE note_id=?`,
+      [id]
+    );
+    await this.client.run(
+      `DELETE FROM attachments WHERE note_id=?`,
+      [id]
+    );
+    await this.client.run(
+      `DELETE FROM notes WHERE id=?`,
+      [id]
+    );
+    await this.client.run(
+      `INSERT INTO notes_fts(notes_fts) VALUES('rebuild')`
+    );
+  }
+
   async getNote(id: string): Promise<Note | null> {
     const rows = await this.client.query<Row>(
       `SELECT * FROM notes WHERE id=?`,

@@ -13,6 +13,7 @@ export interface StorageAdapter {
   createNote(input: CreateNoteInput): Promise<Note>;
   updateNote(id: string, input: UpdateNoteInput): Promise<Note>;
   deleteNote(id: string): Promise<void>;
+  permanentlyDeleteNote(id: string): Promise<void>;
   getNote(id: string): Promise<Note | null>;
   listNotes(folderId?: string, tagId?: string): Promise<Note[]>;
 
