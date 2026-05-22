@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { initStorage } from "./lib";
-import { useResponsive } from "./hooks";
+import { useResponsive, useTheme } from "./hooks";
 import DesktopLayout from "./components/layouts/DesktopLayout";
 import MobileLayout from "./components/layouts/MobileLayout";
 
 export default function App() {
   const [ready, setReady] = useState(false);
   const { isMobile } = useResponsive();
+  useTheme();
 
   useEffect(() => {
     initStorage().then(() => setReady(true));
