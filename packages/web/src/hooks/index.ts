@@ -7,4 +7,3 @@ export { useTheme } from "./useTheme";
 export { useToast } from "./useToast";
 export { useToastStore } from "./useToast";
 export { useAttachmentRenderer } from "./useAttachmentRenderer";
-export { useAttachmentRenderer, useThumbnailRenderer } from "./useAttachmentRenderer";
