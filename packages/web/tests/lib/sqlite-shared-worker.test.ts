@@ -142,24 +142,26 @@ describe("SharedWorker single-write-lock for multi-tab SQLite coordination", () 
     let executor: SQLExecutor;
     let broadcastFn: ReturnType<typeof vi.fn>;
 
-    beforeEach(() => {
+    beforeEach(async () => {
       executor = createMockExecutor();
       broadcastFn = vi.fn();
       handler = new SharedWorkerSQLiteHandler(executor);
       handler.setBroadcastFn(broadcastFn);
+      await handler.handleRequest({ id: "init-0", type: "init" });
     });
 
     it("should handle init request", async () => {
-      const response = await handler.handleRequest({
+      const freshExecutor = createMockExecutor();
+      const freshHandler = new SharedWorkerSQLiteHandler(freshExecutor);
+      const response = await freshHandler.handleRequest({
         id: "1",
         type: "init",
       });
       expect(response).toEqual({ id: "1", type: "init-result" });
-      expect(executor.init).toHaveBeenCalledOnce();
+      expect(freshExecutor.init).toHaveBeenCalledOnce();
     });
 
     it("should handle close request", async () => {
-      await handler.handleRequest({ id: "1", type: "init" });
       const response = await handler.handleRequest({
         id: "2",
         type: "close",

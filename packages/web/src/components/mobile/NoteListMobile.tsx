@@ -15,8 +15,12 @@ export default function NoteListMobile() {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
-    listNotes().then(setNotes);
-    listFolders().then(setFolders);
+    listNotes()
+      .then(setNotes)
+      .catch(() => {});
+    listFolders()
+      .then(setFolders)
+      .catch(() => {});
   }, []);
 
   const activeNotes = notes.filter((n) => n.deletedAt === null);

@@ -5,17 +5,16 @@ import { IDBBatchAtomicVFS } from "wa-sqlite/src/examples/IDBBatchAtomicVFS.js";
 const DB_NAME = "notes";
 const VFS_NAME = "notes-vfs";
 
-const DDL = `
-CREATE TABLE IF NOT EXISTS folders (
+const DDL_STATEMENTS = [
+  `CREATE TABLE IF NOT EXISTS folders (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
   parent_id TEXT,
   sort_order INTEGER NOT NULL DEFAULT 0,
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS notes (
+)`,
+  `CREATE TABLE IF NOT EXISTS notes (
   id TEXT PRIMARY KEY,
   title TEXT NOT NULL DEFAULT '',
   content_json TEXT NOT NULL DEFAULT '',
@@ -26,9 +25,8 @@ CREATE TABLE IF NOT EXISTS notes (
   updated_at INTEGER NOT NULL,
   deleted_at INTEGER,
   version INTEGER NOT NULL DEFAULT 1
-);
-
-CREATE TABLE IF NOT EXISTS attachments (
+)`,
+  `CREATE TABLE IF NOT EXISTS attachments (
   id TEXT PRIMARY KEY,
   note_id TEXT NOT NULL REFERENCES notes(id) ON DELETE CASCADE,
   type TEXT NOT NULL,
@@ -36,27 +34,24 @@ CREATE TABLE IF NOT EXISTS attachments (
   mime_type TEXT NOT NULL,
   size INTEGER NOT NULL,
   created_at INTEGER NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS tags (
+)`,
+  `CREATE TABLE IF NOT EXISTS tags (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL UNIQUE
-);
-
-CREATE TABLE IF NOT EXISTS note_tags (
+)`,
+  `CREATE TABLE IF NOT EXISTS note_tags (
   note_id TEXT NOT NULL REFERENCES notes(id) ON DELETE CASCADE,
   tag_id TEXT NOT NULL REFERENCES tags(id) ON DELETE CASCADE,
   PRIMARY KEY (note_id, tag_id)
-);
-
-CREATE INDEX IF NOT EXISTS idx_note_tags_note_id ON note_tags(note_id);
-CREATE INDEX IF NOT EXISTS idx_note_tags_tag_id ON note_tags(tag_id);
-CREATE INDEX IF NOT EXISTS idx_notes_folder_id ON notes(folder_id);
-CREATE INDEX IF NOT EXISTS idx_notes_deleted_at ON notes(deleted_at);
-CREATE INDEX IF NOT EXISTS idx_notes_updated_at ON notes(updated_at);
-CREATE INDEX IF NOT EXISTS idx_folders_parent_id ON folders(parent_id);
-CREATE INDEX IF NOT EXISTS idx_attachments_note_id ON attachments(note_id);
-`;
+)`,
+  `CREATE INDEX IF NOT EXISTS idx_note_tags_note_id ON note_tags(note_id)`,
+  `CREATE INDEX IF NOT EXISTS idx_note_tags_tag_id ON note_tags(tag_id)`,
+  `CREATE INDEX IF NOT EXISTS idx_notes_folder_id ON notes(folder_id)`,
+  `CREATE INDEX IF NOT EXISTS idx_notes_deleted_at ON notes(deleted_at)`,
+  `CREATE INDEX IF NOT EXISTS idx_notes_updated_at ON notes(updated_at)`,
+  `CREATE INDEX IF NOT EXISTS idx_folders_parent_id ON folders(parent_id)`,
+  `CREATE INDEX IF NOT EXISTS idx_attachments_note_id ON attachments(note_id)`,
+];
 
 const FTS5_DDL = `
 CREATE VIRTUAL TABLE IF NOT EXISTS notes_fts USING fts5(
@@ -93,7 +88,9 @@ export async function initSQLite(dbName?: string): Promise<SQLiteDB> {
     VFS_NAME,
   );
 
-  await sqlite3.exec(db, DDL);
+  for (const stmt of DDL_STATEMENTS) {
+    await sqlite3.run(db, stmt);
+  }
   try {
     await sqlite3.exec(db, FTS5_DDL);
   } catch (_e) {

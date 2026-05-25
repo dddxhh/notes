@@ -104,6 +104,7 @@ export class SharedWorkerSQLiteHandler {
   private writeLock = new WriteLock();
   private executor: SQLExecutor | null = null;
   private broadcastFn: ((notification: DataChangeNotification) => void) | null = null;
+  private initialized = false;
 
   constructor(executor?: SQLExecutor) {
     if (executor) this.executor = executor;
@@ -123,25 +124,31 @@ export class SharedWorkerSQLiteHandler {
         case "init": {
           if (!this.executor) throw new Error("No executor set");
           await this.executor.init();
+          this.initialized = true;
           return { id: request.id, type: "init-result" };
         }
         case "close": {
           if (!this.executor) throw new Error("No executor set");
           await this.executor.close();
+          this.initialized = false;
           return { id: request.id, type: "close-result" };
         }
         case "query": {
-          if (!this.executor) throw new Error("No executor set");
-          const rows = await this.executor.query(request.sql!, request.params);
+          if (!this.initialized) {
+            return { id: request.id, type: "query-result", error: "Database not initialized" };
+          }
+          const rows = await this.executor!.query(request.sql!, request.params);
           return { id: request.id, type: "query-result", rows };
         }
         case "run": {
-          if (!this.executor) throw new Error("No executor set");
+          if (!this.initialized) {
+            return { id: request.id, type: "run-result", error: "Database not initialized" };
+          }
           const sql = request.sql!;
           if (isWriteOperation(sql)) {
             await this.writeLock.acquire();
             try {
-              await this.executor.run(sql, request.params);
+              await this.executor!.run(sql, request.params);
               if (this.broadcastFn) {
                 const table = extractTableName(sql);
                 if (table) {
@@ -155,7 +162,7 @@ export class SharedWorkerSQLiteHandler {
               this.writeLock.release();
             }
           } else {
-            await this.executor.run(sql, request.params);
+            await this.executor!.run(sql, request.params);
           }
           return { id: request.id, type: "run-result" };
         }

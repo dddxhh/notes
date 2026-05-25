@@ -19,8 +19,12 @@ export default function QuickNote() {
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    listNotes().then(setNotes);
-    listTags().then(setTags);
+    listNotes()
+      .then(setNotes)
+      .catch(() => {});
+    listTags()
+      .then(setTags)
+      .catch(() => {});
   }, []);
 
   useEffect(() => {

@@ -8,9 +8,21 @@ import {
 
 class WorkerSQLExecutor {
   private sqliteDB: SQLiteDB | null = null;
+  private initPromise: Promise<void> | null = null;
 
   async init(): Promise<void> {
-    this.sqliteDB = await initSQLite();
+    if (this.sqliteDB) return;
+    if (this.initPromise) return this.initPromise;
+
+    this.initPromise = (async () => {
+      this.sqliteDB = await initSQLite();
+    })();
+
+    try {
+      await this.initPromise;
+    } finally {
+      this.initPromise = null;
+    }
   }
 
   async close(): Promise<void> {
