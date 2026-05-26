@@ -352,7 +352,9 @@ export class SharedWorkerStorageAdapter implements StorageAdapter {
       [title, contentJson, mdText, folderId, type, now, deletedAt, version, id],
     );
 
-    await this.client.run(`INSERT INTO notes_fts(notes_fts) VALUES('rebuild')`);
+    try {
+      await this.client.run(`INSERT INTO notes_fts(notes_fts) VALUES('rebuild')`);
+    } catch {}
 
     return {
       ...existing,
@@ -370,14 +372,18 @@ export class SharedWorkerStorageAdapter implements StorageAdapter {
   async deleteNote(id: string): Promise<void> {
     const now = Date.now();
     await this.client.run(`UPDATE notes SET deleted_at=?, updated_at=? WHERE id=?`, [now, now, id]);
-    await this.client.run(`INSERT INTO notes_fts(notes_fts) VALUES('rebuild')`);
+    try {
+      await this.client.run(`INSERT INTO notes_fts(notes_fts) VALUES('rebuild')`);
+    } catch {}
   }
 
   async permanentlyDeleteNote(id: string): Promise<void> {
     await this.client.run(`DELETE FROM note_tags WHERE note_id=?`, [id]);
     await this.client.run(`DELETE FROM attachments WHERE note_id=?`, [id]);
     await this.client.run(`DELETE FROM notes WHERE id=?`, [id]);
-    await this.client.run(`INSERT INTO notes_fts(notes_fts) VALUES('rebuild')`);
+    try {
+      await this.client.run(`INSERT INTO notes_fts(notes_fts) VALUES('rebuild')`);
+    } catch {}
   }
 
   async getNote(id: string): Promise<Note | null> {
@@ -683,7 +689,9 @@ export class SharedWorkerStorageAdapter implements StorageAdapter {
       `UPDATE notes SET deleted_at=?, updated_at=? WHERE folder_id=? AND deleted_at IS NULL`,
       [Date.now(), Date.now(), folderId],
     );
-    await this.client.run(`INSERT INTO notes_fts(notes_fts) VALUES('rebuild')`);
+    try {
+      await this.client.run(`INSERT INTO notes_fts(notes_fts) VALUES('rebuild')`);
+    } catch {}
   }
 }
 

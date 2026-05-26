@@ -108,7 +108,9 @@ export class WebStorageAdapter implements StorageAdapter {
       [title, contentJson, mdText, folderId, type, now, deletedAt, version, id],
     );
 
-    await runSQL(db, `INSERT INTO notes_fts(notes_fts) VALUES('rebuild')`);
+    try {
+      await runSQL(db, `INSERT INTO notes_fts(notes_fts) VALUES('rebuild')`);
+    } catch {}
 
     return {
       ...existing,
@@ -127,7 +129,9 @@ export class WebStorageAdapter implements StorageAdapter {
     const db = this.getDB();
     const now = Date.now();
     await runSQL(db, `UPDATE notes SET deleted_at=?, updated_at=? WHERE id=?`, [now, now, id]);
-    await runSQL(db, `INSERT INTO notes_fts(notes_fts) VALUES('rebuild')`);
+    try {
+      await runSQL(db, `INSERT INTO notes_fts(notes_fts) VALUES('rebuild')`);
+    } catch {}
   }
 
   async permanentlyDeleteNote(id: string): Promise<void> {
@@ -135,7 +139,9 @@ export class WebStorageAdapter implements StorageAdapter {
     await runSQL(db, `DELETE FROM note_tags WHERE note_id=?`, [id]);
     await runSQL(db, `DELETE FROM attachments WHERE note_id=?`, [id]);
     await runSQL(db, `DELETE FROM notes WHERE id=?`, [id]);
-    await runSQL(db, `INSERT INTO notes_fts(notes_fts) VALUES('rebuild')`);
+    try {
+      await runSQL(db, `INSERT INTO notes_fts(notes_fts) VALUES('rebuild')`);
+    } catch {}
   }
 
   async getNote(id: string): Promise<Note | null> {
@@ -375,7 +381,9 @@ export class WebStorageAdapter implements StorageAdapter {
       `UPDATE notes SET deleted_at=?, updated_at=? WHERE folder_id=? AND deleted_at IS NULL`,
       [Date.now(), Date.now(), folderId],
     );
-    await runSQL(db, `INSERT INTO notes_fts(notes_fts) VALUES('rebuild')`);
+    try {
+      await runSQL(db, `INSERT INTO notes_fts(notes_fts) VALUES('rebuild')`);
+    } catch {}
   }
 }
 

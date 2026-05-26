@@ -1,8 +1,6 @@
-import { useState } from "react";
 import { Note, Attachment } from "@notes/core";
 import TagBadge from "./TagBadge";
 import NoteCardMenu from "./NoteCardMenu";
-import DeleteNoteDialog from "./DeleteNoteDialog";
 import * as Tooltip from "@radix-ui/react-tooltip";
 import { useThumbnailRenderer } from "../../hooks/useThumbnailRenderer";
 import { extractTitleFromContent } from "../../lib/markdown-serializer";
@@ -26,7 +24,6 @@ export default function NoteCard({
   onMoveToFolder,
   onCopyMarkdown,
 }: NoteCardProps) {
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const timeStr = new Date(note.updatedAt).toLocaleDateString("zh-CN", {
     month: "short",
     day: "numeric",
@@ -87,7 +84,7 @@ export default function NoteCard({
               {(onDelete || onMoveToFolder) && (
                 <div className="flex-shrink-0">
                   <NoteCardMenu
-                    onDelete={() => setDeleteDialogOpen(true)}
+                    onDelete={() => onDelete?.(note)}
                     onMoveToFolder={() => onMoveToFolder?.(note)}
                     onCopyMarkdown={() => onCopyMarkdown?.(note)}
                   />
@@ -141,15 +138,6 @@ export default function NoteCard({
           </div>
         </div>
       </div>
-      <DeleteNoteDialog
-        open={deleteDialogOpen}
-        onOpenChange={setDeleteDialogOpen}
-        noteTitle={note.title || extractTitleFromContent(note.mdText)}
-        onConfirm={() => {
-          onDelete?.(note);
-          setDeleteDialogOpen(false);
-        }}
-      />
     </div>
   );
 }
