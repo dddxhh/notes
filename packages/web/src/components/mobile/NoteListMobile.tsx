@@ -7,8 +7,9 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import MobileDrawer from "./MobileDrawer";
 
 export default function NoteListMobile() {
-  const { listNotes, listFolders, getNotesForTag } = useStorage();
+  const { listNotes, listFolders, getNotesForTag, createNote } = useStorage();
   const { notes, setNotes, setCurrentNote } = useNotesStore();
+  const addNote = useNotesStore((s) => s.addNote);
   const { folders, setFolders } = useFoldersStore();
   const tags = useTagsStore((s) => s.tags);
   const [selectedTagId, setSelectedTagId] = useState<string | null>(null);
@@ -48,6 +49,12 @@ export default function NoteListMobile() {
     return base.filter((n) => tagFilteredNoteIds.has(n.id));
   }, [notes, selectedTagId, tagFilteredNoteIds]);
 
+  const handleNewNote = useCallback(async () => {
+    const note = await createNote({ title: "" });
+    addNote(note);
+    setCurrentNote(note);
+  }, [createNote, addNote, setCurrentNote]);
+
   const handleTagFilter = useCallback(
     (tagId: string) => {
       setSelectedTagId(selectedTagId === tagId ? null : tagId);
@@ -69,10 +76,20 @@ export default function NoteListMobile() {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="p-3 border-b" style={{ borderColor: "var(--border-color)" }}>
+      <div
+        className="p-3 border-b flex items-center justify-between"
+        style={{ borderColor: "var(--border-color)" }}
+      >
         <h2 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>
           ← 全部笔记
         </h2>
+        <button
+          onClick={handleNewNote}
+          className="px-3 py-1 rounded-md text-sm hover:opacity-80"
+          style={{ backgroundColor: "var(--accent)", color: "white" }}
+        >
+          + 新建
+        </button>
       </div>
 
       <div

@@ -16,7 +16,8 @@ export default function Sidebar() {
   const deleteTagFromStore = useTagsStore((s) => s.deleteTag);
   const sidebarOpen = useUIStore((s) => s.sidebarOpen);
   const setSidebarOpen = useUIStore((s) => s.setSidebarOpen);
-  const { getNotesForTag, deleteTag } = useStorage();
+  const { getNotesForTag, deleteTag, createNote } = useStorage();
+  const addNote = useNotesStore((s) => s.addNote);
 
   const { searchInput, updateFilter, clearSearch } = useSearch();
   const [showFilter, setShowFilter] = useState(false);
@@ -71,6 +72,12 @@ export default function Sidebar() {
     );
   };
 
+  const handleNewNote = useCallback(async () => {
+    const note = await createNote({ title: "" });
+    addNote(note);
+    setCurrentNote(note);
+  }, [createNote, addNote, setCurrentNote]);
+
   const handleDeleteTagClick = useCallback(
     async (tagId: string) => {
       const tagNotes = await getNotesForTag(tagId);
@@ -105,7 +112,16 @@ export default function Sidebar() {
       }}
     >
       <div className="p-3 space-y-2 border-b" style={{ borderColor: "var(--border-color)" }}>
-        <FolderTreeDropdown />
+        <div className="flex items-center gap-2">
+          <FolderTreeDropdown />
+          <button
+            onClick={handleNewNote}
+            className="px-2 py-1 rounded-md text-sm hover:opacity-80"
+            style={{ backgroundColor: "var(--bg-tertiary)", color: "var(--text-primary)" }}
+          >
+            + 新建
+          </button>
+        </div>
         <SearchBar
           query={searchInput.query || ""}
           onQueryChange={(q) => updateFilter({ query: q })}
