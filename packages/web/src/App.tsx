@@ -4,6 +4,7 @@ import { useResponsive, useTheme, useAttachmentIntegrity } from "./hooks";
 import DesktopLayout from "./components/layouts/DesktopLayout";
 import MobileLayout from "./components/layouts/MobileLayout";
 import AttachmentIntegrityBanner from "./components/shared/AttachmentIntegrityBanner";
+import * as Tooltip from "@radix-ui/react-tooltip";
 
 export default function App() {
   const [ready, setReady] = useState(false);
@@ -22,7 +23,7 @@ export default function App() {
     );
 
   return (
-    <>
+    <Tooltip.Provider delayDuration={300}>
       {checked && !bannerDismissed && (
         <AttachmentIntegrityBanner
           missingAttachments={missingAttachments}
@@ -30,6 +31,6 @@ export default function App() {
         />
       )}
       {isMobile ? <MobileLayout /> : <DesktopLayout />}
-    </>
+    </Tooltip.Provider>
   );
 }

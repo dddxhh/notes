@@ -3,6 +3,7 @@ import { Note, Attachment } from "@notes/core";
 import TagBadge from "./TagBadge";
 import NoteCardMenu from "./NoteCardMenu";
 import DeleteNoteDialog from "./DeleteNoteDialog";
+import * as Tooltip from "@radix-ui/react-tooltip";
 import { useThumbnailRenderer } from "../../hooks/useThumbnailRenderer";
 import { extractTitleFromContent } from "../../lib/markdown-serializer";
 
@@ -97,9 +98,45 @@ export default function NoteCard({
               <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
                 {timeStr}
               </span>
-              {tags?.map((tag) => (
-                <TagBadge key={tag.id} name={tag.name} />
-              ))}
+              {tags && tags.length > 0 && (
+                <div className="flex items-center gap-1 overflow-hidden">
+                  {tags.slice(0, 2).map((tag) => (
+                    <TagBadge key={tag.id} name={tag.name} />
+                  ))}
+                  {tags.length > 2 && (
+                    <Tooltip.Root>
+                      <Tooltip.Trigger asChild>
+                        <span
+                          className="inline-flex items-center px-1.5 py-0.5 text-xs rounded-full cursor-default"
+                          style={{
+                            backgroundColor: "var(--bg-tertiary)",
+                            color: "var(--text-secondary)",
+                          }}
+                        >
+                          +{tags.length - 2}
+                        </span>
+                      </Tooltip.Trigger>
+                      <Tooltip.Portal>
+                        <Tooltip.Content
+                          className="rounded-md px-3 py-2 text-xs shadow-lg z-50"
+                          style={{
+                            backgroundColor: "var(--bg-primary)",
+                            color: "var(--text-primary)",
+                            border: "1px solid var(--border-color)",
+                          }}
+                          sideOffset={4}
+                        >
+                          {tags
+                            .slice(2)
+                            .map((tag) => tag.name)
+                            .join(", ")}
+                          <Tooltip.Arrow style={{ fill: "var(--bg-primary)" }} />
+                        </Tooltip.Content>
+                      </Tooltip.Portal>
+                    </Tooltip.Root>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>

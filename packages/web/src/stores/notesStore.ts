@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { Note } from "@notes/core";
+import { Note, Tag } from "@notes/core";
 import { getStorage } from "../lib/sqlite-init";
 
 interface NotesState {
@@ -29,6 +29,10 @@ interface NotesState {
   loadDeletedNotes: () => Promise<void>;
   restoreNote: (id: string) => Promise<void>;
   permanentlyDeleteNote: (id: string) => Promise<void>;
+  noteTagsMap: Map<string, Tag[]>;
+  setNoteTagsMap: (map: Map<string, Tag[]>) => void;
+  updateNoteTags: (noteId: string, tags: Tag[]) => void;
+  removeNoteTags: (noteId: string) => void;
 }
 
 export const useNotesStore = create<NotesState>((set, get) => ({
@@ -81,4 +85,18 @@ export const useNotesStore = create<NotesState>((set, get) => ({
     const state = get();
     set({ deletedNotes: state.deletedNotes.filter((n) => n.id !== id) });
   },
+  noteTagsMap: new Map(),
+  setNoteTagsMap: (map) => set({ noteTagsMap: map }),
+  updateNoteTags: (noteId, tags) =>
+    set((state) => {
+      const next = new Map(state.noteTagsMap);
+      next.set(noteId, tags);
+      return { noteTagsMap: next };
+    }),
+  removeNoteTags: (noteId) =>
+    set((state) => {
+      const next = new Map(state.noteTagsMap);
+      next.delete(noteId);
+      return { noteTagsMap: next };
+    }),
 }));

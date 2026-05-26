@@ -19,9 +19,12 @@ export default function Sidebar() {
   const deleteTagFromStore = useTagsStore((s) => s.deleteTag);
   const sidebarOpen = useUIStore((s) => s.sidebarOpen);
   const setSidebarOpen = useUIStore((s) => s.setSidebarOpen);
-  const { getNotesForTag, deleteTag, createNote, deleteNote, updateNote } = useStorage();
+  const { getNotesForTag, deleteTag, createNote, deleteNote, updateNote, getTagsForNote } =
+    useStorage();
   const addNote = useNotesStore((s) => s.addNote);
   const removeNoteFromList = useNotesStore((s) => s.removeNoteFromList);
+  const noteTagsMap = useNotesStore((s) => s.noteTagsMap);
+  const setNoteTagsMap = useNotesStore((s) => s.setNoteTagsMap);
 
   const { searchInput, updateFilter, clearSearch } = useSearch();
   const [showFilter, setShowFilter] = useState(false);
@@ -37,6 +40,23 @@ export default function Sidebar() {
   const activeNotes = useMemo(() => notes.filter((n) => n.deletedAt === null), [notes]);
 
   const [tagFilteredNoteIds, setTagFilteredNoteIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const map = new Map<string, { id: string; name: string }[]>();
+      for (const note of activeNotes) {
+        const tags = await getTagsForNote(note.id);
+        map.set(note.id, tags);
+      }
+      if (!cancelled) {
+        setNoteTagsMap(map);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [activeNotes.length, getTagsForNote, setNoteTagsMap]);
 
   useEffect(() => {
     if (activeTagIds.length === 0) {
@@ -204,6 +224,7 @@ export default function Sidebar() {
                 <NoteCard
                   note={note}
                   onClick={setCurrentNote}
+                  tags={noteTagsMap.get(note.id)}
                   onDelete={(n) => setDeleteNoteId(n.id)}
                   onMoveToFolder={(n) => {
                     setMoveNoteId(n.id);

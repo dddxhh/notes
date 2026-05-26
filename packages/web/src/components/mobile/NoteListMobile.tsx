@@ -10,11 +10,20 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import MobileDrawer from "./MobileDrawer";
 
 export default function NoteListMobile() {
-  const { listNotes, listFolders, getNotesForTag, createNote, deleteNote, updateNote } =
-    useStorage();
+  const {
+    listNotes,
+    listFolders,
+    getNotesForTag,
+    createNote,
+    deleteNote,
+    updateNote,
+    getTagsForNote,
+  } = useStorage();
   const { notes, setNotes, setCurrentNote } = useNotesStore();
   const addNote = useNotesStore((s) => s.addNote);
   const removeNoteFromList = useNotesStore((s) => s.removeNoteFromList);
+  const noteTagsMap = useNotesStore((s) => s.noteTagsMap);
+  const setNoteTagsMap = useNotesStore((s) => s.setNoteTagsMap);
   const { folders, setFolders } = useFoldersStore();
   const tags = useTagsStore((s) => s.tags);
   const [selectedTagId, setSelectedTagId] = useState<string | null>(null);
@@ -56,6 +65,23 @@ export default function NoteListMobile() {
     if (!selectedTagId || tagFilteredNoteIds.size === 0) return base;
     return base.filter((n) => tagFilteredNoteIds.has(n.id));
   }, [notes, selectedTagId, tagFilteredNoteIds]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const map = new Map<string, { id: string; name: string }[]>();
+      for (const note of activeNotes) {
+        const tags = await getTagsForNote(note.id);
+        map.set(note.id, tags);
+      }
+      if (!cancelled) {
+        setNoteTagsMap(map);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [activeNotes.length, getTagsForNote, setNoteTagsMap]);
 
   const handleNewNote = useCallback(async () => {
     const note = await createNote({ title: "" });
@@ -168,6 +194,7 @@ export default function NoteListMobile() {
                   key={note.id}
                   note={note}
                   onClick={setCurrentNote}
+                  tags={noteTagsMap.get(note.id)}
                   onDelete={(n) => setDeleteNoteId(n.id)}
                   onMoveToFolder={(n) => {
                     setMoveNoteId(n.id);
