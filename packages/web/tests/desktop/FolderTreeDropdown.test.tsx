@@ -18,10 +18,35 @@ vi.mock("../../src/stores", () => ({
       folders: mockFolders,
       currentFolderId: mockCurrentFolderId,
       setCurrentFolderId: mockSetCurrentFolderId,
+      addFolder: vi.fn(),
+      removeFolder: vi.fn(),
+      updateFolderInList: vi.fn(),
+    }),
+  useNotesStore: (selector: any) =>
+    selector({
+      notes: [],
+      removeNoteFromList: vi.fn(),
+      noteTagsMap: new Map(),
     }),
 }));
 
 vi.mock("../../src/hooks", () => ({
+  useStorage: () => ({
+    createFolder: vi
+      .fn()
+      .mockResolvedValue({
+        id: "f3",
+        name: "New",
+        parentId: null,
+        sortOrder: 0,
+        createdAt: 1,
+        updatedAt: 1,
+      }),
+    updateFolder: vi.fn().mockResolvedValue(mockFolders[0]),
+    deleteFolder: vi.fn().mockResolvedValue(undefined),
+    updateNotesFolderId: vi.fn().mockResolvedValue(undefined),
+    softDeleteNotesByFolder: vi.fn().mockResolvedValue(undefined),
+  }),
   useFolderTree: () => ({
     tree: [
       {

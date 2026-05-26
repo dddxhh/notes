@@ -24,6 +24,9 @@ vi.mock("../../src/stores", () => ({
           setNotes: mockSetNotes,
           addNote: vi.fn(),
           setCurrentNote: mockSetCurrentNote,
+          removeNoteFromList: vi.fn(),
+          noteTagsMap: new Map(),
+          setNoteTagsMap: vi.fn(),
         })
       : { notes: mockNotes },
   useFoldersStore: (selector?: any) =>
@@ -54,6 +57,11 @@ vi.mock("../../src/hooks", () => ({
   useStorage: () => ({
     listNotes: mockListNotes,
     listFolders: mockListFolders,
+    createNote: vi.fn().mockResolvedValue(mockNotes[0]),
+    deleteNote: vi.fn().mockResolvedValue(undefined),
+    updateNote: vi.fn().mockResolvedValue(mockNotes[0]),
+    getNotesForTag: vi.fn().mockResolvedValue([]),
+    getTagsForNote: vi.fn().mockResolvedValue([]),
   }),
 }));
 

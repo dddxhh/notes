@@ -59,6 +59,10 @@ vi.mock("../../src/stores", () => ({
       currentNote: null,
       setCurrentNote: mockSetCurrentNote,
       setNotes: vi.fn(),
+      addNote: vi.fn(),
+      removeNoteFromList: vi.fn(),
+      noteTagsMap: new Map(),
+      setNoteTagsMap: vi.fn(),
     }),
   useFoldersStore: (selector: any) =>
     selector({
@@ -89,6 +93,11 @@ vi.mock("../../src/hooks", () => ({
     listNotes: vi.fn().mockResolvedValue(mockNotes),
     listFolders: vi.fn().mockResolvedValue([]),
     listTags: vi.fn().mockResolvedValue(mockTags),
+    createNote: vi.fn().mockResolvedValue(mockNotes[0]),
+    deleteNote: vi.fn().mockResolvedValue(undefined),
+    updateNote: vi.fn().mockResolvedValue(mockNotes[0]),
+    getNotesForTag: vi.fn().mockResolvedValue([]),
+    getTagsForNote: vi.fn().mockResolvedValue([]),
   }),
   useSearch: () => ({
     searchInput: {},
