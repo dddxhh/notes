@@ -8,6 +8,7 @@ interface FoldersState {
   addFolder: (folder: Folder) => void;
   removeFolder: (id: string) => void;
   setCurrentFolderId: (id: string | null) => void;
+  updateFolderInList: (id: string, partial: Partial<Folder> & { id: string }) => void;
 }
 
 export const useFoldersStore = create<FoldersState>((set) => ({
@@ -20,4 +21,8 @@ export const useFoldersStore = create<FoldersState>((set) => ({
       folders: state.folders.filter((f) => f.id !== id),
     })),
   setCurrentFolderId: (id) => set({ currentFolderId: id }),
+  updateFolderInList: (id, partial) =>
+    set((state) => ({
+      folders: state.folders.map((f) => (f.id === id ? { ...f, ...partial } : f)),
+    })),
 }));

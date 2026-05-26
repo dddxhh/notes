@@ -4,6 +4,7 @@ import { useFolderTree, type FolderTreeNode } from "../../hooks";
 interface FolderTreeProps {
   onSelectFolder: (id: string | null) => void;
   selectedFolderId: string | null;
+  onDeleteFolder?: (id: string) => void;
 }
 
 function TreeNode({
@@ -12,12 +13,14 @@ function TreeNode({
   selectedFolderId,
   expandedIds,
   setExpandedIds,
+  onDeleteFolder,
 }: {
   node: FolderTreeNode;
   onSelectFolder: (id: string | null) => void;
   selectedFolderId: string | null;
   expandedIds: Set<string>;
   setExpandedIds: (ids: Set<string>) => void;
+  onDeleteFolder?: (id: string) => void;
 }) {
   const isExpanded = expandedIds.has(node.folder.id);
   const isSelected = selectedFolderId === node.folder.id;
@@ -55,6 +58,16 @@ function TreeNode({
         >
           {node.folder.name}
         </span>
+        {onDeleteFolder && (
+          <button
+            onClick={() => onDeleteFolder(node.folder.id)}
+            className="text-xs ml-1 hover:opacity-80"
+            style={{ color: "var(--danger)" }}
+            aria-label={`删除文件夹 ${node.folder.name}`}
+          >
+            🗑
+          </button>
+        )}
       </div>
       {hasChildren && isExpanded && (
         <ul className="ml-4 mt-1">
@@ -66,6 +79,7 @@ function TreeNode({
               selectedFolderId={selectedFolderId}
               expandedIds={expandedIds}
               setExpandedIds={setExpandedIds}
+              onDeleteFolder={onDeleteFolder}
             />
           ))}
         </ul>
@@ -74,7 +88,11 @@ function TreeNode({
   );
 }
 
-export default function FolderTree({ onSelectFolder, selectedFolderId }: FolderTreeProps) {
+export default function FolderTree({
+  onSelectFolder,
+  selectedFolderId,
+  onDeleteFolder,
+}: FolderTreeProps) {
   const { tree } = useFolderTree();
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
@@ -98,6 +116,7 @@ export default function FolderTree({ onSelectFolder, selectedFolderId }: FolderT
             selectedFolderId={selectedFolderId}
             expandedIds={expandedIds}
             setExpandedIds={setExpandedIds}
+            onDeleteFolder={onDeleteFolder}
           />
         ))}
       </ul>

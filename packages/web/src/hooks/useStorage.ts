@@ -6,6 +6,7 @@ import {
   UpdateNoteInput,
   Folder,
   CreateFolderInput,
+  UpdateFolderInput,
   Tag,
   SearchInput,
   SearchResult,
@@ -34,6 +35,17 @@ export function useStorage() {
 
   const createFolder = useCallback(async (input: CreateFolderInput): Promise<Folder> => {
     return getStorage().createFolder(input);
+  }, []);
+
+  const updateFolder = useCallback(
+    async (id: string, input: UpdateFolderInput): Promise<Folder> => {
+      return getStorage().updateFolder(id, input);
+    },
+    [],
+  );
+
+  const deleteFolder = useCallback(async (id: string): Promise<void> => {
+    return getStorage().deleteFolder(id);
   }, []);
 
   const listFolders = useCallback(async (parentId?: string | null): Promise<Folder[]> => {
@@ -97,6 +109,8 @@ export function useStorage() {
     getNote,
     listNotes,
     createFolder,
+    updateFolder,
+    deleteFolder,
     listFolders,
     createTag,
     addTagsToNote,
