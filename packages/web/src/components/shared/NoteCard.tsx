@@ -37,9 +37,9 @@ export default function NoteCard({
 
   return (
     <div>
-      <button
+      <div
         onClick={() => onClick(note)}
-        className="block w-full p-3 rounded-lg hover:shadow-sm transition-colors text-left group"
+        className="block w-full p-3 rounded-lg hover:shadow-sm transition-colors text-left group cursor-pointer"
         style={{
           backgroundColor: "var(--bg-secondary)",
           border: "1px solid var(--border-color)",
@@ -140,7 +140,7 @@ export default function NoteCard({
             </div>
           </div>
         </div>
-      </button>
+      </div>
       <DeleteNoteDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
