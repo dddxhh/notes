@@ -1,9 +1,10 @@
 import { useRef, useMemo, useState, useCallback, useEffect } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { useNotesStore, useTagsStore, useUIStore } from "../../stores";
+import { useNotesStore, useTagsStore, useUIStore, useFoldersStore } from "../../stores";
 import { useSearch, useStorage } from "../../hooks";
 import FolderTreeDropdown from "./FolderTreeDropdown";
 import SearchBar from "../shared/SearchBar";
+import SearchFilterPanel from "../shared/SearchFilterPanel";
 import ThemeToggle from "../shared/ThemeToggle";
 import NoteCard from "../shared/NoteCard";
 import DeleteTagDialog from "../shared/DeleteTagDialog";
@@ -16,6 +17,7 @@ export default function Sidebar() {
   const notes = useNotesStore((s) => s.notes);
   const setCurrentNote = useNotesStore((s) => s.setCurrentNote);
   const tags = useTagsStore((s) => s.tags);
+  const folders = useFoldersStore((s) => s.folders);
   const deleteTagFromStore = useTagsStore((s) => s.deleteTag);
   const sidebarOpen = useUIStore((s) => s.sidebarOpen);
   const setSidebarOpen = useUIStore((s) => s.setSidebarOpen);
@@ -26,7 +28,7 @@ export default function Sidebar() {
   const noteTagsMap = useNotesStore((s) => s.noteTagsMap);
   const setNoteTagsMap = useNotesStore((s) => s.setNoteTagsMap);
 
-  const { searchInput, updateFilter, clearSearch } = useSearch();
+  const { searchInput, result, updateFilter, clearSearch } = useSearch();
   const [showFilter, setShowFilter] = useState(false);
   const [activeTagIds, setActiveTagIds] = useState<string[]>([]);
   const [deleteTagId, setDeleteTagId] = useState<string | null>(null);
@@ -82,10 +84,30 @@ export default function Sidebar() {
     };
   }, [activeTagIds, activeNotes, getNotesForTag]);
 
+  const searchResultIds = useMemo(() => {
+    if (!result) return null;
+    return new Set(result.notes.map((n) => n.id));
+  }, [result]);
+
   const finalNotes = useMemo(() => {
-    if (activeTagIds.length === 0) return activeNotes;
-    return activeNotes.filter((n) => tagFilteredNoteIds.includes(n.id));
-  }, [activeNotes, activeTagIds, tagFilteredNoteIds]);
+    let notes = activeNotes;
+    if (activeTagIds.length > 0) {
+      notes = notes.filter((n) => tagFilteredNoteIds.includes(n.id));
+    }
+    if (searchInput.query) {
+      const q = searchInput.query.toLowerCase();
+      notes = notes.filter(
+        (n) => n.title.toLowerCase().includes(q) || n.mdText.toLowerCase().includes(q),
+      );
+    }
+    if (searchInput.folderId) {
+      notes = notes.filter((n) => n.folderId === searchInput.folderId);
+    }
+    if (searchResultIds) {
+      notes = notes.filter((n) => searchResultIds.has(n.id));
+    }
+    return notes;
+  }, [activeNotes, activeTagIds, tagFilteredNoteIds, searchInput, searchResultIds]);
 
   const virtualizer = useVirtualizer({
     count: finalNotes.length,
@@ -175,6 +197,14 @@ export default function Sidebar() {
           showFilter={showFilter}
           onToggleFilter={() => setShowFilter(!showFilter)}
         />
+        {showFilter && (
+          <SearchFilterPanel
+            folders={folders}
+            tags={tags}
+            filter={searchInput}
+            onFilterChange={updateFilter}
+          />
+        )}
       </div>
 
       <div className="px-3 py-2 flex flex-wrap gap-1">

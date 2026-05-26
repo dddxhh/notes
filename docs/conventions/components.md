@@ -10,7 +10,7 @@
 components/
   desktop/    -- 桌面端专属组件（Sidebar、FolderTree、FolderTreeDropdown）
   mobile/     -- 移动端专属组件（MobileDrawer、MobileFAB、MobileSearch 等）
-  shared/     -- 双端共用组件（Editor、EditorToolbar、Toast、SearchBar 等）
+  shared/     -- 双端共用组件（Editor、EditorToolbar、Toast、SearchBar、SearchFilterPanel、SearchResultList 等）
   layouts/    -- 布局壳（DesktopLayout、MobileLayout）
 ```
 
@@ -56,6 +56,25 @@ const isMobile = useUIStore((s) => s.isMobile);
 ```
 
 永远用箭头选择器，不要 `useNotesStore()` 解构整个 store（会导致不必要的重渲染）。
+
+### Sidebar 搜索/筛选集成
+
+桌面端 Sidebar 的笔记列表通过 `finalNotes` 综合多重筛选源：
+
+```
+finalNotes = activeNotes
+  ∩ tagFilteredNoteIds（侧栏标签点击 → getNotesForTag）
+  ∩ client-side query（searchInput.query → title/mdText includes）
+  ∩ client-side folder（searchInput.folderId）
+  ∩ searchResultIds（useSearch result → 数据库 FTS5 搜索结果）
+```
+
+- **`useSearch` hook** 管理 `searchInput` 和 `result` 状态，通过 `updateFilter` 合并部分筛选条件并触发 `executeSearch`。
+- **客户端筛选**（query、folderId）即时生效，不依赖异步数据库搜索，作为可靠兜底。
+- **数据库搜索结果**（searchResultIds）与客户端筛选交叉过滤，确保精确匹配。
+- **SearchFilterPanel** 通过 `showFilter` 状态条件渲染，`onFilterChange` 连接 `updateFilter`。
+
+移动端 `MobileSearch` 使用不同的模式：不复用侧栏笔记列表，而是直接用 `SearchResultList` 渲染 `result`。
 
 ## Store 使用
 
