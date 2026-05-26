@@ -27,6 +27,8 @@ export interface StorageAdapter {
   updateFolder(id: string, input: UpdateFolderInput): Promise<Folder>;
   deleteFolder(id: string): Promise<void>;
   listFolders(parentId?: string | null): Promise<Folder[]>;
+  updateNotesFolderId(oldFolderId: string, newFolderId: string | null): Promise<void>;
+  softDeleteNotesByFolder(folderId: string): Promise<void>;
 
   saveAttachment(noteId: string, file: File, type: AttachmentType): Promise<Attachment>;
   getAttachmentBlob(id: string): Promise<Blob | null>;

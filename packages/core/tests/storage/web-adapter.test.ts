@@ -102,4 +102,40 @@ describe.skip("WebStorageAdapter CRUD (WASM not available in vitest/happy-dom)",
       expect(tags.length).toBe(0);
     });
   });
+
+  describe("WebStorageAdapter batch methods", () => {
+    it("updateNotesFolderId moves all notes from one folder to another", async () => {
+      const folder1 = await adapter.createFolder({ name: "folder1" });
+      const folder2 = await adapter.createFolder({ name: "folder2" });
+      await adapter.createNote({ title: "note1", folderId: folder1.id });
+      await adapter.createNote({ title: "note2", folderId: folder1.id });
+
+      await adapter.updateNotesFolderId(folder1.id, folder2.id);
+
+      const notes = await adapter.listNotes(folder2.id);
+      expect(notes.length).toBe(2);
+    });
+
+    it("updateNotesFolderId sets folderId to null when newFolderId is null", async () => {
+      const folder = await adapter.createFolder({ name: "folder" });
+      await adapter.createNote({ title: "note", folderId: folder.id });
+
+      await adapter.updateNotesFolderId(folder.id, null);
+
+      const allNotes = await adapter.listNotes();
+      const note = allNotes.find((n) => n.title === "note");
+      expect(note?.folderId).toBeNull();
+    });
+
+    it("softDeleteNotesByFolder soft-deletes all notes in a folder", async () => {
+      const folder = await adapter.createFolder({ name: "folder" });
+      await adapter.createNote({ title: "note1", folderId: folder.id });
+      await adapter.createNote({ title: "note2", folderId: folder.id });
+
+      await adapter.softDeleteNotesByFolder(folder.id);
+
+      const activeNotes = await adapter.listNotes(folder.id);
+      expect(activeNotes.length).toBe(0);
+    });
+  });
 });

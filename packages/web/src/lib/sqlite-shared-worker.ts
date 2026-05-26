@@ -670,6 +670,21 @@ export class SharedWorkerStorageAdapter implements StorageAdapter {
     );
     return rows.map(mapNoteRow);
   }
+
+  async updateNotesFolderId(oldFolderId: string, newFolderId: string | null): Promise<void> {
+    await this.client.run(
+      `UPDATE notes SET folder_id=?, updated_at=? WHERE folder_id=? AND deleted_at IS NULL`,
+      [newFolderId, Date.now(), oldFolderId],
+    );
+  }
+
+  async softDeleteNotesByFolder(folderId: string): Promise<void> {
+    await this.client.run(
+      `UPDATE notes SET deleted_at=?, updated_at=? WHERE folder_id=? AND deleted_at IS NULL`,
+      [Date.now(), Date.now(), folderId],
+    );
+    await this.client.run(`INSERT INTO notes_fts(notes_fts) VALUES('rebuild')`);
+  }
 }
 
 function mapNoteRow(row: Row): Note {

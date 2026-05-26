@@ -75,6 +75,17 @@ export function useStorage() {
     return getStorage().searchNotes(input);
   }, []);
 
+  const updateNotesFolderId = useCallback(
+    async (oldFolderId: string, newFolderId: string | null): Promise<void> => {
+      return getStorage().updateNotesFolderId(oldFolderId, newFolderId);
+    },
+    [],
+  );
+
+  const softDeleteNotesByFolder = useCallback(async (folderId: string): Promise<void> => {
+    return getStorage().softDeleteNotesByFolder(folderId);
+  }, []);
+
   return {
     createNote,
     updateNote,
@@ -91,5 +102,7 @@ export function useStorage() {
     deleteTag,
     getNotesForTag,
     searchNotes,
+    updateNotesFolderId,
+    softDeleteNotesByFolder,
   };
 }
