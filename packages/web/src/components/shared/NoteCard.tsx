@@ -1,6 +1,7 @@
 import { Note, Attachment } from "@notes/core";
 import TagBadge from "./TagBadge";
 import { useThumbnailRenderer } from "../../hooks/useThumbnailRenderer";
+import { extractTitleFromContent } from "../../lib/markdown-serializer";
 
 interface NoteCardProps {
   note: Note;
@@ -56,7 +57,11 @@ export default function NoteCard({ note, onClick, tags, attachments }: NoteCardP
         )}
         <div className="flex-1 min-w-0">
           <div className="font-semibold text-sm truncate" style={{ color: "var(--text-primary)" }}>
-            {note.title || "未命名笔记"}
+            {note.title || (
+              <span style={{ color: "var(--text-secondary)", fontStyle: "italic" }}>
+                {extractTitleFromContent(note.mdText)}
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-2 mt-1">
             <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
