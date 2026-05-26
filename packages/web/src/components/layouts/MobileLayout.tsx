@@ -24,7 +24,7 @@ export default function MobileLayout() {
   }, [setCurrentNote]);
 
   const handleNewNote = useCallback(async () => {
-    const note = await createNote({ title: "新笔记" });
+    const note = await createNote({ title: "" });
     setCurrentNote(note);
   }, [createNote, setCurrentNote]);
 

@@ -43,4 +43,6 @@ export interface StorageAdapter {
   removeTagsFromNote(noteId: string, tagIds: string[]): Promise<void>;
   getTagsForNote(noteId: string): Promise<Tag[]>;
   listTags(): Promise<Tag[]>;
+  deleteTag(id: string): Promise<void>;
+  getNotesForTag(tagId: string): Promise<Note[]>;
 }

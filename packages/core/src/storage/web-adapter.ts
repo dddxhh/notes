@@ -291,8 +291,12 @@ export class WebStorageAdapter implements StorageAdapter {
   }
 
   async createTag(name: string): Promise<Tag> {
-    const id = generateId();
     const db = this.getDB();
+    const existing = await querySQL<Row>(db, `SELECT id, name FROM tags WHERE name=?`, [name]);
+    if (existing.length > 0) {
+      return { id: existing[0].id as string, name: existing[0].name as string };
+    }
+    const id = generateId();
     await runSQL(db, `INSERT INTO tags (id, name) VALUES (?, ?)`, [id, name]);
     return { id, name };
   }
@@ -337,6 +341,22 @@ export class WebStorageAdapter implements StorageAdapter {
   async listTags(): Promise<Tag[]> {
     const rows = await querySQL<Row>(this.getDB(), `SELECT id, name FROM tags ORDER BY name ASC`);
     return rows.map((r) => ({ id: r.id as string, name: r.name as string }));
+  }
+
+  async deleteTag(id: string): Promise<void> {
+    const db = this.getDB();
+    await runSQL(db, `DELETE FROM note_tags WHERE tag_id=?`, [id]);
+    await runSQL(db, `DELETE FROM tags WHERE id=?`, [id]);
+  }
+
+  async getNotesForTag(tagId: string): Promise<Note[]> {
+    const db = this.getDB();
+    const rows = await querySQL<Row>(
+      db,
+      `SELECT notes.* FROM notes INNER JOIN note_tags ON notes.id=note_tags.note_id WHERE note_tags.tag_id=? AND notes.deleted_at IS NULL`,
+      [tagId],
+    );
+    return rows.map(mapNoteRow);
   }
 }
 

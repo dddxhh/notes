@@ -1,6 +1,6 @@
 import { useState } from "react";
+import * as Popover from "@radix-ui/react-popover";
 import { useTagsStore } from "../../stores/tagsStore";
-import TagCreateDialog from "./TagCreateDialog";
 
 interface TagSelectorProps {
   selectedTagIds: string[];
@@ -17,9 +17,13 @@ export default function TagSelector({
 }: TagSelectorProps) {
   const tags = useTagsStore((s) => s.tags);
   const [search, setSearch] = useState("");
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [open, setOpen] = useState(false);
 
-  const filteredTags = tags.filter((t) => t.name.toLowerCase().includes(search.toLowerCase()));
+  const searchTrimmed = search.trim();
+  const lowerSearch = searchTrimmed.toLowerCase();
+  const filteredTags = tags.filter((t) => t.name.toLowerCase().includes(lowerSearch));
+  const exactMatch = tags.some((t) => t.name.toLowerCase() === lowerSearch && searchTrimmed !== "");
+  const canCreate = searchTrimmed !== "" && !exactMatch;
 
   const handleClick = (tagId: string) => {
     if (selectedTagIds.includes(tagId)) {
@@ -29,56 +33,78 @@ export default function TagSelector({
     }
   };
 
+  const handleCreate = () => {
+    onCreateTag(searchTrimmed);
+    setSearch("");
+  };
+
   return (
-    <div
-      className="flex flex-col gap-2 p-2 rounded-lg"
-      style={{ backgroundColor: "var(--bg-secondary)" }}
-    >
-      <input
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder="搜索标签..."
-        className="w-full rounded-md border px-3 py-1.5 outline-none focus:ring-2 focus:ring-blue-500"
-        style={{
-          backgroundColor: "var(--bg-primary)",
-          color: "var(--text-primary)",
-          borderColor: "var(--border-color)",
-        }}
-      />
-      <div className="flex flex-col gap-1 max-h-48 overflow-y-auto">
-        {filteredTags.map((tag) => (
-          <div
-            key={tag.id}
-            onClick={() => handleClick(tag.id)}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-md cursor-pointer hover:opacity-80 ${
-              selectedTagIds.includes(tag.id) ? "bg-blue-500 text-white" : ""
-            }`}
-            style={
-              !selectedTagIds.includes(tag.id)
-                ? { backgroundColor: "var(--bg-tertiary)", color: "var(--text-primary)" }
-                : undefined
-            }
-          >
-            {selectedTagIds.includes(tag.id) && <span className="text-sm">✓</span>}
-            <span>{tag.name}</span>
+    <Popover.Root open={open} onOpenChange={setOpen}>
+      <Popover.Trigger asChild>
+        <button
+          className="px-2 py-0.5 text-xs rounded-full"
+          style={{ backgroundColor: "var(--bg-tertiary)", color: "var(--text-secondary)" }}
+        >
+          添加标签
+        </button>
+      </Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Content
+          className="z-50 w-56 rounded-lg p-2 shadow-md"
+          style={{
+            backgroundColor: "var(--bg-secondary)",
+            color: "var(--text-primary)",
+            border: "1px solid var(--border-color)",
+          }}
+          sideOffset={4}
+          align="start"
+        >
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && canCreate) handleCreate();
+            }}
+            placeholder="搜索或创建标签..."
+            className="w-full rounded-md border px-2 py-1 text-xs outline-none focus:ring-2 focus:ring-blue-500"
+            style={{
+              backgroundColor: "var(--bg-primary)",
+              color: "var(--text-primary)",
+              borderColor: "var(--border-color)",
+            }}
+            autoFocus
+          />
+          <div className="flex flex-col gap-1 mt-1 max-h-40 overflow-y-auto">
+            {filteredTags.map((tag) => (
+              <div
+                key={tag.id}
+                onClick={() => handleClick(tag.id)}
+                className={`flex items-center gap-1 px-2 py-1 text-xs rounded-md cursor-pointer hover:opacity-80 ${
+                  selectedTagIds.includes(tag.id) ? "bg-blue-500 text-white" : ""
+                }`}
+                style={
+                  !selectedTagIds.includes(tag.id)
+                    ? { backgroundColor: "var(--bg-tertiary)", color: "var(--text-primary)" }
+                    : undefined
+                }
+              >
+                {selectedTagIds.includes(tag.id) && <span>✓</span>}
+                <span>{tag.name}</span>
+              </div>
+            ))}
+            {canCreate && (
+              <div
+                onClick={handleCreate}
+                className="flex items-center gap-1 px-2 py-1 text-xs rounded-md cursor-pointer hover:opacity-80 text-blue-500"
+                style={{ backgroundColor: "var(--bg-tertiary)" }}
+              >
+                <span>+</span>
+                <span>创建 '{searchTrimmed}'</span>
+              </div>
+            )}
           </div>
-        ))}
-      </div>
-      <button
-        onClick={() => setDialogOpen(true)}
-        className="mt-1 rounded-md px-3 py-1.5 text-sm font-medium text-blue-500 hover:opacity-80"
-        style={{ backgroundColor: "var(--bg-tertiary)" }}
-      >
-        新建标签
-      </button>
-      <TagCreateDialog
-        open={dialogOpen}
-        onClose={() => setDialogOpen(false)}
-        onCreate={(name) => {
-          onCreateTag(name);
-          setDialogOpen(false);
-        }}
-      />
-    </div>
+        </Popover.Content>
+      </Popover.Portal>
+    </Popover.Root>
   );
 }

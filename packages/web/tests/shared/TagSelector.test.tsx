@@ -25,12 +25,16 @@ vi.mock("../../src/stores/tagsStore", () => ({
       setTags: vi.fn(),
       addTag: vi.fn(),
       removeTag: vi.fn(),
+      deleteTag: vi.fn(),
       setLoading: vi.fn(),
     }),
 }));
 
-vi.mock("../../src/components/shared/TagCreateDialog", () => ({
-  default: () => <div data-testid="tag-create-dialog">MockDialog</div>,
+vi.mock("@radix-ui/react-popover", () => ({
+  Root: ({ children }: any) => children,
+  Trigger: ({ children }: any) => children,
+  Portal: ({ children }: any) => children,
+  Content: ({ children }: any) => <div>{children}</div>,
 }));
 
 import TagSelector from "../../src/components/shared/TagSelector";
@@ -41,7 +45,7 @@ describe("TagSelector", () => {
     mockStoreTags = [...mockTags];
   });
 
-  it("renders list of available tags", () => {
+  it("renders trigger button", () => {
     render(
       <TagSelector
         selectedTagIds={[]}
@@ -50,24 +54,23 @@ describe("TagSelector", () => {
         onCreateTag={mockOnCreateTag}
       />,
     );
-    expect(screen.getByText("work")).toBeTruthy();
-    expect(screen.getByText("personal")).toBeTruthy();
-    expect(screen.getByText("important")).toBeTruthy();
+    expect(screen.getByText("添加标签")).toBeTruthy();
   });
 
-  it("selected tags are highlighted/checked", () => {
+  it("renders list of available tags after clicking trigger", async () => {
+    const user = userEvent.setup();
     render(
       <TagSelector
-        selectedTagIds={["id1"]}
+        selectedTagIds={[]}
         onAdd={mockOnAdd}
         onRemove={mockOnRemove}
         onCreateTag={mockOnCreateTag}
       />,
     );
-    const workItem = screen.getByText("work").closest("div")!;
-    expect(workItem.className).toContain("bg-blue-500");
-    const personalItem = screen.getByText("personal").closest("div")!;
-    expect(personalItem.className).not.toContain("bg-blue-500");
+    await user.click(screen.getByText("添加标签"));
+    expect(screen.getByText("work")).toBeTruthy();
+    expect(screen.getByText("personal")).toBeTruthy();
+    expect(screen.getByText("important")).toBeTruthy();
   });
 
   it("clicking an unselected tag calls onAdd", async () => {
@@ -80,6 +83,7 @@ describe("TagSelector", () => {
         onCreateTag={mockOnCreateTag}
       />,
     );
+    await user.click(screen.getByText("添加标签"));
     await user.click(screen.getByText("work"));
     expect(mockOnAdd).toHaveBeenCalledWith("id1");
   });
@@ -94,6 +98,7 @@ describe("TagSelector", () => {
         onCreateTag={mockOnCreateTag}
       />,
     );
+    await user.click(screen.getByText("添加标签"));
     await user.click(screen.getByText("work"));
     expect(mockOnRemove).toHaveBeenCalledWith("id1");
   });
@@ -108,14 +113,16 @@ describe("TagSelector", () => {
         onCreateTag={mockOnCreateTag}
       />,
     );
-    const searchInput = screen.getByPlaceholderText("搜索标签...");
+    await user.click(screen.getByText("添加标签"));
+    const searchInput = screen.getByPlaceholderText("搜索或创建标签...");
     await user.type(searchInput, "work");
     expect(screen.getByText("work")).toBeTruthy();
     expect(screen.queryByText("personal")).toBeNull();
     expect(screen.queryByText("important")).toBeNull();
   });
 
-  it("新建标签 button is present", () => {
+  it("shows create option when search has no exact match", async () => {
+    const user = userEvent.setup();
     render(
       <TagSelector
         selectedTagIds={[]}
@@ -124,6 +131,42 @@ describe("TagSelector", () => {
         onCreateTag={mockOnCreateTag}
       />,
     );
-    expect(screen.getByText("新建标签")).toBeTruthy();
+    await user.click(screen.getByText("添加标签"));
+    const searchInput = screen.getByPlaceholderText("搜索或创建标签...");
+    await user.type(searchInput, "newtag");
+    expect(screen.getByText("创建 'newtag'")).toBeTruthy();
+  });
+
+  it("does not show create option when search exactly matches existing tag", async () => {
+    const user = userEvent.setup();
+    render(
+      <TagSelector
+        selectedTagIds={[]}
+        onAdd={mockOnAdd}
+        onRemove={mockOnRemove}
+        onCreateTag={mockOnCreateTag}
+      />,
+    );
+    await user.click(screen.getByText("添加标签"));
+    const searchInput = screen.getByPlaceholderText("搜索或创建标签...");
+    await user.type(searchInput, "work");
+    expect(screen.queryByText("创建 'work'")).toBeNull();
+  });
+
+  it("clicking create option calls onCreateTag", async () => {
+    const user = userEvent.setup();
+    render(
+      <TagSelector
+        selectedTagIds={[]}
+        onAdd={mockOnAdd}
+        onRemove={mockOnRemove}
+        onCreateTag={mockOnCreateTag}
+      />,
+    );
+    await user.click(screen.getByText("添加标签"));
+    const searchInput = screen.getByPlaceholderText("搜索或创建标签...");
+    await user.type(searchInput, "newtag");
+    await user.click(screen.getByText("创建 'newtag'"));
+    expect(mockOnCreateTag).toHaveBeenCalledWith("newtag");
   });
 });

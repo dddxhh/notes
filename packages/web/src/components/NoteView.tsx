@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from "react";
-import { useUIStore, useTagsStore } from "../stores";
+import { useUIStore, useTagsStore, useNotesStore } from "../stores";
 import { useStorage, useAttachmentUpload, useToast } from "../hooks";
 import { revokeAllObjectUrls } from "../lib/attachment-protocol";
 import Editor from "./shared/Editor";
@@ -7,12 +7,9 @@ import MarkdownEditor from "./shared/MarkdownEditor";
 import ModeToggle from "./shared/ModeToggle";
 import TagBadge from "./shared/TagBadge";
 import TagSelector from "./shared/TagSelector";
+import NoteTitleInput from "./shared/NoteTitleInput";
 import ContextMenu from "./shared/ContextMenu";
-import {
-  markdownToProseMirrorJSON,
-  proseMirrorJSONToMarkdown,
-  extractTitleFromContent,
-} from "../lib/markdown-serializer";
+import { markdownToProseMirrorJSON } from "../lib/markdown-serializer";
 import { Note } from "@notes/core";
 import type { UploadResult } from "../hooks";
 
@@ -26,13 +23,14 @@ export default function NoteView({ note, onBack, initialTagIds }: NoteViewProps)
   const editorMode = useUIStore((s) => s.editorMode);
   const isMobile = useUIStore((s) => s.isMobile);
   const tags = useTagsStore((s) => s.tags);
-  const { updateNote, addTagsToNote, createTag } = useStorage();
+  const addTagToStore = useTagsStore((s) => s.addTag);
+  const { updateNote, addTagsToNote, removeTagFromNote, createTag } = useStorage();
   const { uploadFile } = useAttachmentUpload(note.id);
   const { showToast } = useToast();
   const [contentJson, setContentJson] = useState(note.contentJson);
   const [mdText, setMdText] = useState(note.mdText);
+  const [title, setTitle] = useState(note.title);
   const [noteTagIds, setNoteTagIds] = useState<string[]>(initialTagIds ?? []);
-  const [showTagSelector, setShowTagSelector] = useState(false);
   const noteIdRef = useRef(note.id);
   useEffect(() => {
     noteIdRef.current = note.id;
@@ -41,6 +39,7 @@ export default function NoteView({ note, onBack, initialTagIds }: NoteViewProps)
   useEffect(() => {
     setContentJson(note.contentJson);
     setMdText(note.mdText);
+    setTitle(note.title);
     setNoteTagIds(initialTagIds ?? []);
   }, [note.id, initialTagIds]);
 
@@ -73,23 +72,40 @@ export default function NoteView({ note, onBack, initialTagIds }: NoteViewProps)
   }, []);
 
   useEffect(() => {
-    const timeout = setTimeout(async () => {
-      const title = extractTitleFromContent(mdText);
-      try {
-        await updateNote(noteIdRef.current, {
-          title: title !== note.title ? title : undefined,
-          contentJson,
-          mdText,
-        });
-      } catch {}
+    const timeout = setTimeout(() => {
+      const store = useNotesStore.getState();
+      const currentNote = store.currentNote;
+      if (currentNote && currentNote.id === noteIdRef.current) {
+        store.setCurrentNote({ ...currentNote, contentJson, mdText });
+      }
+      updateNote(noteIdRef.current, { contentJson, mdText }).catch(() => {});
     }, 500);
     return () => clearTimeout(timeout);
   }, [contentJson, mdText, updateNote]);
+
+  const handleTitleChange = useCallback(
+    (newTitle: string) => {
+      setTitle(newTitle);
+      const store = useNotesStore.getState();
+      store.updateNoteInList(noteIdRef.current, { id: noteIdRef.current, title: newTitle });
+      const currentNote = store.currentNote;
+      if (currentNote && currentNote.id === noteIdRef.current) {
+        store.setCurrentNote({ ...currentNote, title: newTitle });
+      }
+      updateNote(noteIdRef.current, { title: newTitle }).catch(() => {
+        showToast("标题保存失败", "error");
+      });
+    },
+    [updateNote, showToast],
+  );
 
   const handleAddTag = useCallback(
     async (tagId: string) => {
       if (noteTagIds.includes(tagId)) {
         setNoteTagIds((prev) => prev.filter((id) => id !== tagId));
+        try {
+          await removeTagFromNote(noteIdRef.current, tagId);
+        } catch {}
       } else {
         setNoteTagIds((prev) => [...prev, tagId]);
         try {
@@ -97,22 +113,29 @@ export default function NoteView({ note, onBack, initialTagIds }: NoteViewProps)
         } catch {}
       }
     },
-    [noteTagIds, addTagsToNote],
+    [noteTagIds, addTagsToNote, removeTagFromNote],
   );
 
-  const handleRemoveTag = useCallback((tagId: string) => {
-    setNoteTagIds((prev) => prev.filter((id) => id !== tagId));
-  }, []);
+  const handleRemoveTag = useCallback(
+    async (tagId: string) => {
+      setNoteTagIds((prev) => prev.filter((id) => id !== tagId));
+      try {
+        await removeTagFromNote(noteIdRef.current, tagId);
+      } catch {}
+    },
+    [removeTagFromNote],
+  );
 
   const handleCreateTag = useCallback(
     async (name: string) => {
       const tag = await createTag(name);
+      addTagToStore(tag);
       setNoteTagIds((prev) => [...prev, tag.id]);
       try {
         await addTagsToNote(noteIdRef.current, [tag.id]);
       } catch {}
     },
-    [addTagsToNote],
+    [addTagsToNote, createTag, addTagToStore],
   );
 
   const noteTags = tags.filter((t) => noteTagIds.includes(t.id));
@@ -122,10 +145,7 @@ export default function NoteView({ note, onBack, initialTagIds }: NoteViewProps)
     (_id: string, _targetFolderId: string) => {},
     [],
   );
-  const handleContextMenuAddTag = useCallback((_id: string) => {
-    setShowTagSelector(true);
-  }, []);
-  const handleContextMenuRename = useCallback((_id: string, _newName: string) => {}, []);
+  const handleContextMenuAddTag = useCallback((_id: string) => {}, []);
   const handleContextMenuCopyMarkdown = useCallback(
     (_id: string) => {
       navigator.clipboard.writeText(mdText);
@@ -144,9 +164,7 @@ export default function NoteView({ note, onBack, initialTagIds }: NoteViewProps)
             ← 返回
           </button>
         )}
-        <h2 className="text-lg font-semibold truncate" style={{ color: "var(--text-primary)" }}>
-          {note.title}
-        </h2>
+        <NoteTitleInput value={title} onChange={handleTitleChange} />
         <div className="flex items-center gap-2">
           <ModeToggle />
         </div>
@@ -164,32 +182,21 @@ export default function NoteView({ note, onBack, initialTagIds }: NoteViewProps)
             onRemove={() => handleRemoveTag(tag.id)}
           />
         ))}
-        <button
-          onClick={() => setShowTagSelector(!showTagSelector)}
-          className="px-2 py-0.5 text-xs rounded-full"
-          style={{ backgroundColor: "var(--bg-tertiary)", color: "var(--text-secondary)" }}
-        >
-          添加标签
-        </button>
-        {showTagSelector && (
-          <TagSelector
-            selectedTagIds={noteTagIds}
-            onAdd={handleAddTag}
-            onRemove={handleRemoveTag}
-            onCreateTag={handleCreateTag}
-          />
-        )}
+        <TagSelector
+          selectedTagIds={noteTagIds}
+          onAdd={handleAddTag}
+          onRemove={handleRemoveTag}
+          onCreateTag={handleCreateTag}
+        />
       </div>
 
       <ContextMenu
         itemId={note.id}
         itemType="note"
-        currentName={note.title}
         currentFolderId={note.folderId}
         onDelete={handleContextMenuDelete}
         onMoveToFolder={handleContextMenuMoveToFolder}
         onAddTag={handleContextMenuAddTag}
-        onRename={handleContextMenuRename}
         onCopyMarkdown={handleContextMenuCopyMarkdown}
       >
         <div className="flex-1 overflow-auto p-4">

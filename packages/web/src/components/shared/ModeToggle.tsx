@@ -8,21 +8,23 @@ export default function ModeToggle() {
     <div className="flex items-center gap-1">
       <button
         onClick={() => setEditorMode("wysiwyg")}
-        className={`px-3 py-1 rounded text-sm ${
+        className="px-3 py-1 rounded text-sm transition-colors"
+        style={
           editorMode === "wysiwyg"
-            ? "bg-blue-500 text-white"
-            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-        }`}
+            ? { backgroundColor: "var(--accent)", color: "white" }
+            : { backgroundColor: "var(--bg-tertiary)", color: "var(--text-secondary)" }
+        }
       >
-        所见即所得
+        富文本
       </button>
       <button
         onClick={() => setEditorMode("markdown")}
-        className={`px-3 py-1 rounded text-sm ${
+        className="px-3 py-1 rounded text-sm transition-colors"
+        style={
           editorMode === "markdown"
-            ? "bg-blue-500 text-white"
-            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-        }`}
+            ? { backgroundColor: "var(--accent)", color: "white" }
+            : { backgroundColor: "var(--bg-tertiary)", color: "var(--text-secondary)" }
+        }
       >
         Markdown
       </button>

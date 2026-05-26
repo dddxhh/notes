@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { useStorage } from "../../hooks";
 import { useNotesStore, useFoldersStore, useTagsStore } from "../../stores";
 import NoteCard from "../shared/NoteCard";
@@ -7,11 +7,12 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import MobileDrawer from "./MobileDrawer";
 
 export default function NoteListMobile() {
-  const { listNotes, listFolders } = useStorage();
+  const { listNotes, listFolders, getNotesForTag } = useStorage();
   const { notes, setNotes, setCurrentNote } = useNotesStore();
   const { folders, setFolders } = useFoldersStore();
   const tags = useTagsStore((s) => s.tags);
   const [selectedTagId, setSelectedTagId] = useState<string | null>(null);
+  const [tagFilteredNoteIds, setTagFilteredNoteIds] = useState<Set<string>>(new Set());
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
@@ -23,7 +24,29 @@ export default function NoteListMobile() {
       .catch(() => {});
   }, []);
 
-  const activeNotes = notes.filter((n) => n.deletedAt === null);
+  useEffect(() => {
+    if (!selectedTagId) {
+      setTagFilteredNoteIds(new Set());
+      return;
+    }
+    let cancelled = false;
+    getNotesForTag(selectedTagId)
+      .then((tagNotes) => {
+        if (!cancelled) {
+          setTagFilteredNoteIds(new Set(tagNotes.map((n) => n.id)));
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedTagId, getNotesForTag]);
+
+  const activeNotes = useMemo(() => {
+    const base = notes.filter((n) => n.deletedAt === null);
+    if (!selectedTagId || tagFilteredNoteIds.size === 0) return base;
+    return base.filter((n) => tagFilteredNoteIds.has(n.id));
+  }, [notes, selectedTagId, tagFilteredNoteIds]);
 
   const handleTagFilter = useCallback(
     (tagId: string) => {
@@ -31,6 +54,10 @@ export default function NoteListMobile() {
     },
     [selectedTagId],
   );
+
+  const handleTagSelectFromDrawer = useCallback((tagId: string) => {
+    setSelectedTagId(tagId);
+  }, []);
 
   const parentRef = useRef<HTMLDivElement>(null);
   const virtualizer = useVirtualizer({
@@ -67,7 +94,11 @@ export default function NoteListMobile() {
         </button>
       </div>
 
-      <MobileDrawer open={drawerOpen} onOpenChange={setDrawerOpen} />
+      <MobileDrawer
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+        onTagSelect={handleTagSelectFromDrawer}
+      />
 
       <div ref={parentRef} className="flex-1 overflow-auto">
         <div

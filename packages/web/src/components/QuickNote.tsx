@@ -1,13 +1,13 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { useStorage } from "../hooks";
 import { useNotesStore, useUIStore, useTagsStore } from "../stores";
-import { extractTitleFromContent } from "../lib/markdown-serializer";
 import NoteCard from "./shared/NoteCard";
 import TagBadge from "./shared/TagBadge";
+import type { Note } from "@notes/core";
 import SearchBar from "./shared/SearchBar";
 
 export default function QuickNote() {
-  const { createNote, updateNote, listNotes, listTags } = useStorage();
+  const { createNote, updateNote, listNotes, listTags, getNotesForTag } = useStorage();
   const { notes, setNotes, addNote, setCurrentNote } = useNotesStore();
   const isMobile = useUIStore((s) => s.isMobile);
   const tags = useTagsStore((s) => s.tags);
@@ -15,6 +15,7 @@ export default function QuickNote() {
   const [inputValue, setInputValue] = useState("");
   const [currentQuickNoteId, setCurrentQuickNoteId] = useState<string | null>(null);
   const [selectedTagId, setSelectedTagId] = useState<string | null>(null);
+  const [tagFilteredNoteIds, setTagFilteredNoteIds] = useState<Set<string>>(new Set());
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -28,10 +29,27 @@ export default function QuickNote() {
   }, []);
 
   useEffect(() => {
+    if (!selectedTagId) {
+      setTagFilteredNoteIds(new Set());
+      return;
+    }
+    let cancelled = false;
+    getNotesForTag(selectedTagId)
+      .then((tagNotes) => {
+        if (!cancelled) {
+          setTagFilteredNoteIds(new Set(tagNotes.map((n: Note) => n.id)));
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedTagId, getNotesForTag]);
+
+  useEffect(() => {
     if (!currentQuickNoteId || !inputValue.trim()) return;
     const timeout = setTimeout(async () => {
-      const title = extractTitleFromContent(inputValue);
-      await updateNote(currentQuickNoteId, { title, mdText: inputValue });
+      await updateNote(currentQuickNoteId, { mdText: inputValue });
     }, 500);
     return () => clearTimeout(timeout);
   }, [inputValue, currentQuickNoteId, updateNote]);
@@ -42,8 +60,7 @@ export default function QuickNote() {
       setInputValue(newValue);
 
       if (!currentQuickNoteId && newValue.trim()) {
-        const title = extractTitleFromContent(newValue);
-        const note = await createNote({ title, mdText: newValue });
+        const note = await createNote({ title: "", mdText: newValue });
         addNote(note);
         setCurrentQuickNoteId(note.id);
       }
@@ -65,9 +82,11 @@ export default function QuickNote() {
     [selectedTagId],
   );
 
-  const filteredNotes = selectedTagId
-    ? notes.filter((n) => n.deletedAt === null)
-    : notes.filter((n) => n.deletedAt === null);
+  const filteredNotes = useMemo(() => {
+    const base = notes.filter((n) => n.deletedAt === null);
+    if (!selectedTagId || tagFilteredNoteIds.size === 0) return base;
+    return base.filter((n) => tagFilteredNoteIds.has(n.id));
+  }, [notes, selectedTagId, tagFilteredNoteIds]);
 
   const recentNotes = filteredNotes.slice(0, 10);
 
@@ -131,12 +150,7 @@ export default function QuickNote() {
         </div>
         <div className="space-y-2">
           {recentNotes.map((note) => (
-            <NoteCard
-              key={note.id}
-              note={note}
-              onClick={handleNoteClick}
-              tags={tags.filter((t) => true)}
-            />
+            <NoteCard key={note.id} note={note} onClick={handleNoteClick} tags={tags} />
           ))}
         </div>
       </div>

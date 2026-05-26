@@ -4,7 +4,7 @@ import userEvent from "@testing-library/user-event";
 
 afterEach(cleanup);
 
-const mockUpdateNote = vi.fn();
+const mockUpdateNote = vi.fn().mockResolvedValue({});
 const mockAddTagsToNote = vi.fn();
 const mockListTags = vi.fn();
 const mockCreateTag = vi.fn();
@@ -15,6 +15,13 @@ let mockEditorMode: "wysiwyg" | "markdown" = "wysiwyg";
 let mockIsMobile = false;
 let mockTags: { id: string; name: string }[] = [];
 
+const mockNotesStoreState = {
+  notes: [],
+  currentNote: null,
+  updateNoteInList: vi.fn(),
+  setCurrentNote: vi.fn(),
+};
+
 vi.mock("../../src/stores", () => ({
   useUIStore: (selector: any) =>
     selector({
@@ -23,7 +30,7 @@ vi.mock("../../src/stores", () => ({
       isMobile: mockIsMobile,
       setIsMobile: vi.fn(),
     }),
-  useNotesStore: () => ({ notes: [], currentNote: null }),
+  useNotesStore: (selector: any) => selector(mockNotesStoreState),
   useSlashCommandStore: (selector: any) =>
     selector({ pendingUpload: null, setPendingUpload: vi.fn() }),
   useAttachmentsStore: (selector: any) => selector({ attachments: [], addAttachment: vi.fn() }),
@@ -128,7 +135,7 @@ vi.mock("../../src/components/shared/TagSelector", () => ({
         </span>
       ))}
       <button data-testid="add-tag-btn" onClick={() => onAdd("tag-new")}>
-        添加
+        添加标签
       </button>
       <button data-testid="create-tag-btn" onClick={() => onCreateTag("新标签")}>
         新建
@@ -154,7 +161,10 @@ vi.mock("../../src/components/shared/ContextMenu", () => ({
   ),
 }));
 
+import { useNotesStore } from "../../src/stores";
 import NoteView from "../../src/components/NoteView";
+
+(useNotesStore as any).getState = () => mockNotesStoreState;
 
 const mockNote = {
   id: "note-1",
@@ -180,15 +190,18 @@ describe("NoteView", () => {
     vi.clearAllMocks();
     mockEditorMode = "wysiwyg";
     mockIsMobile = false;
+    mockNotesStoreState.currentNote = null;
+    mockNotesStoreState.updateNoteInList.mockReset();
+    mockNotesStoreState.setCurrentNote.mockReset();
     mockTags = [
       { id: "tag-1", name: "work" },
       { id: "tag-2", name: "ideas" },
     ];
   });
 
-  it("renders note title", () => {
-    const { container } = render(<NoteView note={mockNote} />);
-    expect(container.textContent).toContain("Test Note");
+  it("renders note title in input field", () => {
+    render(<NoteView note={mockNote} />);
+    expect(screen.getByDisplayValue("Test Note")).toBeTruthy();
   });
 
   it("shows ModeToggle", () => {
@@ -249,23 +262,19 @@ describe("NoteView", () => {
     expect(screen.getAllByTestId("tag-badge").length).toBe(1);
   });
 
-  it("shows 添加标签 button", () => {
+  it("shows 添加标签 button (TagSelector trigger)", () => {
     render(<NoteView note={mockNote} />);
     expect(screen.getByText("添加标签")).toBeTruthy();
   });
 
-  it("shows TagSelector when 添加标签 is clicked", async () => {
-    const user = userEvent.setup();
+  it("shows TagSelector (always rendered)", () => {
     render(<NoteView note={mockNote} />);
-    expect(screen.queryByTestId("tag-selector")).toBeNull();
-    await user.click(screen.getByText("添加标签"));
     expect(screen.getByTestId("tag-selector")).toBeTruthy();
   });
 
   it("calls addTagsToNote when a tag is added via TagSelector", async () => {
     const user = userEvent.setup();
     render(<NoteView note={mockNote} />);
-    await user.click(screen.getByText("添加标签"));
     await user.click(screen.getByTestId("add-tag-btn"));
     expect(mockAddTagsToNote).toHaveBeenCalledWith("note-1", ["tag-new"]);
   });

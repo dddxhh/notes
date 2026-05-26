@@ -7,12 +7,7 @@ afterEach(cleanup);
 const mockOnDelete = vi.fn();
 const mockOnMoveToFolder = vi.fn();
 const mockOnAddTag = vi.fn();
-const mockOnRename = vi.fn();
 const mockOnCopyMarkdown = vi.fn();
-
-const confirmOpen = false;
-const renameOpen = false;
-const moveOpen = false;
 
 vi.mock("../../src/components/shared/ConfirmDialog", () => ({
   default: ({ open, onOpenChange, title, confirmLabel, variant, onConfirm }: any) =>
@@ -31,28 +26,6 @@ vi.mock("../../src/components/shared/ConfirmDialog", () => ({
           {confirmLabel}
         </button>
         <button data-testid="confirm-cancel" onClick={() => onOpenChange(false)}>
-          取消
-        </button>
-      </div>
-    ) : null,
-}));
-
-vi.mock("../../src/components/shared/RenameDialog", () => ({
-  default: ({ open, onOpenChange, currentName, onRename }: any) =>
-    open ? (
-      <div data-testid="rename-dialog">
-        <span data-testid="rename-current">{currentName}</span>
-        <input data-testid="rename-input" defaultValue={currentName} onChange={(e: any) => {}} />
-        <button
-          data-testid="rename-confirm"
-          onClick={() => {
-            onRename("New Name");
-            onOpenChange(false);
-          }}
-        >
-          确认
-        </button>
-        <button data-testid="rename-cancel" onClick={() => onOpenChange(false)}>
           取消
         </button>
       </div>
@@ -93,12 +66,10 @@ describe("ContextMenu", () => {
       <ContextMenu
         itemId="note-1"
         itemType="note"
-        currentName="My Note"
         currentFolderId="f1"
         onDelete={mockOnDelete}
         onMoveToFolder={mockOnMoveToFolder}
         onAddTag={mockOnAddTag}
-        onRename={mockOnRename}
         onCopyMarkdown={mockOnCopyMarkdown}
       >
         <div>Note Content</div>
@@ -113,12 +84,10 @@ describe("ContextMenu", () => {
       <ContextMenu
         itemId="note-1"
         itemType="note"
-        currentName="My Note"
         currentFolderId="f1"
         onDelete={mockOnDelete}
         onMoveToFolder={mockOnMoveToFolder}
         onAddTag={mockOnAddTag}
-        onRename={mockOnRename}
         onCopyMarkdown={mockOnCopyMarkdown}
       >
         <div>Note Content</div>
@@ -126,7 +95,6 @@ describe("ContextMenu", () => {
     );
     const trigger = screen.getByText("Note Content");
     await user.pointer({ keys: "[MouseRight]", target: trigger });
-    expect(screen.getByText("重命名")).toBeTruthy();
     expect(screen.getByText("移动到文件夹")).toBeTruthy();
     expect(screen.getByText("添加标签")).toBeTruthy();
     expect(screen.getByText("删除笔记")).toBeTruthy();
@@ -139,11 +107,9 @@ describe("ContextMenu", () => {
       <ContextMenu
         itemId="f1"
         itemType="folder"
-        currentName="My Folder"
         onDelete={mockOnDelete}
         onMoveToFolder={mockOnMoveToFolder}
         onAddTag={mockOnAddTag}
-        onRename={mockOnRename}
         onCopyMarkdown={mockOnCopyMarkdown}
       >
         <div>Folder Content</div>
@@ -155,42 +121,16 @@ describe("ContextMenu", () => {
     expect(screen.queryByText("删除笔记")).toBeNull();
   });
 
-  it("clicking 重命名 opens RenameDialog", async () => {
-    const user = userEvent.setup();
-    render(
-      <ContextMenu
-        itemId="note-1"
-        itemType="note"
-        currentName="My Note"
-        currentFolderId="f1"
-        onDelete={mockOnDelete}
-        onMoveToFolder={mockOnMoveToFolder}
-        onAddTag={mockOnAddTag}
-        onRename={mockOnRename}
-        onCopyMarkdown={mockOnCopyMarkdown}
-      >
-        <div>Note Content</div>
-      </ContextMenu>,
-    );
-    const trigger = screen.getByText("Note Content");
-    await user.pointer({ keys: "[MouseRight]", target: trigger });
-    await user.click(screen.getByText("重命名"));
-    expect(screen.getByTestId("rename-dialog")).toBeTruthy();
-    expect(screen.getByTestId("rename-current").textContent).toBe("My Note");
-  });
-
   it("clicking 删除笔记 opens ConfirmDialog", async () => {
     const user = userEvent.setup();
     render(
       <ContextMenu
         itemId="note-1"
         itemType="note"
-        currentName="My Note"
         currentFolderId="f1"
         onDelete={mockOnDelete}
         onMoveToFolder={mockOnMoveToFolder}
         onAddTag={mockOnAddTag}
-        onRename={mockOnRename}
         onCopyMarkdown={mockOnCopyMarkdown}
       >
         <div>Note Content</div>
@@ -210,12 +150,10 @@ describe("ContextMenu", () => {
       <ContextMenu
         itemId="note-2"
         itemType="note"
-        currentName="My Note"
         currentFolderId="f1"
         onDelete={mockOnDelete}
         onMoveToFolder={mockOnMoveToFolder}
         onAddTag={mockOnAddTag}
-        onRename={mockOnRename}
         onCopyMarkdown={mockOnCopyMarkdown}
       >
         <div>Note Content</div>
@@ -234,11 +172,9 @@ describe("ContextMenu", () => {
       <ContextMenu
         itemId="note-3"
         itemType="note"
-        currentName="Note 3"
         onDelete={mockOnDelete}
         onMoveToFolder={mockOnMoveToFolder}
         onAddTag={mockOnAddTag}
-        onRename={mockOnRename}
         onCopyMarkdown={mockOnCopyMarkdown}
       >
         <div>Note Content</div>
@@ -256,12 +192,10 @@ describe("ContextMenu", () => {
       <ContextMenu
         itemId="note-1"
         itemType="note"
-        currentName="My Note"
         currentFolderId="f1"
         onDelete={mockOnDelete}
         onMoveToFolder={mockOnMoveToFolder}
         onAddTag={mockOnAddTag}
-        onRename={mockOnRename}
         onCopyMarkdown={mockOnCopyMarkdown}
       >
         <div>Note Content</div>
@@ -279,12 +213,10 @@ describe("ContextMenu", () => {
       <ContextMenu
         itemId="note-1"
         itemType="note"
-        currentName="My Note"
         currentFolderId="f1"
         onDelete={mockOnDelete}
         onMoveToFolder={mockOnMoveToFolder}
         onAddTag={mockOnAddTag}
-        onRename={mockOnRename}
         onCopyMarkdown={mockOnCopyMarkdown}
       >
         <div>Note Content</div>
@@ -298,42 +230,16 @@ describe("ContextMenu", () => {
     expect(screen.queryByTestId("confirm-dialog")).toBeNull();
   });
 
-  it("confirming rename in RenameDialog calls onRename with itemId and newName", async () => {
-    const user = userEvent.setup();
-    render(
-      <ContextMenu
-        itemId="note-1"
-        itemType="note"
-        currentName="My Note"
-        currentFolderId="f1"
-        onDelete={mockOnDelete}
-        onMoveToFolder={mockOnMoveToFolder}
-        onAddTag={mockOnAddTag}
-        onRename={mockOnRename}
-        onCopyMarkdown={mockOnCopyMarkdown}
-      >
-        <div>Note Content</div>
-      </ContextMenu>,
-    );
-    const trigger = screen.getByText("Note Content");
-    await user.pointer({ keys: "[MouseRight]", target: trigger });
-    await user.click(screen.getByText("重命名"));
-    await user.click(screen.getByTestId("rename-confirm"));
-    expect(mockOnRename).toHaveBeenCalledWith("note-1", "New Name");
-  });
-
   it("confirming move in MoveNoteDialog calls onMoveToFolder with itemId and targetFolderId", async () => {
     const user = userEvent.setup();
     render(
       <ContextMenu
         itemId="note-1"
         itemType="note"
-        currentName="My Note"
         currentFolderId="f1"
         onDelete={mockOnDelete}
         onMoveToFolder={mockOnMoveToFolder}
         onAddTag={mockOnAddTag}
-        onRename={mockOnRename}
         onCopyMarkdown={mockOnCopyMarkdown}
       >
         <div>Note Content</div>
@@ -352,11 +258,9 @@ describe("ContextMenu", () => {
       <ContextMenu
         itemId="f1"
         itemType="folder"
-        currentName="My Folder"
         onDelete={mockOnDelete}
         onMoveToFolder={mockOnMoveToFolder}
         onAddTag={mockOnAddTag}
-        onRename={mockOnRename}
         onCopyMarkdown={mockOnCopyMarkdown}
       >
         <div>Folder Content</div>
@@ -373,11 +277,9 @@ describe("ContextMenu", () => {
       <ContextMenu
         itemId="f1"
         itemType="folder"
-        currentName="My Folder"
         onDelete={mockOnDelete}
         onMoveToFolder={mockOnMoveToFolder}
         onAddTag={mockOnAddTag}
-        onRename={mockOnRename}
         onCopyMarkdown={mockOnCopyMarkdown}
       >
         <div>Folder Content</div>
@@ -394,11 +296,9 @@ describe("ContextMenu", () => {
       <ContextMenu
         itemId="f1"
         itemType="folder"
-        currentName="My Folder"
         onDelete={mockOnDelete}
         onMoveToFolder={mockOnMoveToFolder}
         onAddTag={mockOnAddTag}
-        onRename={mockOnRename}
         onCopyMarkdown={mockOnCopyMarkdown}
       >
         <div>Folder Content</div>
@@ -407,5 +307,25 @@ describe("ContextMenu", () => {
     const trigger = screen.getByText("Folder Content");
     await user.pointer({ keys: "[MouseRight]", target: trigger });
     expect(screen.queryByText("移动到文件夹")).toBeNull();
+  });
+
+  it("does not show 重命名 for notes", async () => {
+    const user = userEvent.setup();
+    render(
+      <ContextMenu
+        itemId="note-1"
+        itemType="note"
+        currentFolderId="f1"
+        onDelete={mockOnDelete}
+        onMoveToFolder={mockOnMoveToFolder}
+        onAddTag={mockOnAddTag}
+        onCopyMarkdown={mockOnCopyMarkdown}
+      >
+        <div>Note Content</div>
+      </ContextMenu>,
+    );
+    const trigger = screen.getByText("Note Content");
+    await user.pointer({ keys: "[MouseRight]", target: trigger });
+    expect(screen.queryByText("重命名")).toBeNull();
   });
 });

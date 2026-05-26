@@ -52,6 +52,25 @@ export function useStorage() {
     return getStorage().listTags();
   }, []);
 
+  const removeTagFromNote = useCallback(async (noteId: string, tagId: string): Promise<void> => {
+    return getStorage().removeTagFromNote(noteId, tagId);
+  }, []);
+
+  const removeTagsFromNote = useCallback(
+    async (noteId: string, tagIds: string[]): Promise<void> => {
+      return getStorage().removeTagsFromNote(noteId, tagIds);
+    },
+    [],
+  );
+
+  const deleteTag = useCallback(async (id: string): Promise<void> => {
+    return getStorage().deleteTag(id);
+  }, []);
+
+  const getNotesForTag = useCallback(async (tagId: string): Promise<Note[]> => {
+    return getStorage().getNotesForTag(tagId);
+  }, []);
+
   const searchNotes = useCallback(async (input: SearchInput): Promise<SearchResult> => {
     return getStorage().searchNotes(input);
   }, []);
@@ -67,6 +86,10 @@ export function useStorage() {
     createTag,
     addTagsToNote,
     listTags,
+    removeTagFromNote,
+    removeTagsFromNote,
+    deleteTag,
+    getNotesForTag,
     searchNotes,
   };
 }

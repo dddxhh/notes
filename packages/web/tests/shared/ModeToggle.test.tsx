@@ -20,20 +20,20 @@ describe("ModeToggle", () => {
     mockEditorMode = "wysiwyg";
   });
 
-  it("renders both 所见即所得 and Markdown buttons", () => {
+  it("renders both 富文本 and Markdown buttons", () => {
     const { container } = render(<ModeToggle />);
     const buttons = Array.from(container.querySelectorAll("button"));
     expect(buttons.length).toBe(2);
-    expect(buttons[0].textContent).toBe("所见即所得");
+    expect(buttons[0].textContent).toBe("富文本");
     expect(buttons[1].textContent).toBe("Markdown");
   });
 
-  it("highlights the active mode", () => {
+  it("highlights the active mode via style", () => {
     mockEditorMode = "wysiwyg";
     const { container } = render(<ModeToggle />);
     const buttons = Array.from(container.querySelectorAll("button"));
-    expect(buttons[0].className).toContain("bg-blue-500");
-    expect(buttons[1].className).toContain("bg-gray-200");
+    expect(buttons[0].style.backgroundColor).toBe("var(--accent)");
+    expect(buttons[1].style.backgroundColor).toBe("var(--bg-tertiary)");
   });
 
   it("calls setEditorMode when clicking a mode button", async () => {

@@ -289,7 +289,7 @@ describe("MobileLayout", () => {
       version: 1,
     };
     const { container } = render(<MobileLayout />);
-    expect(container.textContent).toContain("Active Note");
+    expect(screen.getByDisplayValue("Active Note")).toBeTruthy();
   });
 
   it("has four screen states: quickNote, noteList, search, settings", async () => {

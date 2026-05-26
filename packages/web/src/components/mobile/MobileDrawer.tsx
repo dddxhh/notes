@@ -1,22 +1,56 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import FolderTree from "../desktop/FolderTree";
 import { useTagsStore, useFoldersStore } from "../../stores";
+import { useStorage } from "../../hooks";
+import DeleteTagDialog from "../shared/DeleteTagDialog";
+import type { Note } from "@notes/core";
+import { useState, useCallback } from "react";
 
 interface MobileDrawerProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   onNavigate?: () => void;
+  onTagSelect?: (tagId: string) => void;
 }
 
-export default function MobileDrawer({ open, onOpenChange, onNavigate }: MobileDrawerProps) {
+export default function MobileDrawer({
+  open,
+  onOpenChange,
+  onNavigate,
+  onTagSelect,
+}: MobileDrawerProps) {
   const tags = useTagsStore((s) => s.tags);
+  const deleteTagFromStore = useTagsStore((s) => s.deleteTag);
   const setCurrentFolderId = useFoldersStore((s) => s.setCurrentFolderId);
+  const { getNotesForTag, deleteTag } = useStorage();
+
+  const [deleteTagId, setDeleteTagId] = useState<string | null>(null);
+  const [affectedNotes, setAffectedNotes] = useState<Note[]>([]);
 
   const handleSelectFolder = (id: string | null) => {
     setCurrentFolderId(id);
     onNavigate?.();
     onOpenChange?.(false);
   };
+
+  const handleDeleteTagClick = useCallback(
+    async (tagId: string) => {
+      const tagNotes = await getNotesForTag(tagId);
+      setAffectedNotes(tagNotes);
+      setDeleteTagId(tagId);
+    },
+    [getNotesForTag],
+  );
+
+  const handleConfirmDeleteTag = useCallback(async () => {
+    if (!deleteTagId) return;
+    await deleteTag(deleteTagId);
+    deleteTagFromStore(deleteTagId);
+    setDeleteTagId(null);
+    setAffectedNotes([]);
+  }, [deleteTagId, deleteTag, deleteTagFromStore]);
+
+  const deletingTagName = deleteTagId ? (tags.find((t) => t.id === deleteTagId)?.name ?? "") : "";
 
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
@@ -59,19 +93,43 @@ export default function MobileDrawer({ open, onOpenChange, onNavigate }: MobileD
             </h3>
             <div className="flex flex-wrap gap-2">
               {tags.map((tag) => (
-                <button
-                  key={tag.id}
-                  onClick={() => onNavigate?.()}
-                  className="px-2 py-1 rounded-md text-xs"
-                  style={{ backgroundColor: "var(--bg-tertiary)", color: "var(--text-primary)" }}
-                >
-                  #{tag.name}
-                </button>
+                <div key={tag.id} className="flex items-center gap-0.5">
+                  <button
+                    onClick={() => {
+                      onTagSelect?.(tag.id);
+                      onNavigate?.();
+                      onOpenChange?.(false);
+                    }}
+                    className="px-2 py-1 rounded-md text-xs"
+                    style={{ backgroundColor: "var(--bg-tertiary)", color: "var(--text-primary)" }}
+                  >
+                    #{tag.name}
+                  </button>
+                  <button
+                    onClick={() => handleDeleteTagClick(tag.id)}
+                    className="px-1 text-xs rounded hover:opacity-80"
+                    style={{ color: "var(--text-secondary)" }}
+                    aria-label={`删除标签 ${tag.name}`}
+                  >
+                    ×
+                  </button>
+                </div>
               ))}
             </div>
           </div>
         </Dialog.Content>
       </Dialog.Portal>
+
+      <DeleteTagDialog
+        open={deleteTagId !== null}
+        onClose={() => {
+          setDeleteTagId(null);
+          setAffectedNotes([]);
+        }}
+        tagName={deletingTagName}
+        affectedNotes={affectedNotes}
+        onConfirm={handleConfirmDeleteTag}
+      />
     </Dialog.Root>
   );
 }

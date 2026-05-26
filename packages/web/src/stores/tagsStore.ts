@@ -7,6 +7,7 @@ interface TagsState {
   setTags: (tags: Tag[]) => void;
   addTag: (tag: Tag) => void;
   removeTag: (id: string) => void;
+  deleteTag: (id: string) => void;
   setLoading: (loading: boolean) => void;
 }
 
@@ -16,5 +17,6 @@ export const useTagsStore = create<TagsState>((set) => ({
   setTags: (tags) => set({ tags }),
   addTag: (tag) => set((state) => ({ tags: [...state.tags, tag] })),
   removeTag: (id) => set((state) => ({ tags: state.tags.filter((t) => t.id !== id) })),
+  deleteTag: (id) => set((state) => ({ tags: state.tags.filter((t) => t.id !== id) })),
   setLoading: (loading) => set({ loading }),
 }));

@@ -197,7 +197,7 @@ describe("DesktopLayout", () => {
       version: 1,
     };
     const { container } = render(<DesktopLayout />);
-    expect(container.textContent).toContain("Selected Note");
+    expect(screen.getByDisplayValue("Selected Note")).toBeTruthy();
   });
 
   it("main area takes full width when sidebar is collapsed", () => {

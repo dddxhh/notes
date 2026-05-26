@@ -1,5 +1,5 @@
 import { useEditor, EditorContent } from "@tiptap/react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useMemo } from "react";
 import { getEditorExtensions } from "../../lib/tiptap-setup";
 import { proseMirrorJSONToMarkdown } from "../../lib/markdown-serializer";
 import { useUIStore, useSlashCommandStore } from "../../stores";
@@ -60,9 +60,18 @@ export default function Editor({
     }
   };
 
+  const parsedContent = useMemo(() => {
+    if (!content) return "";
+    try {
+      return JSON.parse(content);
+    } catch {
+      return content;
+    }
+  }, [content]);
+
   const editor = useEditor({
     extensions: getEditorExtensions(mobile),
-    content: content || "",
+    content: parsedContent || "",
     onUpdate: ({ editor }) => {
       const contentJson = JSON.stringify(editor.getJSON());
       const mdText = proseMirrorJSONToMarkdown(contentJson);
@@ -92,11 +101,11 @@ export default function Editor({
   });
 
   useEffect(() => {
-    if (editor && content && noteIdRef.current !== currentNoteId) {
-      editor.commands.setContent(content);
+    if (editor && parsedContent && noteIdRef.current !== currentNoteId) {
+      editor.commands.setContent(parsedContent);
       noteIdRef.current = currentNoteId ?? null;
     }
-  }, [editor, content, currentNoteId]);
+  }, [editor, parsedContent, currentNoteId]);
 
   useEffect(() => {
     if (pendingUpload === "image") {

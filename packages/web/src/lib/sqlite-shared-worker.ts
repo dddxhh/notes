@@ -607,6 +607,10 @@ export class SharedWorkerStorageAdapter implements StorageAdapter {
   }
 
   async createTag(name: string): Promise<Tag> {
+    const existing = await this.client.query<Row>(`SELECT id, name FROM tags WHERE name=?`, [name]);
+    if (existing.length > 0) {
+      return { id: existing[0].id as string, name: existing[0].name as string };
+    }
     const id = generateId();
     await this.client.run(`INSERT INTO tags (id, name) VALUES (?, ?)`, [id, name]);
     return { id, name };
@@ -652,6 +656,19 @@ export class SharedWorkerStorageAdapter implements StorageAdapter {
       id: r.id as string,
       name: r.name as string,
     }));
+  }
+
+  async deleteTag(id: string): Promise<void> {
+    await this.client.run(`DELETE FROM note_tags WHERE tag_id=?`, [id]);
+    await this.client.run(`DELETE FROM tags WHERE id=?`, [id]);
+  }
+
+  async getNotesForTag(tagId: string): Promise<Note[]> {
+    const rows = await this.client.query<Row>(
+      `SELECT notes.* FROM notes INNER JOIN note_tags ON notes.id=note_tags.note_id WHERE note_tags.tag_id=? AND notes.deleted_at IS NULL`,
+      [tagId],
+    );
+    return rows.map(mapNoteRow);
   }
 }
 

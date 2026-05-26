@@ -72,7 +72,7 @@ export default function MarkdownEditor({ content, onUpdate, preview }: MarkdownE
       </div>
       {showPreview ? (
         <div
-          className="flex-1 overflow-auto p-4 prose prose-sm max-w-none"
+          className="markdown-preview flex-1 min-h-0 overflow-auto p-4 prose prose-sm max-w-none"
           style={{ backgroundColor: "var(--bg-secondary)", color: "var(--text-primary)" }}
           dangerouslySetInnerHTML={{ __html: renderedHtml }}
         />
@@ -80,7 +80,7 @@ export default function MarkdownEditor({ content, onUpdate, preview }: MarkdownE
         <textarea
           value={localContent}
           onChange={handleChange}
-          className="w-full h-full p-4 font-mono text-sm resize-none focus:outline-none"
+          className="flex-1 min-h-0 w-full p-4 font-mono text-sm resize-none focus:outline-none"
           style={{
             backgroundColor: "var(--bg-secondary)",
             color: "var(--text-primary)",
