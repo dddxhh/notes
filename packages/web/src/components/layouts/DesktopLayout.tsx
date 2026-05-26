@@ -32,7 +32,7 @@ export default function DesktopLayout() {
         </div>
 
         <div className="flex-1 overflow-auto">
-          {currentNote ? <NoteView note={currentNote} /> : <QuickNote />}
+          {currentNote ? <NoteView key={currentNote.id} note={currentNote} /> : <QuickNote />}
         </div>
       </div>
     </div>

@@ -43,7 +43,7 @@ export default function MobileLayout() {
 
   const renderScreen = () => {
     if (currentNote) {
-      return <NoteView note={currentNote} onBack={handleBack} />;
+      return <NoteView key={currentNote.id} note={currentNote} onBack={handleBack} />;
     }
     switch (screen) {
       case "quickNote":

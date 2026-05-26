@@ -1,5 +1,9 @@
 # AGENTS.md — 笔记应用仓库指南
 
+## Language
+
+请用中文思考和回答所有问题。代码本身和技术关键词保持英文。
+
 ## 仓库结构
 
 pnpm monorepo + Turborepo，两个包：
