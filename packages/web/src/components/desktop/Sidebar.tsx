@@ -7,6 +7,9 @@ import SearchBar from "../shared/SearchBar";
 import ThemeToggle from "../shared/ThemeToggle";
 import NoteCard from "../shared/NoteCard";
 import DeleteTagDialog from "../shared/DeleteTagDialog";
+import DeleteNoteDialog from "../shared/DeleteNoteDialog";
+import MoveNoteDialog from "../shared/MoveNoteDialog";
+import { extractTitleFromContent } from "../../lib/markdown-serializer";
 import type { Note } from "@notes/core";
 
 export default function Sidebar() {
@@ -16,14 +19,18 @@ export default function Sidebar() {
   const deleteTagFromStore = useTagsStore((s) => s.deleteTag);
   const sidebarOpen = useUIStore((s) => s.sidebarOpen);
   const setSidebarOpen = useUIStore((s) => s.setSidebarOpen);
-  const { getNotesForTag, deleteTag, createNote } = useStorage();
+  const { getNotesForTag, deleteTag, createNote, deleteNote, updateNote } = useStorage();
   const addNote = useNotesStore((s) => s.addNote);
+  const removeNoteFromList = useNotesStore((s) => s.removeNoteFromList);
 
   const { searchInput, updateFilter, clearSearch } = useSearch();
   const [showFilter, setShowFilter] = useState(false);
   const [activeTagIds, setActiveTagIds] = useState<string[]>([]);
   const [deleteTagId, setDeleteTagId] = useState<string | null>(null);
   const [affectedNotes, setAffectedNotes] = useState<Note[]>([]);
+  const [deleteNoteId, setDeleteNoteId] = useState<string | null>(null);
+  const [moveNoteId, setMoveNoteId] = useState<string | null>(null);
+  const [moveNoteFolderId, setMoveNoteFolderId] = useState<string | null>(null);
 
   const parentRef = useRef<HTMLDivElement>(null);
 
@@ -95,6 +102,26 @@ export default function Sidebar() {
     setDeleteTagId(null);
     setAffectedNotes([]);
   }, [deleteTagId, deleteTag, deleteTagFromStore]);
+
+  const handleDeleteNote = useCallback(async () => {
+    if (!deleteNoteId) return;
+    await deleteNote(deleteNoteId);
+    removeNoteFromList(deleteNoteId);
+    setDeleteNoteId(null);
+  }, [deleteNoteId, deleteNote, removeNoteFromList]);
+
+  const handleMoveToFolder = useCallback(
+    async (targetFolderId: string) => {
+      if (!moveNoteId) return;
+      await updateNote(moveNoteId, { folderId: targetFolderId });
+      useNotesStore
+        .getState()
+        .updateNoteInList(moveNoteId, { id: moveNoteId, folderId: targetFolderId });
+      setMoveNoteId(null);
+      setMoveNoteFolderId(null);
+    },
+    [moveNoteId, updateNote],
+  );
 
   const deletingTagName = deleteTagId ? (tags.find((t) => t.id === deleteTagId)?.name ?? "") : "";
 
@@ -174,7 +201,16 @@ export default function Sidebar() {
                   transform: `translateY(${virtualItem.start}px)`,
                 }}
               >
-                <NoteCard note={note} onClick={setCurrentNote} />
+                <NoteCard
+                  note={note}
+                  onClick={setCurrentNote}
+                  onDelete={(n) => setDeleteNoteId(n.id)}
+                  onMoveToFolder={(n) => {
+                    setMoveNoteId(n.id);
+                    setMoveNoteFolderId(n.folderId);
+                  }}
+                  onCopyMarkdown={(n) => navigator.clipboard.writeText(n.mdText)}
+                />
               </div>
             );
           })}
@@ -205,6 +241,31 @@ export default function Sidebar() {
         tagName={deletingTagName}
         affectedNotes={affectedNotes}
         onConfirm={handleConfirmDeleteTag}
+      />
+      <DeleteNoteDialog
+        open={deleteNoteId !== null}
+        onOpenChange={(open) => {
+          if (!open) setDeleteNoteId(null);
+        }}
+        noteTitle={
+          deleteNoteId
+            ? finalNotes.find((n) => n.id === deleteNoteId)?.title ||
+              extractTitleFromContent(finalNotes.find((n) => n.id === deleteNoteId)?.mdText || "")
+            : ""
+        }
+        onConfirm={handleDeleteNote}
+      />
+      <MoveNoteDialog
+        open={moveNoteId !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setMoveNoteId(null);
+            setMoveNoteFolderId(null);
+          }
+        }}
+        noteId={moveNoteId ?? ""}
+        currentFolderId={moveNoteFolderId}
+        onMove={handleMoveToFolder}
       />
     </div>
   );

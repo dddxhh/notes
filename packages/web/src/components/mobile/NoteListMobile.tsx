@@ -3,18 +3,26 @@ import { useStorage } from "../../hooks";
 import { useNotesStore, useFoldersStore, useTagsStore } from "../../stores";
 import NoteCard from "../shared/NoteCard";
 import TagBadge from "../shared/TagBadge";
+import DeleteNoteDialog from "../shared/DeleteNoteDialog";
+import MoveNoteDialog from "../shared/MoveNoteDialog";
+import { extractTitleFromContent } from "../../lib/markdown-serializer";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import MobileDrawer from "./MobileDrawer";
 
 export default function NoteListMobile() {
-  const { listNotes, listFolders, getNotesForTag, createNote } = useStorage();
+  const { listNotes, listFolders, getNotesForTag, createNote, deleteNote, updateNote } =
+    useStorage();
   const { notes, setNotes, setCurrentNote } = useNotesStore();
   const addNote = useNotesStore((s) => s.addNote);
+  const removeNoteFromList = useNotesStore((s) => s.removeNoteFromList);
   const { folders, setFolders } = useFoldersStore();
   const tags = useTagsStore((s) => s.tags);
   const [selectedTagId, setSelectedTagId] = useState<string | null>(null);
   const [tagFilteredNoteIds, setTagFilteredNoteIds] = useState<Set<string>>(new Set());
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [deleteNoteId, setDeleteNoteId] = useState<string | null>(null);
+  const [moveNoteId, setMoveNoteId] = useState<string | null>(null);
+  const [moveNoteFolderId, setMoveNoteFolderId] = useState<string | null>(null);
 
   useEffect(() => {
     listNotes()
@@ -65,6 +73,26 @@ export default function NoteListMobile() {
   const handleTagSelectFromDrawer = useCallback((tagId: string) => {
     setSelectedTagId(tagId);
   }, []);
+
+  const handleDeleteNote = useCallback(async () => {
+    if (!deleteNoteId) return;
+    await deleteNote(deleteNoteId);
+    removeNoteFromList(deleteNoteId);
+    setDeleteNoteId(null);
+  }, [deleteNoteId, deleteNote, removeNoteFromList]);
+
+  const handleMoveToFolder = useCallback(
+    async (targetFolderId: string) => {
+      if (!moveNoteId) return;
+      await updateNote(moveNoteId, { folderId: targetFolderId });
+      useNotesStore
+        .getState()
+        .updateNoteInList(moveNoteId, { id: moveNoteId, folderId: targetFolderId });
+      setMoveNoteId(null);
+      setMoveNoteFolderId(null);
+    },
+    [moveNoteId, updateNote],
+  );
 
   const parentRef = useRef<HTMLDivElement>(null);
   const virtualizer = useVirtualizer({
@@ -136,12 +164,47 @@ export default function NoteListMobile() {
                   transform: `translateY(${virtualItem.start}px)`,
                 }}
               >
-                <NoteCard key={note.id} note={note} onClick={setCurrentNote} />
+                <NoteCard
+                  key={note.id}
+                  note={note}
+                  onClick={setCurrentNote}
+                  onDelete={(n) => setDeleteNoteId(n.id)}
+                  onMoveToFolder={(n) => {
+                    setMoveNoteId(n.id);
+                    setMoveNoteFolderId(n.folderId);
+                  }}
+                  onCopyMarkdown={(n) => navigator.clipboard.writeText(n.mdText)}
+                />
               </div>
             );
           })}
         </div>
       </div>
+      <DeleteNoteDialog
+        open={deleteNoteId !== null}
+        onOpenChange={(open) => {
+          if (!open) setDeleteNoteId(null);
+        }}
+        noteTitle={
+          deleteNoteId
+            ? activeNotes.find((n) => n.id === deleteNoteId)?.title ||
+              extractTitleFromContent(activeNotes.find((n) => n.id === deleteNoteId)?.mdText || "")
+            : ""
+        }
+        onConfirm={handleDeleteNote}
+      />
+      <MoveNoteDialog
+        open={moveNoteId !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setMoveNoteId(null);
+            setMoveNoteFolderId(null);
+          }
+        }}
+        noteId={moveNoteId ?? ""}
+        currentFolderId={moveNoteFolderId}
+        onMove={handleMoveToFolder}
+      />
     </div>
   );
 }
