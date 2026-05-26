@@ -24,7 +24,8 @@ export default function NoteView({ note, onBack, initialTagIds }: NoteViewProps)
   const isMobile = useUIStore((s) => s.isMobile);
   const tags = useTagsStore((s) => s.tags);
   const addTagToStore = useTagsStore((s) => s.addTag);
-  const { updateNote, addTagsToNote, removeTagFromNote, createTag } = useStorage();
+  const removeNoteFromList = useNotesStore((s) => s.removeNoteFromList);
+  const { updateNote, addTagsToNote, removeTagFromNote, createTag, deleteNote } = useStorage();
   const { uploadFile } = useAttachmentUpload(note.id);
   const { showToast } = useToast();
   const [contentJson, setContentJson] = useState(note.contentJson);
@@ -140,10 +141,27 @@ export default function NoteView({ note, onBack, initialTagIds }: NoteViewProps)
 
   const noteTags = tags.filter((t) => noteTagIds.includes(t.id));
 
-  const handleContextMenuDelete = useCallback((_id: string) => {}, []);
+  const handleContextMenuDelete = useCallback(
+    async (id: string) => {
+      await deleteNote(id);
+      removeNoteFromList(id);
+      const store = useNotesStore.getState();
+      if (store.currentNote?.id === id) {
+        store.setCurrentNote(null);
+      }
+    },
+    [deleteNote, removeNoteFromList],
+  );
   const handleContextMenuMoveToFolder = useCallback(
-    (_id: string, _targetFolderId: string) => {},
-    [],
+    async (id: string, targetFolderId: string) => {
+      await updateNote(id, { folderId: targetFolderId });
+      const store = useNotesStore.getState();
+      store.updateNoteInList(id, { id, folderId: targetFolderId });
+      if (store.currentNote?.id === id) {
+        store.setCurrentNote({ ...store.currentNote, folderId: targetFolderId });
+      }
+    },
+    [updateNote],
   );
   const handleContextMenuAddTag = useCallback((_id: string) => {}, []);
   const handleContextMenuCopyMarkdown = useCallback(
