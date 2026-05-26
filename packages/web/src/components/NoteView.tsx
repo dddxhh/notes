@@ -72,17 +72,34 @@ export default function NoteView({ note, onBack, initialTagIds }: NoteViewProps)
     setContentJson(newJson);
   }, []);
 
-  useEffect(() => {
-    const timeout = setTimeout(() => {
+  const pendingSaveRef = useRef<{ contentJson: string; mdText: string } | null>(null);
+
+  const flushSave = useCallback(() => {
+    if (pendingSaveRef.current) {
+      const { contentJson: cj, mdText: mt } = pendingSaveRef.current;
       const store = useNotesStore.getState();
+      store.updateNoteInList(noteIdRef.current, {
+        id: noteIdRef.current,
+        contentJson: cj,
+        mdText: mt,
+      });
       const currentNote = store.currentNote;
       if (currentNote && currentNote.id === noteIdRef.current) {
-        store.setCurrentNote({ ...currentNote, contentJson, mdText });
+        store.setCurrentNote({ ...currentNote, contentJson: cj, mdText: mt });
       }
-      updateNote(noteIdRef.current, { contentJson, mdText }).catch(() => {});
-    }, 500);
-    return () => clearTimeout(timeout);
-  }, [contentJson, mdText, updateNote]);
+      updateNote(noteIdRef.current, { contentJson: cj, mdText: mt }).catch(() => {});
+      pendingSaveRef.current = null;
+    }
+  }, [updateNote]);
+
+  useEffect(() => {
+    pendingSaveRef.current = { contentJson, mdText };
+    const timeout = setTimeout(flushSave, 500);
+    return () => {
+      clearTimeout(timeout);
+      flushSave();
+    };
+  }, [contentJson, mdText, flushSave]);
 
   const handleTitleChange = useCallback(
     (newTitle: string) => {
