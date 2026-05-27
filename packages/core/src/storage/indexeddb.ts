@@ -100,3 +100,26 @@ export async function generateImageThumbnail(blob: Blob, maxWidth: number = 200)
   imageBitmap.close();
   return canvas.convertToBlob({ type: "image/webp", quality: 0.8 });
 }
+
+export async function getAllBlobKeys(storeName: string): Promise<string[]> {
+  return new Promise<string[]>((resolve, reject) => {
+    const store = getStore(storeName, "readonly");
+    const request = store.getAllKeys();
+    request.onsuccess = () => resolve(request.result as string[]);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function clearStore(storeName: string): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
+    const store = getStore(storeName, "readwrite");
+    const request = store.clear();
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject(request.error);
+  });
+}
+
+export async function clearAllStores(): Promise<void> {
+  await clearStore(ATTACHMENTS_STORE);
+  await clearStore(THUMBNAILS_STORE);
+}

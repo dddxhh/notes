@@ -11,4 +11,6 @@ export {
   getThumbnail,
   deleteBlob,
   generateImageThumbnail,
+  getAllBlobKeys,
+  clearAllStores,
 } from "./indexeddb";

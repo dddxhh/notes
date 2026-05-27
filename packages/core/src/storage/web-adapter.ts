@@ -9,6 +9,8 @@ import {
   getThumbnail,
   deleteBlob,
   generateImageThumbnail,
+  getAllBlobKeys,
+  clearAllStores,
 } from "./indexeddb";
 import { searchNotes } from "../search/fts5";
 import {
@@ -26,6 +28,7 @@ import {
   SearchResult,
 } from "../models";
 import { generateId } from "../utils";
+import { DataDump } from "../models/data-dump";
 
 type Row = Record<string, number | string | null>;
 
@@ -395,6 +398,153 @@ export class WebStorageAdapter implements StorageAdapter {
       await runSQL(db, `INSERT INTO notes_fts(notes_fts) VALUES('rebuild')`);
     } catch {}
   }
+
+  async dumpAll(): Promise<DataDump> {
+    const db = this.getDB();
+
+    const folderRows = await querySQL<Row>(db, `SELECT * FROM folders`);
+    const folders = folderRows.map(mapFolderRow);
+
+    const noteRows = await querySQL<Row>(db, `SELECT * FROM notes WHERE deleted_at IS NULL`);
+    const notes = noteRows.map(mapNoteRow);
+
+    const tagRows = await querySQL<Row>(db, `SELECT id, name FROM tags`);
+    const tags = tagRows.map((r) => ({ id: r.id as string, name: r.name as string }));
+
+    const noteTagRows = await querySQL<Row>(db, `SELECT note_id, tag_id FROM note_tags`);
+    const noteTags = noteTagRows.map((r) => ({
+      noteId: r.note_id as string,
+      tagId: r.tag_id as string,
+    }));
+
+    const attachmentRows = await querySQL<Row>(
+      db,
+      `SELECT * FROM attachments WHERE note_id IN (SELECT id FROM notes WHERE deleted_at IS NULL)`,
+    );
+    const attachments = attachmentRows.map((r) => ({
+      id: r.id as string,
+      noteId: r.note_id as string,
+      type: r.type as AttachmentType,
+      filename: r.filename as string,
+      mimeType: r.mime_type as string,
+      size: r.size as number,
+      createdAt: r.created_at as number,
+    }));
+
+    const blobKeys = await getAllBlobKeys("attachments-store");
+    const attachmentBlobs: { id: string; mimeType: string; data: string }[] = [];
+    for (const key of blobKeys) {
+      const blob = await getBlob(key);
+      if (blob) {
+        const buffer = await blob.arrayBuffer();
+        const base64 = arrayBufferToBase64(buffer);
+        const att = attachments.find((a) => a.id === key);
+        attachmentBlobs.push({ id: key, mimeType: att?.mimeType ?? blob.type, data: base64 });
+      }
+    }
+
+    const thumbKeys = await getAllBlobKeys("thumbnails-store");
+    const thumbnails: { id: string; data: string }[] = [];
+    for (const key of thumbKeys) {
+      const blob = await getThumbnail(key);
+      if (blob) {
+        const buffer = await blob.arrayBuffer();
+        thumbnails.push({ id: key, data: arrayBufferToBase64(buffer) });
+      }
+    }
+
+    return {
+      version: 1,
+      exportedAt: Date.now(),
+      folders,
+      notes,
+      tags,
+      noteTags,
+      attachments,
+      attachmentBlobs,
+      thumbnails,
+    };
+  }
+
+  async restoreAll(dump: DataDump): Promise<void> {
+    const db = this.getDB();
+
+    await runSQL(db, `DELETE FROM note_tags`);
+    await runSQL(db, `DELETE FROM attachments`);
+    await runSQL(db, `DELETE FROM notes`);
+    await runSQL(db, `DELETE FROM folders`);
+    await runSQL(db, `DELETE FROM tags`);
+    await clearAllStores();
+
+    for (const folder of dump.folders) {
+      await runSQL(
+        db,
+        `INSERT INTO folders (id, name, parent_id, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)`,
+        [
+          folder.id,
+          folder.name,
+          folder.parentId,
+          folder.sortOrder,
+          folder.createdAt,
+          folder.updatedAt,
+        ],
+      );
+    }
+
+    for (const note of dump.notes) {
+      await runSQL(
+        db,
+        `INSERT INTO notes (id, title, content_json, md_text, folder_id, type, created_at, updated_at, deleted_at, version) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          note.id,
+          note.title,
+          note.contentJson,
+          note.mdText,
+          note.folderId,
+          note.type,
+          note.createdAt,
+          note.updatedAt,
+          note.deletedAt,
+          note.version,
+        ],
+      );
+    }
+
+    for (const tag of dump.tags) {
+      await runSQL(db, `INSERT INTO tags (id, name) VALUES (?, ?)`, [tag.id, tag.name]);
+    }
+
+    for (const nt of dump.noteTags) {
+      await runSQL(db, `INSERT INTO note_tags (note_id, tag_id) VALUES (?, ?)`, [
+        nt.noteId,
+        nt.tagId,
+      ]);
+    }
+
+    for (const att of dump.attachments) {
+      await runSQL(
+        db,
+        `INSERT INTO attachments (id, note_id, type, filename, mime_type, size, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [att.id, att.noteId, att.type, att.filename, att.mimeType, att.size, att.createdAt],
+      );
+    }
+
+    for (const ab of dump.attachmentBlobs) {
+      const buffer = base64ToArrayBuffer(ab.data);
+      const blob = new Blob([buffer], { type: ab.mimeType });
+      await saveBlob(ab.id, blob);
+    }
+
+    for (const th of dump.thumbnails) {
+      const buffer = base64ToArrayBuffer(th.data);
+      const blob = new Blob([buffer], { type: "image/webp" });
+      await saveThumbnail(th.id, blob);
+    }
+
+    try {
+      await runSQL(db, `INSERT INTO notes_fts(notes_fts) VALUES('rebuild')`);
+    } catch {}
+  }
 }
 
 function mapNoteRow(row: Row): Note {
@@ -421,4 +571,22 @@ function mapFolderRow(row: Row): Folder {
     createdAt: row.created_at as number,
     updatedAt: row.updated_at as number,
   };
+}
+
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+  let binary = "";
+  for (let i = 0; i < bytes.byteLength; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+}
+
+function base64ToArrayBuffer(base64: string): ArrayBuffer {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes.buffer;
 }
