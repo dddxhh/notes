@@ -5,3 +5,4 @@ export { createDefaultFolder } from "./folder";
 export type { Attachment, AttachmentType } from "./attachment";
 export type { Tag, UpdateTagInput } from "./tag";
 export type { SearchInput, SearchResult, TagFilterMode } from "./search";
+export type { DataDump } from "./data-dump";

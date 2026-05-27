@@ -12,6 +12,7 @@ import {
   SearchInput,
   SearchResult,
 } from "../models";
+import { DataDump } from "../models/data-dump";
 
 export interface StorageAdapter {
   init(): Promise<void>;
@@ -49,4 +50,7 @@ export interface StorageAdapter {
   listTags(): Promise<Tag[]>;
   deleteTag(id: string): Promise<void>;
   getNotesForTag(tagId: string): Promise<Note[]>;
+
+  dumpAll(): Promise<DataDump>;
+  restoreAll(dump: DataDump): Promise<void>;
 }
