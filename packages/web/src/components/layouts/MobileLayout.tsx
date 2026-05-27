@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { useNotesStore, useFoldersStore } from "../../stores";
+import { useNotesStore, useFoldersStore, useUIStore } from "../../stores";
 import { useStorage } from "../../hooks";
 import NoteView from "../NoteView";
 import NoteListMobile from "../mobile/NoteListMobile";
@@ -8,6 +8,7 @@ import MobileSearch from "../mobile/MobileSearch";
 import MobileSettings from "../mobile/MobileSettings";
 import MobileFAB from "../mobile/MobileFAB";
 import MobileDrawer from "../mobile/MobileDrawer";
+import TrashView from "../shared/TrashView";
 
 type ScreenState = "quickNote" | "noteList" | "search" | "settings";
 
@@ -18,6 +19,7 @@ export default function MobileLayout() {
   const addNote = useNotesStore((s) => s.addNote);
   const [screen, setScreen] = useState<ScreenState>("quickNote");
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const showTrash = useUIStore((s) => s.showTrash);
 
   const handleBack = useCallback(() => {
     setCurrentNote(null);
@@ -44,6 +46,9 @@ export default function MobileLayout() {
   }, []);
 
   const renderScreen = () => {
+    if (showTrash) {
+      return <TrashView />;
+    }
     if (currentNote) {
       return <NoteView key={currentNote.id} note={currentNote} onBack={handleBack} />;
     }
