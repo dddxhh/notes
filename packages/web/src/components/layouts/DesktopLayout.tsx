@@ -1,13 +1,14 @@
-import { useState } from "react";
 import Sidebar from "../desktop/Sidebar";
 import NoteView from "../NoteView";
 import QuickNote from "../QuickNote";
+import TrashView from "../shared/TrashView";
 import { useNotesStore, useUIStore } from "../../stores";
 
 export default function DesktopLayout() {
   const currentNote = useNotesStore((s) => s.currentNote);
   const sidebarOpen = useUIStore((s) => s.sidebarOpen);
   const setSidebarOpen = useUIStore((s) => s.setSidebarOpen);
+  const showTrash = useUIStore((s) => s.showTrash);
 
   return (
     <div
@@ -32,7 +33,13 @@ export default function DesktopLayout() {
         </div>
 
         <div className="flex-1 overflow-auto">
-          {currentNote ? <NoteView key={currentNote.id} note={currentNote} /> : <QuickNote />}
+          {showTrash ? (
+            <TrashView />
+          ) : currentNote ? (
+            <NoteView key={currentNote.id} note={currentNote} />
+          ) : (
+            <QuickNote />
+          )}
         </div>
       </div>
     </div>
