@@ -4,6 +4,7 @@ import NoteCardMenu from "./NoteCardMenu";
 import * as Tooltip from "@radix-ui/react-tooltip";
 import { useThumbnailRenderer } from "../../hooks/useThumbnailRenderer";
 import { extractTitleFromContent } from "../../lib/markdown-serializer";
+import { formatShortDateTime } from "../../lib/format-date";
 
 interface NoteCardProps {
   note: Note;
@@ -24,10 +25,7 @@ export default function NoteCard({
   onMoveToFolder,
   onCopyMarkdown,
 }: NoteCardProps) {
-  const timeStr = new Date(note.updatedAt).toLocaleDateString("zh-CN", {
-    month: "short",
-    day: "numeric",
-  });
+  const timeStr = formatShortDateTime(note.updatedAt);
 
   const firstImage = attachments?.find((a) => a.type === "image");
   const { thumbnailSrc, error: thumbError } = useThumbnailRenderer(firstImage?.id ?? "");

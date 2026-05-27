@@ -10,6 +10,7 @@ import TagSelector from "./shared/TagSelector";
 import NoteTitleInput from "./shared/NoteTitleInput";
 import ContextMenu from "./shared/ContextMenu";
 import { markdownToProseMirrorJSON } from "../lib/markdown-serializer";
+import { formatDateTime } from "../lib/format-date";
 import { Note } from "@notes/core";
 import type { UploadResult } from "../hooks";
 
@@ -279,7 +280,7 @@ export default function NoteView({ note, onBack, initialTagIds }: NoteViewProps)
         className="p-2 text-xs border-t"
         style={{ color: "var(--text-secondary)", borderColor: "var(--border-color)" }}
       >
-        {new Date(note.updatedAt).toLocaleDateString("zh-CN")} · 自动保存 ✓
+        {formatDateTime(note.updatedAt)} · 自动保存 ✓
       </div>
     </div>
   );

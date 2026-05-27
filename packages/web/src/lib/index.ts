@@ -12,3 +12,4 @@ export {
 export { CustomImage } from "./CustomImage";
 export { CustomVideo } from "./CustomVideo";
 export { SlashCommand } from "./SlashCommandExtension";
+export { formatDateTime, formatShortDateTime } from "./format-date";

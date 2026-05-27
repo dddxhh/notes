@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNotesStore, useUIStore } from "../../stores";
+import { formatDateTime } from "../../lib/format-date";
 
 export default function TrashView() {
   const showTrash = useUIStore((s) => s.showTrash);
@@ -25,12 +26,6 @@ export default function TrashView() {
       await permanentlyDeleteNote(note.id);
     }
     setConfirmEmpty(false);
-  };
-
-  const formatTime = (ts: number | null) => {
-    if (!ts) return "";
-    const d = new Date(ts);
-    return d.toLocaleDateString() + " " + d.toLocaleTimeString();
   };
 
   return (
@@ -62,7 +57,7 @@ export default function TrashView() {
               >
                 <div>
                   <div className="text-sm font-medium">{note.title}</div>
-                  <div className="text-xs opacity-50">{formatTime(note.deletedAt)}</div>
+                  <div className="text-xs opacity-50">{formatDateTime(note.deletedAt)}</div>
                 </div>
                 <div className="flex gap-2">
                   <button

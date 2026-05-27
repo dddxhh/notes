@@ -1,4 +1,5 @@
 import type { SearchResult } from "@notes/core";
+import { formatShortDateTime } from "../../lib/format-date";
 
 interface SearchResultListProps {
   result: SearchResult | null;
@@ -32,10 +33,7 @@ export default function SearchResultList({
   return (
     <div className="flex flex-col gap-2">
       {result.notes.map((note) => {
-        const timeStr = new Date(note.updatedAt).toLocaleDateString("zh-CN", {
-          month: "short",
-          day: "numeric",
-        });
+        const timeStr = formatShortDateTime(note.updatedAt);
         return (
           <button
             key={note.id}
