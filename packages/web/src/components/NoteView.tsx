@@ -127,40 +127,59 @@ export default function NoteView({ note, onBack, initialTagIds }: NoteViewProps)
   const handleAddTag = useCallback(
     async (tagId: string) => {
       if (noteTagIds.includes(tagId)) {
-        setNoteTagIds((prev) => prev.filter((id) => id !== tagId));
+        const newIds = noteTagIds.filter((id) => id !== tagId);
+        setNoteTagIds(newIds);
+        useNotesStore.getState().updateNoteTags(
+          noteIdRef.current,
+          tags.filter((t) => newIds.includes(t.id)),
+        );
         try {
           await removeTagFromNote(noteIdRef.current, tagId);
         } catch {}
       } else {
-        setNoteTagIds((prev) => [...prev, tagId]);
+        const newIds = [...noteTagIds, tagId];
+        setNoteTagIds(newIds);
+        useNotesStore.getState().updateNoteTags(
+          noteIdRef.current,
+          tags.filter((t) => newIds.includes(t.id)),
+        );
         try {
           await addTagsToNote(noteIdRef.current, [tagId]);
         } catch {}
       }
     },
-    [noteTagIds, addTagsToNote, removeTagFromNote],
+    [noteTagIds, addTagsToNote, removeTagFromNote, tags],
   );
 
   const handleRemoveTag = useCallback(
     async (tagId: string) => {
-      setNoteTagIds((prev) => prev.filter((id) => id !== tagId));
+      const newIds = noteTagIds.filter((id) => id !== tagId);
+      setNoteTagIds(newIds);
+      useNotesStore.getState().updateNoteTags(
+        noteIdRef.current,
+        tags.filter((t) => newIds.includes(t.id)),
+      );
       try {
         await removeTagFromNote(noteIdRef.current, tagId);
       } catch {}
     },
-    [removeTagFromNote],
+    [noteTagIds, removeTagFromNote, tags],
   );
 
   const handleCreateTag = useCallback(
     async (name: string) => {
       const tag = await createTag(name);
       addTagToStore(tag);
-      setNoteTagIds((prev) => [...prev, tag.id]);
+      const newIds = [...noteTagIds, tag.id];
+      setNoteTagIds(newIds);
+      useNotesStore
+        .getState()
+        .updateNoteTags(noteIdRef.current, [...tags.filter((t) => newIds.includes(t.id)), tag]);
       try {
         await addTagsToNote(noteIdRef.current, [tag.id]);
       } catch {}
     },
-    [addTagsToNote, createTag, addTagToStore],
+    [noteTagIds, addTagsToNote, createTag, addTagToStore, tags],
   );
 
   const noteTags = tags.filter((t) => noteTagIds.includes(t.id));
