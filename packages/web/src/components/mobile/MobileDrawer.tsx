@@ -1,6 +1,6 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import FolderTree from "../desktop/FolderTree";
-import { useTagsStore, useFoldersStore, useNotesStore } from "../../stores";
+import { useTagsStore, useFoldersStore, useNotesStore, useUIStore } from "../../stores";
 import { useStorage } from "../../hooks";
 import DeleteTagDialog from "../shared/DeleteTagDialog";
 import DeleteFolderDialog from "../shared/DeleteFolderDialog";
@@ -229,6 +229,19 @@ export default function MobileDrawer({
                 </div>
               ))}
             </div>
+          </div>
+
+          <div className="mt-4 pt-4 border-t" style={{ borderColor: "var(--border-color)" }}>
+            <button
+              onClick={() => {
+                useUIStore.getState().setShowTrash(true);
+                onOpenChange?.(false);
+              }}
+              className="text-sm px-2 py-1 rounded w-full text-left hover:opacity-80"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              🗑️ 回收站
+            </button>
           </div>
         </Dialog.Content>
       </Dialog.Portal>
