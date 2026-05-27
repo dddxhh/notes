@@ -26,6 +26,7 @@ export function exportAsMarkdownZip(dump: DataDump): void {
   }
 
   const usedFilenames = new Set<string>();
+  const noteTagMap = buildNoteTagMap(dump);
   for (const note of dump.notes) {
     let filename = sanitizeFilename(note.title || `笔记-${note.id.slice(0, 8)}`);
     if (usedFilenames.has(filename)) {
@@ -36,8 +37,15 @@ export function exportAsMarkdownZip(dump: DataDump): void {
     const folderPath = note.folderId ? (folderPathMap.get(note.folderId) ?? "") : "";
     const mdPath = folderPath ? `${folderPath}/${filename}.md` : `${filename}.md`;
 
+    const tags = noteTagMap.get(note.id);
+    let content = note.mdText;
+    if (tags && tags.length > 0) {
+      const frontmatter = `---\ntags:\n${tags.map((t) => `- ${t}`).join("\n")}\n---\n`;
+      content = frontmatter + content;
+    }
+
     const encoder = new TextEncoder();
-    files[mdPath] = encoder.encode(note.mdText);
+    files[mdPath] = encoder.encode(content);
   }
 
   for (const ab of dump.attachmentBlobs) {
@@ -100,4 +108,21 @@ function getExtensionFromMimeType(mimeType: string): string {
     "audio/webm": "webm",
   };
   return map[mimeType] ?? "bin";
+}
+
+function buildNoteTagMap(dump: DataDump): Map<string, string[]> {
+  const tagIdToName = new Map<string, string>();
+  for (const tag of dump.tags) {
+    tagIdToName.set(tag.id, tag.name);
+  }
+  const map = new Map<string, string[]>();
+  for (const nt of dump.noteTags) {
+    const tagName = tagIdToName.get(nt.tagId);
+    if (tagName) {
+      const existing = map.get(nt.noteId) ?? [];
+      existing.push(tagName);
+      map.set(nt.noteId, existing);
+    }
+  }
+  return map;
 }

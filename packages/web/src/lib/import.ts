@@ -79,9 +79,10 @@ export async function importMarkdownZip(file: File): Promise<DataDump> {
 
   for (const nf of noteFiles) {
     const noteId = generateId();
+    const { content: strippedContent, frontmatterTags } = parseFrontmatter(nf.content);
     const title =
-      extractTitle(nf.content) || nf.path.split("/").pop()?.replace(".md", "") || noteId;
-    const mdText = nf.content;
+      extractTitle(strippedContent) || nf.path.split("/").pop()?.replace(".md", "") || noteId;
+    const mdText = strippedContent;
     const contentJson = markdownToProseMirrorJSON(mdText);
 
     const dirPath = nf.path.substring(0, nf.path.lastIndexOf("/"));
@@ -104,12 +105,12 @@ export async function importMarkdownZip(file: File): Promise<DataDump> {
       version: 1,
     });
 
-    const tagMatches = nf.content.matchAll(/(?:^|\s)#([\w\u4e00-\u9fff]+)/g);
-    const extractedTags = new Set<string>();
-    for (const match of tagMatches) {
-      extractedTags.add(match[1]);
+    const allTags = new Set<string>(frontmatterTags);
+    const inlineTagMatches = strippedContent.matchAll(/(?:^|\s)#([\w\u4e00-\u9fff]+)/g);
+    for (const match of inlineTagMatches) {
+      allTags.add(match[1]);
     }
-    for (const tagName of extractedTags) {
+    for (const tagName of allTags) {
       const tagId = `tag-${tagName}`;
       noteTags.push({ noteId, tagId });
       if (!tags.some((t) => t.id === tagId)) {
@@ -151,11 +152,15 @@ export async function importMarkdownZip(file: File): Promise<DataDump> {
 
 export async function importMarkdownFiles(files: File[]): Promise<DataDump> {
   const notes: DataDump["notes"] = [];
+  const tags: DataDump["tags"] = [];
+  const noteTags: DataDump["noteTags"] = [];
 
   for (const file of files) {
     const noteId = generateId();
-    const mdText = await file.text();
-    const title = extractTitle(mdText) || file.name.replace(".md", "");
+    const rawText = await file.text();
+    const { content: strippedContent, frontmatterTags } = parseFrontmatter(rawText);
+    const title = extractTitle(strippedContent) || file.name.replace(".md", "");
+    const mdText = strippedContent;
     const contentJson = markdownToProseMirrorJSON(mdText);
 
     notes.push({
@@ -170,6 +175,19 @@ export async function importMarkdownFiles(files: File[]): Promise<DataDump> {
       deletedAt: null,
       version: 1,
     });
+
+    const allTags = new Set<string>(frontmatterTags);
+    const inlineTagMatches = strippedContent.matchAll(/(?:^|\s)#([\w\u4e00-\u9fff]+)/g);
+    for (const match of inlineTagMatches) {
+      allTags.add(match[1]);
+    }
+    for (const tagName of allTags) {
+      const tagId = `tag-${tagName}`;
+      noteTags.push({ noteId, tagId });
+      if (!tags.some((t) => t.id === tagId)) {
+        tags.push({ id: tagId, name: tagName });
+      }
+    }
   }
 
   return {
@@ -177,8 +195,8 @@ export async function importMarkdownFiles(files: File[]): Promise<DataDump> {
     exportedAt: Date.now(),
     folders: [],
     notes,
-    tags: [],
-    noteTags: [],
+    tags,
+    noteTags,
     attachments: [],
     attachmentBlobs: [],
     thumbnails: [],
@@ -188,6 +206,24 @@ export async function importMarkdownFiles(files: File[]): Promise<DataDump> {
 function extractTitle(mdText: string): string {
   const match = mdText.match(/^#\s+(.+)$/m);
   return match ? match[1].trim() : "";
+}
+
+function parseFrontmatter(text: string): { content: string; frontmatterTags: string[] } {
+  const match = text.match(/^---\n([\s\S]*?)\n---\n/);
+  if (!match) return { content: text, frontmatterTags: [] };
+
+  const frontmatter = match[1];
+  const content = text.slice(match[0].length);
+
+  const tagsLineMatch = frontmatter.match(/^tags:\s*\n((?:\s+-\s+.+\n?)+)/m);
+  if (!tagsLineMatch) return { content, frontmatterTags: [] };
+
+  const tagEntries = tagsLineMatch[1].matchAll(/-\s+(.+)/g);
+  const tags: string[] = [];
+  for (const entry of tagEntries) {
+    tags.push(entry[1].trim());
+  }
+  return { content, frontmatterTags: tags };
 }
 
 function uint8ArrayToBase64(bytes: Uint8Array): string {
