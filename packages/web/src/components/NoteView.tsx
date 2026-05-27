@@ -34,7 +34,9 @@ export default function NoteView({ note, onBack, initialTagIds }: NoteViewProps)
   const [mdText, setMdText] = useState(note.mdText);
   const [title, setTitle] = useState(note.title);
   const [noteTagIds, setNoteTagIds] = useState<string[]>(initialTagIds ?? []);
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
   const noteIdRef = useRef(note.id);
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     noteIdRef.current = note.id;
   }, [note.id]);
@@ -85,17 +87,28 @@ export default function NoteView({ note, onBack, initialTagIds }: NoteViewProps)
   const flushSave = useCallback(() => {
     if (pendingSaveRef.current) {
       const { contentJson: cj, mdText: mt } = pendingSaveRef.current;
+      const now = Date.now();
       const store = useNotesStore.getState();
       store.updateNoteInList(noteIdRef.current, {
         id: noteIdRef.current,
         contentJson: cj,
         mdText: mt,
+        updatedAt: now,
       });
       const currentNote = store.currentNote;
       if (currentNote && currentNote.id === noteIdRef.current) {
-        store.setCurrentNote({ ...currentNote, contentJson: cj, mdText: mt });
+        store.setCurrentNote({ ...currentNote, contentJson: cj, mdText: mt, updatedAt: now });
       }
-      updateNote(noteIdRef.current, { contentJson: cj, mdText: mt }).catch(() => {});
+      setSaveStatus("saving");
+      updateNote(noteIdRef.current, { contentJson: cj, mdText: mt })
+        .then(() => {
+          setSaveStatus("saved");
+          if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+          saveTimerRef.current = setTimeout(() => setSaveStatus("idle"), 2000);
+        })
+        .catch(() => {
+          setSaveStatus("idle");
+        });
       pendingSaveRef.current = null;
     }
   }, [updateNote]);
@@ -112,15 +125,28 @@ export default function NoteView({ note, onBack, initialTagIds }: NoteViewProps)
   const handleTitleChange = useCallback(
     (newTitle: string) => {
       setTitle(newTitle);
+      const now = Date.now();
       const store = useNotesStore.getState();
-      store.updateNoteInList(noteIdRef.current, { id: noteIdRef.current, title: newTitle });
+      store.updateNoteInList(noteIdRef.current, {
+        id: noteIdRef.current,
+        title: newTitle,
+        updatedAt: now,
+      });
       const currentNote = store.currentNote;
       if (currentNote && currentNote.id === noteIdRef.current) {
-        store.setCurrentNote({ ...currentNote, title: newTitle });
+        store.setCurrentNote({ ...currentNote, title: newTitle, updatedAt: now });
       }
-      updateNote(noteIdRef.current, { title: newTitle }).catch(() => {
-        showToast("标题保存失败", "error");
-      });
+      setSaveStatus("saving");
+      updateNote(noteIdRef.current, { title: newTitle })
+        .then(() => {
+          setSaveStatus("saved");
+          if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+          saveTimerRef.current = setTimeout(() => setSaveStatus("idle"), 2000);
+        })
+        .catch(() => {
+          showToast("标题保存失败", "error");
+          setSaveStatus("idle");
+        });
     },
     [updateNote, showToast],
   );
@@ -280,7 +306,8 @@ export default function NoteView({ note, onBack, initialTagIds }: NoteViewProps)
         className="p-2 text-xs border-t"
         style={{ color: "var(--text-secondary)", borderColor: "var(--border-color)" }}
       >
-        {formatDateTime(note.updatedAt)} · 自动保存 ✓
+        {formatDateTime(note.updatedAt)} · 自动保存{" "}
+        {saveStatus === "saving" ? <span className="save-spinner" /> : <span>✓</span>}
       </div>
     </div>
   );
