@@ -57,6 +57,14 @@ vi.mock("../../src/components/shared/ModeToggle", () => ({
   default: () => <div data-testid="mode-toggle">ModeToggle</div>,
 }));
 
+vi.mock("../../src/components/shared/ExportPanel", () => ({
+  default: () => <div>数据导出</div>,
+}));
+
+vi.mock("../../src/components/shared/ImportPanel", () => ({
+  default: () => <div>数据导入</div>,
+}));
+
 import MobileSettings from "../../src/components/mobile/MobileSettings";
 
 describe("MobileSettings", () => {
@@ -70,9 +78,14 @@ describe("MobileSettings", () => {
     expect(screen.getByTestId("mode-toggle")).toBeTruthy();
   });
 
-  it("renders data management section", () => {
+  it("renders data export section", () => {
     render(<MobileSettings />);
-    expect(screen.getByText(/数据管理/i)).toBeTruthy();
+    expect(screen.getByText(/数据导出/i)).toBeTruthy();
+  });
+
+  it("renders data import section", () => {
+    render(<MobileSettings />);
+    expect(screen.getByText(/数据导入/i)).toBeTruthy();
   });
 
   it("renders about info", () => {
