@@ -114,11 +114,16 @@ export default function NoteView({ note, onBack, initialTagIds }: NoteViewProps)
       }
       originalContentRef.current = { contentJson: cj, mdText: mt };
       setSaveStatus("saving");
+      const saveStart = Date.now();
       updateNote(noteIdRef.current, { contentJson: cj, mdText: mt })
         .then(() => {
-          setSaveStatus("saved");
-          if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-          saveTimerRef.current = setTimeout(() => setSaveStatus("idle"), 2000);
+          const elapsed = Date.now() - saveStart;
+          const minSpin = Math.max(0, 800 - elapsed);
+          setTimeout(() => {
+            setSaveStatus("saved");
+            if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+            saveTimerRef.current = setTimeout(() => setSaveStatus("idle"), 2000);
+          }, minSpin);
         })
         .catch(() => {
           setSaveStatus("idle");
@@ -158,11 +163,16 @@ export default function NoteView({ note, onBack, initialTagIds }: NoteViewProps)
       }
       originalTitleRef.current = newTitle;
       setSaveStatus("saving");
+      const saveStart = Date.now();
       updateNote(noteIdRef.current, { title: newTitle })
         .then(() => {
-          setSaveStatus("saved");
-          if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-          saveTimerRef.current = setTimeout(() => setSaveStatus("idle"), 2000);
+          const elapsed = Date.now() - saveStart;
+          const minSpin = Math.max(0, 800 - elapsed);
+          setTimeout(() => {
+            setSaveStatus("saved");
+            if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+            saveTimerRef.current = setTimeout(() => setSaveStatus("idle"), 2000);
+          }, minSpin);
         })
         .catch(() => {
           showToast("标题保存失败", "error");
