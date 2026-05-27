@@ -8,13 +8,14 @@ import {
   importMarkdownZip,
   importMarkdownFiles,
 } from "../../lib/import";
-import type { DataDump } from "@notes/core";
+import type { DataDump, Tag } from "@notes/core";
 
 export default function ImportPanel() {
-  const { restoreAll, listNotes, listFolders, listTags } = useStorage();
+  const { restoreAll, listNotes, listFolders, listTags, getTagsForNote } = useStorage();
   const setNotes = useNotesStore((s) => s.setNotes);
   const setFolders = useFoldersStore((s) => s.setFolders);
   const setTags = useTagsStore((s) => s.setTags);
+  const setNoteTagsMap = useNotesStore((s) => s.setNoteTagsMap);
   const fileRef = useRef<HTMLInputElement>(null);
   const [importing, setImporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -61,6 +62,12 @@ export default function ImportPanel() {
       setFolders(folders);
       const tags = await listTags();
       setTags(tags);
+      const noteTagsMap = new Map<string, Tag[]>();
+      for (const note of notes) {
+        const noteTags = await getTagsForNote(note.id);
+        noteTagsMap.set(note.id, noteTags);
+      }
+      setNoteTagsMap(noteTagsMap);
     } catch (err) {
       setError(err instanceof Error ? err.message : "导入失败");
     } finally {
