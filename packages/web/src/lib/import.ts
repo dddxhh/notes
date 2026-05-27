@@ -209,19 +209,37 @@ function extractTitle(mdText: string): string {
 }
 
 function parseFrontmatter(text: string): { content: string; frontmatterTags: string[] } {
-  const match = text.match(/^---\n([\s\S]*?)\n---\n/);
+  const match = text.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n/);
   if (!match) return { content: text, frontmatterTags: [] };
 
   const frontmatter = match[1];
   const content = text.slice(match[0].length);
 
-  const tagsLineMatch = frontmatter.match(/^tags:\s*\n((?:\s+-\s+.+\n?)+)/m);
-  if (!tagsLineMatch) return { content, frontmatterTags: [] };
-
-  const tagEntries = tagsLineMatch[1].matchAll(/-\s+(.+)/g);
   const tags: string[] = [];
-  for (const entry of tagEntries) {
-    tags.push(entry[1].trim());
+  const lines = frontmatter.split(/\r?\n/);
+  let inTagsSection = false;
+  for (const line of lines) {
+    if (line === "tags:" || line.match(/^tags:\s*\[/)) {
+      inTagsSection = true;
+      const inlineMatch = line.match(/^tags:\s*\[([^\]]*)\]/);
+      if (inlineMatch) {
+        for (const t of inlineMatch[1].split(",")) {
+          const trimmed = t.trim().replace(/^["']|["']$/g, "");
+          if (trimmed) tags.push(trimmed);
+        }
+        inTagsSection = false;
+      }
+      continue;
+    }
+    if (inTagsSection) {
+      const itemMatch = line.match(/^\s*-\s+(.+)$/);
+      if (itemMatch) {
+        const val = itemMatch[1].trim().replace(/^["']|["']$/g, "");
+        if (val) tags.push(val);
+      } else if (line.trim() === "" || line.match(/^\S/)) {
+        inTagsSection = false;
+      }
+    }
   }
   return { content, frontmatterTags: tags };
 }
