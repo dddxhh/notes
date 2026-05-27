@@ -41,6 +41,15 @@ vi.mock("../src/stores", () => ({
           setLoading: vi.fn(),
         })
       : { tags: mockTags },
+  useFoldersStore: (selector?: any) =>
+    selector
+      ? selector({
+          folders: [],
+          setFolders: vi.fn(),
+          currentFolderId: null,
+          setCurrentFolderId: vi.fn(),
+        })
+      : { folders: [], currentFolderId: null },
 }));
 
 vi.mock("../src/hooks", () => ({
@@ -49,6 +58,7 @@ vi.mock("../src/hooks", () => ({
     updateNote: mockUpdateNote,
     listNotes: mockListNotes,
     listTags: mockListTags,
+    listFolders: vi.fn().mockResolvedValue([]),
   }),
 }));
 

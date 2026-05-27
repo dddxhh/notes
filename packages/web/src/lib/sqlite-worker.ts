@@ -20,6 +20,9 @@ class WorkerSQLExecutor {
 
     try {
       await this.initPromise;
+    } catch (e) {
+      console.error("[Worker] executor.init FAILED:", e);
+      throw e;
     } finally {
       this.initPromise = null;
     }
@@ -56,6 +59,8 @@ const executor = new WorkerSQLExecutor();
 handler.setExecutor(executor);
 
 const ports = new Set<MessagePort>();
+let processing = false;
+const pendingQueue: Array<{ request: SqlRequest; port: MessagePort }> = [];
 
 function broadcast(notification: DataChangeNotification): void {
   for (const port of ports) {
@@ -67,6 +72,17 @@ function broadcast(notification: DataChangeNotification): void {
 
 handler.setBroadcastFn(broadcast);
 
+async function processQueue(): Promise<void> {
+  if (processing) return;
+  processing = true;
+  while (pendingQueue.length > 0) {
+    const { request, port } = pendingQueue.shift()!;
+    const response = await handler.handleRequest(request);
+    port.postMessage(response);
+  }
+  processing = false;
+}
+
 const workerSelf = self as unknown as {
   onconnect: ((ev: MessageEvent) => void) | null;
   onclose: ((ev: Event) => void) | null;
@@ -76,10 +92,10 @@ workerSelf.onconnect = (event: MessageEvent) => {
   const port = event.ports[0];
   ports.add(port);
 
-  port.onmessage = async (e: MessageEvent) => {
+  port.onmessage = (e: MessageEvent) => {
     const request: SqlRequest = e.data;
-    const response = await handler.handleRequest(request);
-    port.postMessage(response);
+    pendingQueue.push({ request, port });
+    processQueue();
   };
 
   port.start();

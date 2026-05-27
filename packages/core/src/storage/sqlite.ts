@@ -87,7 +87,6 @@ export async function initSQLite(dbName?: string): Promise<SQLiteDB> {
     SQLite.SQLITE_OPEN_CREATE | SQLite.SQLITE_OPEN_READWRITE,
     VFS_NAME,
   );
-
   for (const stmt of DDL_STATEMENTS) {
     await sqlite3.run(db, stmt);
   }

@@ -32,16 +32,14 @@ vi.mock("../../src/stores", () => ({
 
 vi.mock("../../src/hooks", () => ({
   useStorage: () => ({
-    createFolder: vi
-      .fn()
-      .mockResolvedValue({
-        id: "f3",
-        name: "New",
-        parentId: null,
-        sortOrder: 0,
-        createdAt: 1,
-        updatedAt: 1,
-      }),
+    createFolder: vi.fn().mockResolvedValue({
+      id: "f3",
+      name: "New",
+      parentId: null,
+      sortOrder: 0,
+      createdAt: 1,
+      updatedAt: 1,
+    }),
     updateFolder: vi.fn().mockResolvedValue(mockFolders[0]),
     deleteFolder: vi.fn().mockResolvedValue(undefined),
     updateNotesFolderId: vi.fn().mockResolvedValue(undefined),

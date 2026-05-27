@@ -24,7 +24,7 @@ export default function NoteListMobile() {
   const removeNoteFromList = useNotesStore((s) => s.removeNoteFromList);
   const noteTagsMap = useNotesStore((s) => s.noteTagsMap);
   const setNoteTagsMap = useNotesStore((s) => s.setNoteTagsMap);
-  const { folders, setFolders } = useFoldersStore();
+  const { setFolders, currentFolderId } = useFoldersStore();
   const tags = useTagsStore((s) => s.tags);
   const [selectedTagId, setSelectedTagId] = useState<string | null>(null);
   const [tagFilteredNoteIds, setTagFilteredNoteIds] = useState<Set<string>>(new Set());
@@ -62,9 +62,15 @@ export default function NoteListMobile() {
 
   const activeNotes = useMemo(() => {
     const base = notes.filter((n) => n.deletedAt === null);
-    if (!selectedTagId || tagFilteredNoteIds.size === 0) return base;
-    return base.filter((n) => tagFilteredNoteIds.has(n.id));
-  }, [notes, selectedTagId, tagFilteredNoteIds]);
+    let filtered = base;
+    if (currentFolderId) {
+      filtered = filtered.filter((n) => n.folderId === currentFolderId);
+    }
+    if (selectedTagId && tagFilteredNoteIds.size > 0) {
+      filtered = filtered.filter((n) => tagFilteredNoteIds.has(n.id));
+    }
+    return filtered;
+  }, [notes, currentFolderId, selectedTagId, tagFilteredNoteIds]);
 
   useEffect(() => {
     let cancelled = false;
@@ -84,10 +90,10 @@ export default function NoteListMobile() {
   }, [activeNotes.length, getTagsForNote, setNoteTagsMap]);
 
   const handleNewNote = useCallback(async () => {
-    const note = await createNote({ title: "" });
+    const note = await createNote({ title: "", folderId: currentFolderId });
     addNote(note);
     setCurrentNote(note);
-  }, [createNote, addNote, setCurrentNote]);
+  }, [createNote, addNote, setCurrentNote, currentFolderId]);
 
   const handleTagFilter = useCallback(
     (tagId: string) => {

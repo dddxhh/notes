@@ -26,8 +26,11 @@
 ### 关键约束
 
 - **wa-sqlite 需要 COOP/COEP 头**（SharedArrayBuffer），Vite dev server 和 vitest browser config 都设了，不要去掉。
+- **SharedWorker 消息必须串行处理**：`port.onmessage` 不能直接用 async handler，否则多个 `handleRequest` 并发交错执行会导致 wa-sqlite VFS（IDBBatchAtomicVFS）并发 IndexedDB 事务冲突，出现 "no such table" 或 "unable to open database file" 错误。必须用消息队列 + 串行 `processQueue` 逐条处理。
 - **Soft Delete 仅用于 Note**：`deleteNote` 设 `deletedAt`，`permanentlyDeleteNote` 才真正删除行。Folder 直接硬删，没有软删除。
 - ID 在 adapter 内部生成（`generateId()`），调用方不传 id。
+- **数据加载应在各组件 useEffect 中分散发起**：不要在 App.tsx 集中式加载所有数据后再渲染，因为 SharedWorker 初始化阶段（DDL 建表）与并发查询会冲突。各组件在挂载时各自调用 `listNotes/listFolders/listTags` 即可，串行队列保证执行安全。
+- **currentFolderId 过滤必须用 store 状态而非 searchInput 状态**：`Sidebar.tsx` 的 `finalNotes` 过滤应使用 `useFoldersStore((s) => s.currentFolderId)` 而非 `searchInput.folderId`，后者仅在搜索面板选中时才有值。
 
 ## Attachment 协议
 

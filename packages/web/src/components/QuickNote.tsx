@@ -1,17 +1,18 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { useStorage } from "../hooks";
-import { useNotesStore, useUIStore, useTagsStore } from "../stores";
+import { useNotesStore, useUIStore, useTagsStore, useFoldersStore } from "../stores";
 import NoteCard from "./shared/NoteCard";
 import TagBadge from "./shared/TagBadge";
 import type { Note } from "@notes/core";
 import SearchBar from "./shared/SearchBar";
 
 export default function QuickNote() {
-  const { createNote, updateNote, listNotes, listTags, getNotesForTag } = useStorage();
+  const { createNote, updateNote, listNotes, listFolders, listTags, getNotesForTag } = useStorage();
   const { notes, setNotes, addNote, setCurrentNote } = useNotesStore();
   const isMobile = useUIStore((s) => s.isMobile);
   const tags = useTagsStore((s) => s.tags);
   const setTags = useTagsStore((s) => s.setTags);
+  const setFolders = useFoldersStore((s) => s.setFolders);
   const [inputValue, setInputValue] = useState("");
   const [currentQuickNoteId, setCurrentQuickNoteId] = useState<string | null>(null);
   const [selectedTagId, setSelectedTagId] = useState<string | null>(null);
@@ -21,10 +22,13 @@ export default function QuickNote() {
 
   useEffect(() => {
     listNotes()
-      .then(setNotes)
+      .then((n) => setNotes(n))
+      .catch(() => {});
+    listFolders()
+      .then((f) => setFolders(f))
       .catch(() => {});
     listTags()
-      .then(setTags)
+      .then((t) => setTags(t))
       .catch(() => {});
   }, []);
 

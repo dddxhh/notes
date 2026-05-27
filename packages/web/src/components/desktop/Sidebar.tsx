@@ -18,15 +18,28 @@ export default function Sidebar() {
   const setCurrentNote = useNotesStore((s) => s.setCurrentNote);
   const tags = useTagsStore((s) => s.tags);
   const folders = useFoldersStore((s) => s.folders);
+  const currentFolderId = useFoldersStore((s) => s.currentFolderId);
   const deleteTagFromStore = useTagsStore((s) => s.deleteTag);
   const sidebarOpen = useUIStore((s) => s.sidebarOpen);
   const setSidebarOpen = useUIStore((s) => s.setSidebarOpen);
-  const { getNotesForTag, deleteTag, createNote, deleteNote, updateNote, getTagsForNote } =
-    useStorage();
+  const {
+    getNotesForTag,
+    listNotes,
+    listFolders,
+    listTags,
+    deleteTag,
+    createNote,
+    deleteNote,
+    updateNote,
+    getTagsForNote,
+  } = useStorage();
   const addNote = useNotesStore((s) => s.addNote);
+  const setNotes = useNotesStore((s) => s.setNotes);
   const removeNoteFromList = useNotesStore((s) => s.removeNoteFromList);
   const noteTagsMap = useNotesStore((s) => s.noteTagsMap);
   const setNoteTagsMap = useNotesStore((s) => s.setNoteTagsMap);
+  const setFolders = useFoldersStore((s) => s.setFolders);
+  const setTags = useTagsStore((s) => s.setTags);
 
   const { searchInput, result, updateFilter, clearSearch } = useSearch();
   const [showFilter, setShowFilter] = useState(false);
@@ -38,6 +51,18 @@ export default function Sidebar() {
   const [moveNoteFolderId, setMoveNoteFolderId] = useState<string | null>(null);
 
   const parentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    listNotes()
+      .then((n) => setNotes(n))
+      .catch(() => {});
+    listFolders()
+      .then((f) => setFolders(f))
+      .catch(() => {});
+    listTags()
+      .then((t) => setTags(t))
+      .catch(() => {});
+  }, []);
 
   const activeNotes = useMemo(() => notes.filter((n) => n.deletedAt === null), [notes]);
 
@@ -91,6 +116,9 @@ export default function Sidebar() {
 
   const finalNotes = useMemo(() => {
     let notes = activeNotes;
+    if (currentFolderId) {
+      notes = notes.filter((n) => n.folderId === currentFolderId);
+    }
     if (activeTagIds.length > 0) {
       notes = notes.filter((n) => tagFilteredNoteIds.includes(n.id));
     }
@@ -107,7 +135,14 @@ export default function Sidebar() {
       notes = notes.filter((n) => searchResultIds.has(n.id));
     }
     return notes;
-  }, [activeNotes, activeTagIds, tagFilteredNoteIds, searchInput, searchResultIds]);
+  }, [
+    activeNotes,
+    currentFolderId,
+    activeTagIds,
+    tagFilteredNoteIds,
+    searchInput,
+    searchResultIds,
+  ]);
 
   const virtualizer = useVirtualizer({
     count: finalNotes.length,
@@ -122,10 +157,10 @@ export default function Sidebar() {
   };
 
   const handleNewNote = useCallback(async () => {
-    const note = await createNote({ title: "" });
+    const note = await createNote({ title: "", folderId: currentFolderId });
     addNote(note);
     setCurrentNote(note);
-  }, [createNote, addNote, setCurrentNote]);
+  }, [createNote, addNote, setCurrentNote, currentFolderId]);
 
   const handleDeleteTagClick = useCallback(
     async (tagId: string) => {

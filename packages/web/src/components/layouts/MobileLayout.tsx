@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { useNotesStore, useUIStore } from "../../stores";
+import { useNotesStore, useFoldersStore } from "../../stores";
 import { useStorage } from "../../hooks";
 import NoteView from "../NoteView";
 import NoteListMobile from "../mobile/NoteListMobile";
@@ -23,10 +23,12 @@ export default function MobileLayout() {
     setCurrentNote(null);
   }, [setCurrentNote]);
 
+  const currentFolderId = useFoldersStore((s) => s.currentFolderId);
+
   const handleNewNote = useCallback(async () => {
-    const note = await createNote({ title: "" });
+    const note = await createNote({ title: "", folderId: currentFolderId });
     setCurrentNote(note);
-  }, [createNote, setCurrentNote]);
+  }, [createNote, setCurrentNote, currentFolderId]);
 
   const handleSelectNoteFromSearch = useCallback(
     (id: string) => {
