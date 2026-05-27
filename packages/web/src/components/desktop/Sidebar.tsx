@@ -346,7 +346,18 @@ export default function Sidebar() {
         className="flex items-center justify-between p-3 border-t"
         style={{ borderColor: "var(--border-color)" }}
       >
-        <ThemeToggle />
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <button
+            onClick={() => useUIStore.getState().setShowTrash(true)}
+            aria-label="回收站"
+            className="px-2 py-1 rounded text-sm hover:opacity-80"
+            style={{ backgroundColor: "var(--bg-tertiary)", color: "var(--text-primary)" }}
+            title="回收站"
+          >
+            🗑️
+          </button>
+        </div>
         <button
           onClick={() => setSidebarOpen(false)}
           aria-label="收起侧栏"
