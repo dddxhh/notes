@@ -1,5 +1,7 @@
 import ThemeToggle from "../shared/ThemeToggle";
 import ModeToggle from "../shared/ModeToggle";
+import ExportPanel from "../shared/ExportPanel";
+import ImportPanel from "../shared/ImportPanel";
 
 export default function MobileSettings() {
   return (
@@ -8,29 +10,22 @@ export default function MobileSettings() {
       style={{ backgroundColor: "var(--bg-primary)", color: "var(--text-primary)" }}
     >
       <h2 className="text-lg font-bold">设置</h2>
-
       <div className="space-y-2">
         <h3 className="text-sm font-semibold">主题</h3>
         <ThemeToggle />
       </div>
-
       <div className="space-y-2">
         <h3 className="text-sm font-semibold">编辑模式</h3>
         <ModeToggle />
       </div>
-
-      <div className="space-y-2">
-        <h3 className="text-sm font-semibold">数据管理</h3>
-        <div
-          className="p-3 rounded-md"
-          style={{ backgroundColor: "var(--bg-secondary)", borderColor: "var(--border-color)" }}
-        >
-          <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-            导入/导出功能开发中…
-          </p>
-        </div>
+      <div
+        className="space-y-3 p-3 rounded-md"
+        style={{ backgroundColor: "var(--bg-secondary)", borderColor: "var(--border-color)" }}
+      >
+        <ExportPanel />
+        <div className="border-t" style={{ borderColor: "var(--border-color)" }} />
+        <ImportPanel />
       </div>
-
       <div className="space-y-2">
         <h3 className="text-sm font-semibold">关于</h3>
         <div className="p-3 rounded-md" style={{ backgroundColor: "var(--bg-secondary)" }}>
