@@ -83,10 +83,23 @@ export default function NoteView({ note, onBack, initialTagIds }: NoteViewProps)
   }, []);
 
   const pendingSaveRef = useRef<{ contentJson: string; mdText: string } | null>(null);
+  const originalContentRef = useRef<{ contentJson: string; mdText: string }>({
+    contentJson: note.contentJson,
+    mdText: note.mdText,
+  });
+
+  useEffect(() => {
+    originalContentRef.current = { contentJson: note.contentJson, mdText: note.mdText };
+  }, [note.id, note.contentJson, note.mdText]);
 
   const flushSave = useCallback(() => {
     if (pendingSaveRef.current) {
       const { contentJson: cj, mdText: mt } = pendingSaveRef.current;
+      const orig = originalContentRef.current;
+      if (cj === orig.contentJson && mt === orig.mdText) {
+        pendingSaveRef.current = null;
+        return;
+      }
       const now = Date.now();
       const store = useNotesStore.getState();
       store.updateNoteInList(noteIdRef.current, {
@@ -99,6 +112,7 @@ export default function NoteView({ note, onBack, initialTagIds }: NoteViewProps)
       if (currentNote && currentNote.id === noteIdRef.current) {
         store.setCurrentNote({ ...currentNote, contentJson: cj, mdText: mt, updatedAt: now });
       }
+      originalContentRef.current = { contentJson: cj, mdText: mt };
       setSaveStatus("saving");
       updateNote(noteIdRef.current, { contentJson: cj, mdText: mt })
         .then(() => {
@@ -122,8 +136,14 @@ export default function NoteView({ note, onBack, initialTagIds }: NoteViewProps)
     };
   }, [contentJson, mdText, flushSave]);
 
+  const originalTitleRef = useRef(note.title);
+  useEffect(() => {
+    originalTitleRef.current = note.title;
+  }, [note.id, note.title]);
+
   const handleTitleChange = useCallback(
     (newTitle: string) => {
+      if (newTitle === originalTitleRef.current) return;
       setTitle(newTitle);
       const now = Date.now();
       const store = useNotesStore.getState();
@@ -136,6 +156,7 @@ export default function NoteView({ note, onBack, initialTagIds }: NoteViewProps)
       if (currentNote && currentNote.id === noteIdRef.current) {
         store.setCurrentNote({ ...currentNote, title: newTitle, updatedAt: now });
       }
+      originalTitleRef.current = newTitle;
       setSaveStatus("saving");
       updateNote(noteIdRef.current, { title: newTitle })
         .then(() => {
