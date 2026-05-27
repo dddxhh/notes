@@ -433,6 +433,25 @@ body {
   background-color: var(--hover-bg);
 }
 
+/* Editor toolbar buttons */
+.toolbar-btn {
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.toolbar-btn:hover {
+  background-color: var(--hover-bg);
+  color: var(--text-primary);
+}
+
+.toolbar-btn-active {
+  background-color: var(--accent);
+  color: #fff;
+}
+
 /* Upload toolbar buttons */
 .upload-toolbar-btn {
   display: inline-flex;

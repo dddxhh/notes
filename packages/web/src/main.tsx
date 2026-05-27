@@ -5,6 +5,10 @@ import "./styles/index.css";
 import { useNotesStore, useFoldersStore, useUIStore, useTagsStore } from "./stores";
 import { getStorage } from "./lib";
 
+if (localStorage.getItem("theme") === "dark") {
+  document.documentElement.classList.add("dark");
+}
+
 if (import.meta.env.DEV) {
   (window as any).__notes_stores__ = {
     notes: useNotesStore,

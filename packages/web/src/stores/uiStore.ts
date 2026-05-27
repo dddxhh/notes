@@ -1,5 +1,11 @@
 import { create } from "zustand";
 
+function getInitialTheme(): "light" | "dark" {
+  const stored = localStorage.getItem("theme");
+  if (stored === "light" || stored === "dark") return stored;
+  return "light";
+}
+
 interface UIState {
   theme: "light" | "dark";
   editorMode: "wysiwyg" | "markdown";
@@ -14,7 +20,7 @@ interface UIState {
 }
 
 export const useUIStore = create<UIState>((set) => ({
-  theme: "light",
+  theme: getInitialTheme(),
   editorMode: "wysiwyg",
   sidebarOpen: true,
   isMobile: false,

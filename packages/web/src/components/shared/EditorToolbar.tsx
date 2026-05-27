@@ -30,14 +30,21 @@ export default function EditorToolbar({ editor, noteId = "" }: EditorToolbarProp
   };
 
   return (
-    <div className="flex items-center gap-1 p-2 border-b border-gray-200 bg-gray-50 rounded-t-lg">
+    <div
+      className="flex items-center gap-1 p-2 border-b rounded-t-lg"
+      style={{
+        borderColor: "var(--border-color)",
+        backgroundColor: "var(--bg-tertiary)",
+      }}
+    >
       <button
         onClick={() => editor.chain().focus().toggleBold().run()}
         className={`px-2 py-1 rounded text-sm font-bold ${
-          editor.isActive("bold")
-            ? "bg-blue-500 text-white"
-            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+          editor.isActive("bold") ? "toolbar-btn-active" : "toolbar-btn"
         }`}
+        style={
+          editor.isActive("bold") ? { backgroundColor: "var(--accent)", color: "#fff" } : undefined
+        }
         title="粗体"
       >
         B
@@ -45,10 +52,13 @@ export default function EditorToolbar({ editor, noteId = "" }: EditorToolbarProp
       <button
         onClick={() => editor.chain().focus().toggleItalic().run()}
         className={`px-2 py-1 rounded text-sm italic ${
-          editor.isActive("italic")
-            ? "bg-blue-500 text-white"
-            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+          editor.isActive("italic") ? "toolbar-btn-active" : "toolbar-btn"
         }`}
+        style={
+          editor.isActive("italic")
+            ? { backgroundColor: "var(--accent)", color: "#fff" }
+            : undefined
+        }
         title="斜体"
       >
         I
@@ -56,10 +66,13 @@ export default function EditorToolbar({ editor, noteId = "" }: EditorToolbarProp
       <button
         onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
         className={`px-2 py-1 rounded text-sm ${
-          editor.isActive("heading", { level: 1 })
-            ? "bg-blue-500 text-white"
-            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+          editor.isActive("heading", { level: 1 }) ? "toolbar-btn-active" : "toolbar-btn"
         }`}
+        style={
+          editor.isActive("heading", { level: 1 })
+            ? { backgroundColor: "var(--accent)", color: "#fff" }
+            : undefined
+        }
         title="标题1"
       >
         H1
@@ -67,10 +80,13 @@ export default function EditorToolbar({ editor, noteId = "" }: EditorToolbarProp
       <button
         onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
         className={`px-2 py-1 rounded text-sm ${
-          editor.isActive("heading", { level: 2 })
-            ? "bg-blue-500 text-white"
-            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+          editor.isActive("heading", { level: 2 }) ? "toolbar-btn-active" : "toolbar-btn"
         }`}
+        style={
+          editor.isActive("heading", { level: 2 })
+            ? { backgroundColor: "var(--accent)", color: "#fff" }
+            : undefined
+        }
         title="标题2"
       >
         H2
@@ -78,10 +94,13 @@ export default function EditorToolbar({ editor, noteId = "" }: EditorToolbarProp
       <button
         onClick={() => editor.chain().focus().toggleBulletList().run()}
         className={`px-2 py-1 rounded text-sm ${
-          editor.isActive("bulletList")
-            ? "bg-blue-500 text-white"
-            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+          editor.isActive("bulletList") ? "toolbar-btn-active" : "toolbar-btn"
         }`}
+        style={
+          editor.isActive("bulletList")
+            ? { backgroundColor: "var(--accent)", color: "#fff" }
+            : undefined
+        }
         title="无序列表"
       >
         • 列表
@@ -89,10 +108,13 @@ export default function EditorToolbar({ editor, noteId = "" }: EditorToolbarProp
       <button
         onClick={() => editor.chain().focus().toggleOrderedList().run()}
         className={`px-2 py-1 rounded text-sm ${
-          editor.isActive("orderedList")
-            ? "bg-blue-500 text-white"
-            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+          editor.isActive("orderedList") ? "toolbar-btn-active" : "toolbar-btn"
         }`}
+        style={
+          editor.isActive("orderedList")
+            ? { backgroundColor: "var(--accent)", color: "#fff" }
+            : undefined
+        }
         title="有序列表"
       >
         1. 列表
@@ -100,10 +122,13 @@ export default function EditorToolbar({ editor, noteId = "" }: EditorToolbarProp
       <button
         onClick={() => editor.chain().focus().toggleTaskList().run()}
         className={`px-2 py-1 rounded text-sm ${
-          editor.isActive("taskList")
-            ? "bg-blue-500 text-white"
-            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+          editor.isActive("taskList") ? "toolbar-btn-active" : "toolbar-btn"
         }`}
+        style={
+          editor.isActive("taskList")
+            ? { backgroundColor: "var(--accent)", color: "#fff" }
+            : undefined
+        }
         title="任务列表"
       >
         ☑ 任务
@@ -113,10 +138,11 @@ export default function EditorToolbar({ editor, noteId = "" }: EditorToolbarProp
           editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
         }
         className={`px-2 py-1 rounded text-sm ${
-          editor.isActive("table")
-            ? "bg-blue-500 text-white"
-            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+          editor.isActive("table") ? "toolbar-btn-active" : "toolbar-btn"
         }`}
+        style={
+          editor.isActive("table") ? { backgroundColor: "var(--accent)", color: "#fff" } : undefined
+        }
         title="插入表格"
       >
         ⊞ 表格
@@ -124,10 +150,13 @@ export default function EditorToolbar({ editor, noteId = "" }: EditorToolbarProp
       <button
         onClick={() => editor.chain().focus().toggleCodeBlock().run()}
         className={`px-2 py-1 rounded text-sm ${
-          editor.isActive("codeBlock")
-            ? "bg-blue-500 text-white"
-            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+          editor.isActive("codeBlock") ? "toolbar-btn-active" : "toolbar-btn"
         }`}
+        style={
+          editor.isActive("codeBlock")
+            ? { backgroundColor: "var(--accent)", color: "#fff" }
+            : undefined
+        }
         title="代码块"
       >
         {"{}"}代码
@@ -138,11 +167,12 @@ export default function EditorToolbar({ editor, noteId = "" }: EditorToolbarProp
           const lang = e.target.value;
           editor.chain().focus().updateAttributes("codeBlock", { language: lang }).run();
         }}
-        className={`px-1 py-1 rounded text-sm border ${
-          editor.isActive("codeBlock")
-            ? "border-blue-300"
-            : "border-gray-300 bg-white text-gray-500"
-        }`}
+        className="px-1 py-1 rounded text-sm border"
+        style={{
+          borderColor: editor.isActive("codeBlock") ? "var(--accent)" : "var(--border-color)",
+          backgroundColor: "var(--bg-secondary)",
+          color: "var(--text-secondary)",
+        }}
         title="代码语言"
         disabled={!editor.isActive("codeBlock")}
       >
@@ -156,7 +186,7 @@ export default function EditorToolbar({ editor, noteId = "" }: EditorToolbarProp
       <ImageUploadButton onFileSelected={handleImageUpload} />
       <VideoUploadButton onFileSelected={handleVideoUpload} />
       <div className="ml-auto flex items-center gap-2">
-        <span className="text-xs text-gray-500">
+        <span className="text-xs" style={{ color: "var(--text-tertiary)" }}>
           {editor.storage.characterCount?.characters() ?? 0} 字
         </span>
       </div>

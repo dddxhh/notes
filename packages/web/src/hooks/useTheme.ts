@@ -6,13 +6,6 @@ export function useTheme() {
   const setTheme = useUIStore((s) => s.setTheme);
 
   useEffect(() => {
-    const stored = localStorage.getItem("theme");
-    if (stored === "light" || stored === "dark") {
-      setTheme(stored);
-    }
-  }, [setTheme]);
-
-  useEffect(() => {
     if (theme === "dark") {
       document.documentElement.classList.add("dark");
     } else {
