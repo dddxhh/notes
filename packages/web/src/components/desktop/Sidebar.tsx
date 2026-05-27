@@ -11,6 +11,7 @@ import DeleteTagDialog from "../shared/DeleteTagDialog";
 import DeleteNoteDialog from "../shared/DeleteNoteDialog";
 import MoveNoteDialog from "../shared/MoveNoteDialog";
 import { extractTitleFromContent } from "../../lib/markdown-serializer";
+import DataManagementPanel from "../shared/DataManagementPanel";
 import type { Note } from "@notes/core";
 
 export default function Sidebar() {
@@ -52,6 +53,7 @@ export default function Sidebar() {
   const [moveNoteFolderId, setMoveNoteFolderId] = useState<string | null>(null);
   const [editingTagId, setEditingTagId] = useState<string | null>(null);
   const [editingTagName, setEditingTagName] = useState("");
+  const [showDataManagement, setShowDataManagement] = useState(false);
 
   const parentRef = useRef<HTMLDivElement>(null);
 
@@ -357,6 +359,15 @@ export default function Sidebar() {
           >
             🗑️
           </button>
+          <button
+            onClick={() => setShowDataManagement(true)}
+            aria-label="数据管理"
+            className="px-2 py-1 rounded text-sm hover:opacity-80"
+            style={{ backgroundColor: "var(--bg-tertiary)", color: "var(--text-primary)" }}
+            title="数据管理"
+          >
+            ⚙️
+          </button>
         </div>
         <button
           onClick={() => setSidebarOpen(false)}
@@ -403,6 +414,7 @@ export default function Sidebar() {
         currentFolderId={moveNoteFolderId}
         onMove={handleMoveToFolder}
       />
+      <DataManagementPanel open={showDataManagement} onOpenChange={setShowDataManagement} />
     </div>
   );
 }

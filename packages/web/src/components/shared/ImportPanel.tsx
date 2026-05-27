@@ -8,7 +8,6 @@ import {
   importMarkdownZip,
   importMarkdownFiles,
 } from "../../lib/import";
-import type { ImportFormat } from "../../lib/import";
 import type { DataDump } from "@notes/core";
 
 export default function ImportPanel() {
