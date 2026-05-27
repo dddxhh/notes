@@ -24,6 +24,7 @@ export async function importMarkdownZip(file: File): Promise<DataDump> {
   const buffer = await file.arrayBuffer();
   const entries = unzipSync(new Uint8Array(buffer));
 
+  let metadata: { tags?: { id: string; name: string }[]; folders?: any[] } | null = null;
   const folderNames = new Map<string, string>();
   const noteFiles: { path: string; content: string }[] = [];
   const attachmentFiles: { id: string; mimeType: string; data: Uint8Array }[] = [];
@@ -32,7 +33,11 @@ export async function importMarkdownZip(file: File): Promise<DataDump> {
   const decoder = new TextDecoder();
 
   for (const [path, data] of Object.entries(entries)) {
-    if (path.startsWith("attachments/thumbnails/")) {
+    if (path === "metadata.json") {
+      try {
+        metadata = JSON.parse(decoder.decode(data));
+      } catch {}
+    } else if (path.startsWith("attachments/thumbnails/")) {
       const id = path.split("/").pop()?.replace(".webp", "") ?? "";
       thumbnailFiles.push({ id, data });
     } else if (path.startsWith("attachments/")) {
@@ -58,16 +63,58 @@ export async function importMarkdownZip(file: File): Promise<DataDump> {
 
   const folders: DataDump["folders"] = [];
   const folderPathToId = new Map<string, string>();
-  for (const [name, id] of folderNames) {
-    folders.push({
-      id,
-      name,
-      parentId: null,
-      sortOrder: 0,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    });
-    folderPathToId.set(name, id);
+
+  if (metadata && metadata.folders) {
+    for (const f of metadata.folders) {
+      folders.push({
+        id: f.id,
+        name: f.name,
+        parentId: f.parentId ?? null,
+        sortOrder: f.sortOrder ?? 0,
+        createdAt: f.createdAt ?? Date.now(),
+        updatedAt: f.updatedAt ?? Date.now(),
+      });
+      folderPathToId.set(f.name, f.id);
+    }
+  } else {
+    for (const [name, id] of folderNames) {
+      folders.push({
+        id,
+        name,
+        parentId: null,
+        sortOrder: 0,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      });
+      folderPathToId.set(name, id);
+    }
+  }
+
+  const folderIdMap = new Map<string, string>();
+
+  if (metadata && metadata.folders) {
+    const folderById = new Map<string, any>();
+    for (const f of metadata.folders) {
+      folderById.set(f.id, f);
+      folderIdMap.set(f.id, f.id);
+    }
+    const folderPathById = new Map<string, string>();
+    for (const f of metadata.folders) {
+      let path = f.name;
+      if (f.parentId) {
+        const parentPath = folderPathById.get(f.parentId) ?? "";
+        path = parentPath ? `${parentPath}/${path}` : path;
+      }
+      folderPathById.set(f.id, path);
+    }
+    for (const f of metadata.folders) {
+      const path = folderPathById.get(f.id) ?? f.name;
+      folderIdMap.set(path, f.id);
+    }
+  } else {
+    for (const [name, id] of folderNames) {
+      folderIdMap.set(name, id);
+    }
   }
 
   const notes: DataDump["notes"] = [];
@@ -76,6 +123,19 @@ export async function importMarkdownZip(file: File): Promise<DataDump> {
   const attachmentBlobs: DataDump["attachmentBlobs"] = [];
   const thumbnails: DataDump["thumbnails"] = [];
   const tags: DataDump["tags"] = [];
+
+  if (metadata && metadata.tags) {
+    for (const t of metadata.tags) {
+      tags.push({ id: t.id, name: t.name });
+    }
+  }
+
+  const tagNameToId = new Map<string, string>();
+  if (metadata && metadata.tags) {
+    for (const t of metadata.tags) {
+      tagNameToId.set(t.name, t.id);
+    }
+  }
 
   for (const nf of noteFiles) {
     const noteId = generateId();
@@ -88,8 +148,8 @@ export async function importMarkdownZip(file: File): Promise<DataDump> {
     const dirPath = nf.path.substring(0, nf.path.lastIndexOf("/"));
     let folderId: string | null = null;
     if (dirPath) {
-      const folderName = dirPath.split("/").pop() ?? "";
-      folderId = folderPathToId.get(folderName) ?? null;
+      folderId =
+        folderIdMap.get(dirPath) ?? folderIdMap.get(dirPath.split("/").pop() ?? "") ?? null;
     }
 
     notes.push({
@@ -111,10 +171,15 @@ export async function importMarkdownZip(file: File): Promise<DataDump> {
       allTags.add(match[1]);
     }
     for (const tagName of allTags) {
-      const tagId = `tag-${tagName}`;
+      const tagId = tagNameToId.get(tagName) ?? `tag-${tagName}`;
       noteTags.push({ noteId, tagId });
       if (!tags.some((t) => t.id === tagId)) {
-        tags.push({ id: tagId, name: tagName });
+        if (tagNameToId.has(tagName)) {
+          const original = metadata!.tags!.find((t) => t.id === tagId)!;
+          tags.push({ id: tagId, name: original.name });
+        } else {
+          tags.push({ id: tagId, name: tagName });
+        }
       }
     }
   }

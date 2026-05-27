@@ -68,6 +68,20 @@ export function exportAsMarkdownZip(dump: DataDump): void {
     files[`attachments/thumbnails/${th.id}.webp`] = bytes;
   }
 
+  const metadata = {
+    tags: dump.tags,
+    folders: dump.folders.map((f) => ({
+      id: f.id,
+      name: f.name,
+      parentId: f.parentId,
+      sortOrder: f.sortOrder,
+      createdAt: f.createdAt,
+      updatedAt: f.updatedAt,
+    })),
+  };
+  const encoder = new TextEncoder();
+  files["metadata.json"] = encoder.encode(JSON.stringify(metadata, null, 2));
+
   const zipped = zipSync(files);
   const blob = new Blob([zipped], { type: "application/zip" });
   downloadBlob(blob, `笔记-${formatDate()}.zip`);
