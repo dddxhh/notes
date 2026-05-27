@@ -38,9 +38,18 @@ export function exportAsMarkdownZip(dump: DataDump): void {
     const mdPath = folderPath ? `${folderPath}/${filename}.md` : `${filename}.md`;
 
     const tags = noteTagMap.get(note.id);
+    const createdDate = new Date(note.createdAt).toISOString();
+    const updatedDate = new Date(note.updatedAt).toISOString();
     let content = note.mdText;
+    const fmLines: string[] = [];
+    fmLines.push("created: " + createdDate);
+    fmLines.push("updated: " + updatedDate);
     if (tags && tags.length > 0) {
-      const frontmatter = `---\ntags:\n${tags.map((t) => `- ${t}`).join("\n")}\n---\n`;
+      fmLines.push("tags:");
+      for (const t of tags) fmLines.push("- " + t);
+    }
+    if (fmLines.length > 0) {
+      const frontmatter = `---\n${fmLines.join("\n")}\n---\n`;
       content = frontmatter + content;
     }
 

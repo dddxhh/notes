@@ -139,7 +139,12 @@ export async function importMarkdownZip(file: File): Promise<DataDump> {
 
   for (const nf of noteFiles) {
     const noteId = generateId();
-    const { content: strippedContent, frontmatterTags } = parseFrontmatter(nf.content);
+    const {
+      content: strippedContent,
+      frontmatterTags,
+      createdAt,
+      updatedAt,
+    } = parseFrontmatter(nf.content);
     const title =
       extractTitle(strippedContent) || nf.path.split("/").pop()?.replace(".md", "") || noteId;
     const mdText = strippedContent;
@@ -159,8 +164,8 @@ export async function importMarkdownZip(file: File): Promise<DataDump> {
       mdText,
       folderId,
       type: "markdown",
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
+      createdAt,
+      updatedAt,
       deletedAt: null,
       version: 1,
     });
@@ -223,7 +228,12 @@ export async function importMarkdownFiles(files: File[]): Promise<DataDump> {
   for (const file of files) {
     const noteId = generateId();
     const rawText = await file.text();
-    const { content: strippedContent, frontmatterTags } = parseFrontmatter(rawText);
+    const {
+      content: strippedContent,
+      frontmatterTags,
+      createdAt,
+      updatedAt,
+    } = parseFrontmatter(rawText);
     const title = extractTitle(strippedContent) || file.name.replace(".md", "");
     const mdText = strippedContent;
     const contentJson = markdownToProseMirrorJSON(mdText);
@@ -235,8 +245,8 @@ export async function importMarkdownFiles(files: File[]): Promise<DataDump> {
       mdText,
       folderId: null,
       type: "markdown",
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
+      createdAt,
+      updatedAt,
       deletedAt: null,
       version: 1,
     });
@@ -273,14 +283,22 @@ function extractTitle(mdText: string): string {
   return match ? match[1].trim() : "";
 }
 
-function parseFrontmatter(text: string): { content: string; frontmatterTags: string[] } {
+function parseFrontmatter(text: string): {
+  content: string;
+  frontmatterTags: string[];
+  createdAt: number;
+  updatedAt: number;
+} {
   const match = text.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n/);
-  if (!match) return { content: text, frontmatterTags: [] };
+  if (!match)
+    return { content: text, frontmatterTags: [], createdAt: Date.now(), updatedAt: Date.now() };
 
   const frontmatter = match[1];
   const content = text.slice(match[0].length);
 
   const tags: string[] = [];
+  let createdAt: number | null = null;
+  let updatedAt: number | null = null;
   const lines = frontmatter.split(/\r?\n/);
   let inTagsSection = false;
   for (const line of lines) {
@@ -305,8 +323,21 @@ function parseFrontmatter(text: string): { content: string; frontmatterTags: str
         inTagsSection = false;
       }
     }
+    const createdMatch = line.match(/^created:\s+(.+)$/);
+    if (createdMatch) {
+      createdAt = new Date(createdMatch[1].trim()).getTime();
+    }
+    const updatedMatch = line.match(/^updated:\s+(.+)$/);
+    if (updatedMatch) {
+      updatedAt = new Date(updatedMatch[1].trim()).getTime();
+    }
   }
-  return { content, frontmatterTags: tags };
+  return {
+    content,
+    frontmatterTags: tags,
+    createdAt: createdAt ?? Date.now(),
+    updatedAt: updatedAt ?? Date.now(),
+  };
 }
 
 function uint8ArrayToBase64(bytes: Uint8Array): string {
