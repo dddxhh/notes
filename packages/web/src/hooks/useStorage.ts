@@ -11,6 +11,7 @@ import {
   UpdateTagInput,
   SearchInput,
   SearchResult,
+  DataDump,
 } from "@notes/core";
 
 export function useStorage() {
@@ -107,6 +108,14 @@ export function useStorage() {
     return getStorage().getTagsForNote(noteId);
   }, []);
 
+  const dumpAll = useCallback(async (): Promise<DataDump> => {
+    return getStorage().dumpAll();
+  }, []);
+
+  const restoreAll = useCallback(async (dump: DataDump): Promise<void> => {
+    return getStorage().restoreAll(dump);
+  }, []);
+
   return {
     createNote,
     updateNote,
@@ -129,5 +138,7 @@ export function useStorage() {
     updateNotesFolderId,
     softDeleteNotesByFolder,
     getTagsForNote,
+    dumpAll,
+    restoreAll,
   };
 }
