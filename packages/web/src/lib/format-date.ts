@@ -9,6 +9,7 @@ export function formatDateTime(ts: number | null): string {
   const timeStr = d.toLocaleTimeString("zh-CN", {
     hour: "2-digit",
     minute: "2-digit",
+    second: "2-digit",
   });
   return `${dateStr} ${timeStr}`;
 }
