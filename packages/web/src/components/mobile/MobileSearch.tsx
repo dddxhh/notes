@@ -3,7 +3,7 @@ import { useSearch } from "../../hooks";
 import SearchBar from "../shared/SearchBar";
 import SearchFilterPanel from "../shared/SearchFilterPanel";
 import SearchResultList from "../shared/SearchResultList";
-import { useFoldersStore, useTagsStore } from "../../stores";
+import { useTagsStore } from "../../stores";
 
 interface MobileSearchProps {
   onSelectNote?: (id: string) => void;
@@ -12,7 +12,6 @@ interface MobileSearchProps {
 export default function MobileSearch({ onSelectNote }: MobileSearchProps) {
   const { searchInput, result, loading, updateFilter, clearSearch, executeSearch } = useSearch();
   const [showFilter, setShowFilter] = useState(false);
-  const folders = useFoldersStore((s) => s.folders);
   const tags = useTagsStore((s) => s.tags);
 
   const handleSelectNote = (id: string) => {
@@ -36,12 +35,7 @@ export default function MobileSearch({ onSelectNote }: MobileSearchProps) {
 
       {showFilter && (
         <div className="px-3">
-          <SearchFilterPanel
-            folders={folders}
-            tags={tags}
-            filter={searchInput}
-            onFilterChange={updateFilter}
-          />
+          <SearchFilterPanel tags={tags} filter={searchInput} onFilterChange={updateFilter} />
         </div>
       )}
 

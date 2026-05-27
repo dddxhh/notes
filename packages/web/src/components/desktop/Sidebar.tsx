@@ -17,7 +17,6 @@ export default function Sidebar() {
   const notes = useNotesStore((s) => s.notes);
   const setCurrentNote = useNotesStore((s) => s.setCurrentNote);
   const tags = useTagsStore((s) => s.tags);
-  const folders = useFoldersStore((s) => s.folders);
   const currentFolderId = useFoldersStore((s) => s.currentFolderId);
   const deleteTagFromStore = useTagsStore((s) => s.deleteTag);
   const sidebarOpen = useUIStore((s) => s.sidebarOpen);
@@ -132,9 +131,6 @@ export default function Sidebar() {
         (n) => n.title.toLowerCase().includes(q) || n.mdText.toLowerCase().includes(q),
       );
     }
-    if (searchInput.folderId) {
-      notes = notes.filter((n) => n.folderId === searchInput.folderId);
-    }
     if (searchResultIds) {
       notes = notes.filter((n) => searchResultIds.has(n.id));
     }
@@ -244,7 +240,7 @@ export default function Sidebar() {
       }}
     >
       <div className="p-3 space-y-2 border-b" style={{ borderColor: "var(--border-color)" }}>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between">
           <FolderTreeDropdown />
           <button
             onClick={handleNewNote}
@@ -261,12 +257,7 @@ export default function Sidebar() {
           onToggleFilter={() => setShowFilter(!showFilter)}
         />
         {showFilter && (
-          <SearchFilterPanel
-            folders={folders}
-            tags={tags}
-            filter={searchInput}
-            onFilterChange={updateFilter}
-          />
+          <SearchFilterPanel tags={tags} filter={searchInput} onFilterChange={updateFilter} />
         )}
       </div>
 

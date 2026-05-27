@@ -1,23 +1,16 @@
-import type { Folder, Tag, SearchInput, TagFilterMode } from "@notes/core";
+import type { Tag, SearchInput, TagFilterMode } from "@notes/core";
 
 interface SearchFilterPanelProps {
-  folders: Folder[];
   tags: Tag[];
   filter: SearchInput;
   onFilterChange: (partial: Partial<SearchInput>) => void;
 }
 
 export default function SearchFilterPanel({
-  folders,
   tags,
   filter,
   onFilterChange,
 }: SearchFilterPanelProps) {
-  const handleFolderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
-    onFilterChange({ folderId: value || undefined });
-  };
-
   const handleTagClick = (tagId: string) => {
     const current = filter.tagIds || [];
     const newTagIds = current.includes(tagId)
@@ -69,30 +62,6 @@ export default function SearchFilterPanel({
       className="flex flex-col gap-3 p-3 rounded-lg"
       style={{ backgroundColor: "var(--bg-secondary)" }}
     >
-      <div>
-        <label className="text-sm font-medium block mb-1" style={{ color: "var(--text-primary)" }}>
-          文件夹
-        </label>
-        <select
-          value={filter.folderId || ""}
-          onChange={handleFolderChange}
-          aria-label="文件夹"
-          className="w-full rounded-md border px-2 py-1.5 text-sm outline-none"
-          style={{
-            backgroundColor: "var(--bg-primary)",
-            color: "var(--text-primary)",
-            borderColor: "var(--border-color)",
-          }}
-        >
-          <option value="">全部</option>
-          {folders.map((f) => (
-            <option key={f.id} value={f.id}>
-              {f.name}
-            </option>
-          ))}
-        </select>
-      </div>
-
       <div>
         <div className="flex items-center justify-between mb-1">
           <span className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>
