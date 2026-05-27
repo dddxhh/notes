@@ -25,7 +25,8 @@ export default function NoteView({ note, onBack, initialTagIds }: NoteViewProps)
   const tags = useTagsStore((s) => s.tags);
   const addTagToStore = useTagsStore((s) => s.addTag);
   const removeNoteFromList = useNotesStore((s) => s.removeNoteFromList);
-  const { updateNote, addTagsToNote, removeTagFromNote, createTag, deleteNote } = useStorage();
+  const { updateNote, addTagsToNote, removeTagFromNote, createTag, deleteNote, getTagsForNote } =
+    useStorage();
   const { uploadFile } = useAttachmentUpload(note.id);
   const { showToast } = useToast();
   const [contentJson, setContentJson] = useState(note.contentJson);
@@ -41,8 +42,14 @@ export default function NoteView({ note, onBack, initialTagIds }: NoteViewProps)
     setContentJson(note.contentJson);
     setMdText(note.mdText);
     setTitle(note.title);
-    setNoteTagIds(initialTagIds ?? []);
-  }, [note.id, initialTagIds]);
+    if (initialTagIds) {
+      setNoteTagIds(initialTagIds);
+    } else {
+      getTagsForNote(note.id)
+        .then((t) => setNoteTagIds(t.map((tag) => tag.id)))
+        .catch(() => {});
+    }
+  }, [note.id, initialTagIds, getTagsForNote]);
 
   useEffect(() => {
     return () => revokeAllObjectUrls();
