@@ -3,5 +3,5 @@ export { createDefaultNote } from "./note";
 export type { Folder, CreateFolderInput, UpdateFolderInput } from "./folder";
 export { createDefaultFolder } from "./folder";
 export type { Attachment, AttachmentType } from "./attachment";
-export type { Tag } from "./tag";
+export type { Tag, UpdateTagInput } from "./tag";
 export type { SearchInput, SearchResult, TagFilterMode } from "./search";

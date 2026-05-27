@@ -19,6 +19,7 @@ import type {
   Attachment,
   AttachmentType,
   Tag,
+  UpdateTagInput,
   SearchInput,
   SearchResult,
 } from "@notes/core";
@@ -620,6 +621,14 @@ export class SharedWorkerStorageAdapter implements StorageAdapter {
     const id = generateId();
     await this.client.run(`INSERT INTO tags (id, name) VALUES (?, ?)`, [id, name]);
     return { id, name };
+  }
+
+  async updateTag(id: string, input: UpdateTagInput): Promise<Tag> {
+    if (input.name) {
+      await this.client.run(`UPDATE tags SET name=? WHERE id=?`, [input.name, id]);
+    }
+    const rows = await this.client.query<Row>(`SELECT id, name FROM tags WHERE id=?`, [id]);
+    return { id: rows[0].id as string, name: rows[0].name as string };
   }
 
   async addTagToNote(noteId: string, tagId: string): Promise<void> {

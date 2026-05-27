@@ -8,6 +8,7 @@ import {
   Attachment,
   AttachmentType,
   Tag,
+  UpdateTagInput,
   SearchInput,
   SearchResult,
 } from "../models";
@@ -39,6 +40,7 @@ export interface StorageAdapter {
   searchNotes(input: SearchInput): Promise<SearchResult>;
 
   createTag(name: string): Promise<Tag>;
+  updateTag(id: string, input: UpdateTagInput): Promise<Tag>;
   addTagToNote(noteId: string, tagId: string): Promise<void>;
   addTagsToNote(noteId: string, tagIds: string[]): Promise<void>;
   removeTagFromNote(noteId: string, tagId: string): Promise<void>;

@@ -31,6 +31,7 @@ export default function Sidebar() {
     createNote,
     deleteNote,
     updateNote,
+    updateTag,
     getTagsForNote,
   } = useStorage();
   const addNote = useNotesStore((s) => s.addNote);
@@ -40,6 +41,7 @@ export default function Sidebar() {
   const setNoteTagsMap = useNotesStore((s) => s.setNoteTagsMap);
   const setFolders = useFoldersStore((s) => s.setFolders);
   const setTags = useTagsStore((s) => s.setTags);
+  const updateTagInList = useTagsStore((s) => s.updateTagInList);
 
   const { searchInput, result, updateFilter, clearSearch } = useSearch();
   const [showFilter, setShowFilter] = useState(false);
@@ -49,6 +51,8 @@ export default function Sidebar() {
   const [deleteNoteId, setDeleteNoteId] = useState<string | null>(null);
   const [moveNoteId, setMoveNoteId] = useState<string | null>(null);
   const [moveNoteFolderId, setMoveNoteFolderId] = useState<string | null>(null);
+  const [editingTagId, setEditingTagId] = useState<string | null>(null);
+  const [editingTagName, setEditingTagName] = useState("");
 
   const parentRef = useRef<HTMLDivElement>(null);
 
@@ -156,6 +160,21 @@ export default function Sidebar() {
     );
   };
 
+  const handleStartEditTag = useCallback((tag: { id: string; name: string }) => {
+    setEditingTagId(tag.id);
+    setEditingTagName(tag.name);
+  }, []);
+
+  const handleFinishEditTag = useCallback(async () => {
+    if (!editingTagId || !editingTagName.trim()) {
+      setEditingTagId(null);
+      return;
+    }
+    const updated = await updateTag(editingTagId, { name: editingTagName.trim() });
+    updateTagInList(updated.id, updated);
+    setEditingTagId(null);
+  }, [editingTagId, editingTagName, updateTag, updateTagInList]);
+
   const handleNewNote = useCallback(async () => {
     const note = await createNote({ title: "", folderId: currentFolderId });
     addNote(note);
@@ -245,19 +264,39 @@ export default function Sidebar() {
       <div className="px-3 py-2 flex flex-wrap gap-1">
         {tags.map((tag) => (
           <div key={tag.id} className="flex items-center gap-0.5">
-            <button
-              onClick={() => handleTagClick(tag.id)}
-              className={`px-2 py-1 rounded-md text-xs ${
-                activeTagIds.includes(tag.id) ? "bg-blue-500 text-white" : ""
-              }`}
-              style={
-                !activeTagIds.includes(tag.id)
-                  ? { backgroundColor: "var(--bg-tertiary)", color: "var(--text-primary)" }
-                  : undefined
-              }
-            >
-              {tag.name}
-            </button>
+            {editingTagId === tag.id ? (
+              <input
+                value={editingTagName}
+                onChange={(e) => setEditingTagName(e.target.value)}
+                onBlur={handleFinishEditTag}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleFinishEditTag();
+                  if (e.key === "Escape") setEditingTagId(null);
+                }}
+                className="px-1 py-0.5 rounded-md text-xs w-20"
+                style={{
+                  backgroundColor: "var(--bg-tertiary)",
+                  color: "var(--text-primary)",
+                  border: "1px solid var(--accent)",
+                }}
+                autoFocus
+              />
+            ) : (
+              <button
+                onClick={() => handleTagClick(tag.id)}
+                onDoubleClick={() => handleStartEditTag(tag)}
+                className={`px-2 py-1 rounded-md text-xs ${
+                  activeTagIds.includes(tag.id) ? "bg-blue-500 text-white" : ""
+                }`}
+                style={
+                  !activeTagIds.includes(tag.id)
+                    ? { backgroundColor: "var(--bg-tertiary)", color: "var(--text-primary)" }
+                    : undefined
+                }
+              >
+                {tag.name}
+              </button>
+            )}
             <button
               onClick={() => handleDeleteTagClick(tag.id)}
               className="px-1 py-0.5 text-xs rounded hover:opacity-80"

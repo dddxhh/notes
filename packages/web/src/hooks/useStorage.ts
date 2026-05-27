@@ -8,6 +8,7 @@ import {
   CreateFolderInput,
   UpdateFolderInput,
   Tag,
+  UpdateTagInput,
   SearchInput,
   SearchResult,
 } from "@notes/core";
@@ -54,6 +55,10 @@ export function useStorage() {
 
   const createTag = useCallback(async (name: string): Promise<Tag> => {
     return getStorage().createTag(name);
+  }, []);
+
+  const updateTag = useCallback(async (id: string, input: UpdateTagInput): Promise<Tag> => {
+    return getStorage().updateTag(id, input);
   }, []);
 
   const addTagsToNote = useCallback(async (noteId: string, tagIds: string[]): Promise<void> => {
@@ -113,6 +118,7 @@ export function useStorage() {
     deleteFolder,
     listFolders,
     createTag,
+    updateTag,
     addTagsToNote,
     listTags,
     removeTagFromNote,

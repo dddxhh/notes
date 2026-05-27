@@ -21,6 +21,7 @@ import {
   Attachment,
   AttachmentType,
   Tag,
+  UpdateTagInput,
   SearchInput,
   SearchResult,
 } from "../models";
@@ -305,6 +306,15 @@ export class WebStorageAdapter implements StorageAdapter {
     const id = generateId();
     await runSQL(db, `INSERT INTO tags (id, name) VALUES (?, ?)`, [id, name]);
     return { id, name };
+  }
+
+  async updateTag(id: string, input: UpdateTagInput): Promise<Tag> {
+    const db = this.getDB();
+    if (input.name) {
+      await runSQL(db, `UPDATE tags SET name=? WHERE id=?`, [input.name, id]);
+    }
+    const rows = await querySQL<Row>(db, `SELECT id, name FROM tags WHERE id=?`, [id]);
+    return { id: rows[0].id as string, name: rows[0].name as string };
   }
 
   async addTagToNote(noteId: string, tagId: string): Promise<void> {
