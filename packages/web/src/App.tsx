@@ -14,7 +14,12 @@ export default function App() {
   const [bannerDismissed, setBannerDismissed] = useState(false);
 
   useEffect(() => {
-    initStorage().then(() => setReady(true));
+    initStorage().then(() => {
+      setReady(true);
+      if (navigator.storage && navigator.storage.persist) {
+        navigator.storage.persist();
+      }
+    });
   }, []);
 
   if (!ready)
