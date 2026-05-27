@@ -112,9 +112,9 @@ export default function ImportPanel() {
         }}
       >
         <AlertDialog.Portal>
-          <AlertDialog.Overlay className="fixed inset-0 bg-black/50" />
+          <AlertDialog.Overlay className="fixed inset-0 bg-black/50 z-[60]" />
           <AlertDialog.Content
-            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 rounded-lg p-4 shadow-lg"
+            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 rounded-lg p-4 shadow-lg z-[61]"
             style={{ backgroundColor: "var(--bg-secondary)", color: "var(--text-primary)" }}
           >
             <AlertDialog.Title className="text-sm font-semibold mb-2">确认导入</AlertDialog.Title>
