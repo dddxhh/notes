@@ -172,6 +172,15 @@ export default function Sidebar() {
     }
     const updated = await updateTag(editingTagId, { name: editingTagName.trim() });
     updateTagInList(updated.id, updated);
+    const map = useNotesStore.getState().noteTagsMap;
+    const next = new Map(map);
+    for (const [noteId, noteTags] of map.entries()) {
+      next.set(
+        noteId,
+        noteTags.map((t) => (t.id === updated.id ? updated : t)),
+      );
+    }
+    useNotesStore.getState().setNoteTagsMap(next);
     setEditingTagId(null);
   }, [editingTagId, editingTagName, updateTag, updateTagInList]);
 
