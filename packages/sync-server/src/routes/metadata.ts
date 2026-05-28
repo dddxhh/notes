@@ -11,8 +11,12 @@ export const metadataRoutes: FastifyPluginAsync = async (app) => {
 
     const [notes, folders, tags, noteTags, attachments] = await Promise.all([
       pool.query(
-        `SELECT id, title, folder_id, type, created_at, updated_at, deleted_at, version
-         FROM note_metadata WHERE user_id = $1`,
+        `SELECT nm.id, nm.title, nm.folder_id, nm.type, nm.created_at, nm.updated_at, nm.deleted_at, nm.version,
+                CASE WHEN nm.user_id = $1 THEN true ELSE false END as is_owner,
+                CASE WHEN nm.user_id != $1 THEN s.permission ELSE NULL END as share_permission
+         FROM note_metadata nm
+         LEFT JOIN shares s ON s.note_id = nm.id AND s.target_user_id = $1 AND s.type = 'user_share'
+         WHERE nm.user_id = $1 OR s.target_user_id = $1`,
         [userId],
       ),
       pool.query(
@@ -44,6 +48,8 @@ export const metadataRoutes: FastifyPluginAsync = async (app) => {
         updatedAt: r.updated_at,
         deletedAt: r.deleted_at,
         version: r.version,
+        isOwner: r.is_owner,
+        sharePermission: r.share_permission,
       })),
       folders: folders.rows.map((r: any) => ({
         id: r.id,
