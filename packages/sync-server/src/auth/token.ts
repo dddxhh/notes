@@ -14,7 +14,7 @@ export function signAccessToken(
   secret: string,
   expiresIn: string = "1h",
 ): string {
-  return jwt.sign(payload, secret, { expiresIn });
+  return jwt.sign(payload, secret, { expiresIn: expiresIn as jwt.SignOptions["expiresIn"] });
 }
 
 export function signRefreshToken(
@@ -22,7 +22,7 @@ export function signRefreshToken(
   secret: string,
   expiresIn: string = "30d",
 ): string {
-  return jwt.sign(payload, secret, { expiresIn });
+  return jwt.sign(payload, secret, { expiresIn: expiresIn as jwt.SignOptions["expiresIn"] });
 }
 
 export function verifyAccessToken(token: string, secret: string): AccessTokenPayload {
