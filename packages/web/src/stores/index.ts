@@ -5,3 +5,4 @@ export { useAttachmentsStore } from "./attachmentsStore";
 export { useTagsStore } from "./tagsStore";
 export { useSlashCommandStore } from "./slashCommandStore";
 export { useSyncStore } from "./syncStore";
+export { useAuthStore } from "./authStore";
