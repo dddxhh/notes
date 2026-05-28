@@ -16,15 +16,16 @@
   },
   "devDependencies": {
     "@types/uuid": "^9",
+    "@vitest/browser": "^3",
     "fake-indexeddb": "^6.2.5",
     "happy-dom": "^15",
-    "typescript": "^5",
-    "@vitest/browser": "^3",
     "playwright": "^1.60",
+    "typescript": "^5",
     "vitest": "^3"
   },
   "dependencies": {
     "uuid": "^9",
-    "wa-sqlite": "1.0.0"
+    "wa-sqlite": "1.0.0",
+    "yjs": "^13.6.30"
   }
 }

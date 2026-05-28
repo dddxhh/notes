@@ -21,8 +21,11 @@
     "bcrypt": "^5",
     "fastify": "^4",
     "jsonwebtoken": "^9",
+    "lib0": "^0.2.117",
     "nanoid": "^5",
-    "pg": "^8"
+    "pg": "^8",
+    "y-protocols": "^1.0.7",
+    "yjs": "^13.6.30"
   },
   "devDependencies": {
     "@types/bcrypt": "^5",
