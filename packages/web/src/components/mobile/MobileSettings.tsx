@@ -2,6 +2,7 @@ import ThemeToggle from "../shared/ThemeToggle";
 import ModeToggle from "../shared/ModeToggle";
 import ExportPanel from "../shared/ExportPanel";
 import ImportPanel from "../shared/ImportPanel";
+import SyncSettingsPanel from "../shared/SyncSettingsPanel";
 
 export default function MobileSettings() {
   return (
@@ -17,6 +18,12 @@ export default function MobileSettings() {
       <div className="space-y-2">
         <h3 className="text-sm font-semibold">编辑模式</h3>
         <ModeToggle />
+      </div>
+      <div
+        className="space-y-3 p-3 rounded-md"
+        style={{ backgroundColor: "var(--bg-secondary)", borderColor: "var(--border-color)" }}
+      >
+        <SyncSettingsPanel />
       </div>
       <div
         className="space-y-3 p-3 rounded-md"

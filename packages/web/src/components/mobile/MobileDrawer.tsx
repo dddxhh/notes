@@ -4,6 +4,7 @@ import { useTagsStore, useFoldersStore, useNotesStore, useUIStore } from "../../
 import { useStorage } from "../../hooks";
 import DeleteTagDialog from "../shared/DeleteTagDialog";
 import DeleteFolderDialog from "../shared/DeleteFolderDialog";
+import SyncStatusIndicator from "../shared/SyncStatusIndicator";
 import type { Note } from "@notes/core";
 import { useState, useCallback } from "react";
 
@@ -132,6 +133,9 @@ export default function MobileDrawer({
           style={{ backgroundColor: "var(--bg-primary)", color: "var(--text-primary)" }}
         >
           <Dialog.Title className="text-lg font-bold mb-4">导航</Dialog.Title>
+          <div className="mb-3">
+            <SyncStatusIndicator />
+          </div>
           <Dialog.Close asChild>
             <button
               aria-label="关闭"

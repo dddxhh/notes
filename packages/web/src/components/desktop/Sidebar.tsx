@@ -12,6 +12,7 @@ import DeleteNoteDialog from "../shared/DeleteNoteDialog";
 import MoveNoteDialog from "../shared/MoveNoteDialog";
 import { extractTitleFromContent } from "../../lib/markdown-serializer";
 import DataManagementPanel from "../shared/DataManagementPanel";
+import SyncStatusIndicator from "../shared/SyncStatusIndicator";
 import type { Note } from "@notes/core";
 
 export default function Sidebar() {
@@ -349,6 +350,7 @@ export default function Sidebar() {
         style={{ borderColor: "var(--border-color)" }}
       >
         <div className="flex items-center gap-2">
+          <SyncStatusIndicator />
           <ThemeToggle />
           <button
             onClick={() => useUIStore.getState().setShowTrash(true)}

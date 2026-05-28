@@ -1,0 +1,41 @@
+{
+  "name": "@notes/sync-server",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src",
+    "format": "prettier --write src",
+    "format:check": "prettier --check src",
+    "migrate": "tsx src/db/migrate.ts"
+  },
+  "dependencies": {
+    "@fastify/cors": "^9",
+    "@fastify/multipart": "^8",
+    "@fastify/websocket": "^10",
+    "bcrypt": "^5",
+    "fastify": "^4",
+    "jsonwebtoken": "^9",
+    "lib0": "^0.2.117",
+    "nanoid": "^5",
+    "pg": "^8",
+    "ws": "^8",
+    "y-protocols": "^1.0.7",
+    "yjs": "^13.6.30"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^5",
+    "@types/jsonwebtoken": "^9",
+    "@types/node": "^25.9.1",
+    "@types/pg": "^8",
+    "@types/ws": "^8.18.1",
+    "tsx": "^4",
+    "typescript": "^5",
+    "vitest": "^3"
+  }
+}
