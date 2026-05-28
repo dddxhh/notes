@@ -24,6 +24,7 @@
     "lib0": "^0.2.117",
     "nanoid": "^5",
     "pg": "^8",
+    "ws": "^8",
     "y-protocols": "^1.0.7",
     "yjs": "^13.6.30"
   },
@@ -32,6 +33,7 @@
     "@types/jsonwebtoken": "^9",
     "@types/node": "^25.9.1",
     "@types/pg": "^8",
+    "@types/ws": "^8.18.1",
     "tsx": "^4",
     "typescript": "^5",
     "vitest": "^3"
