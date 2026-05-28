@@ -78,7 +78,10 @@ vi.mock("../src/hooks", () => ({
       version: 1,
     }),
     addTagsToNote: vi.fn(),
+    removeTagFromNote: vi.fn(),
     createTag: vi.fn(),
+    deleteNote: vi.fn(),
+    getTagsForNote: vi.fn().mockResolvedValue([]),
   }),
   useSearch: () => ({
     searchInput: {},

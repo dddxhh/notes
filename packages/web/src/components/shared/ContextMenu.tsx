@@ -31,7 +31,9 @@ export default function ContextMenu({
 
   return (
     <RadixContextMenu.Root>
-      <RadixContextMenu.Trigger asChild>{children}</RadixContextMenu.Trigger>
+      <RadixContextMenu.Trigger asChild>
+        <div data-radix-context-menu-trigger="">{children}</div>
+      </RadixContextMenu.Trigger>
       <RadixContextMenu.Content
         className="context-menu-content"
         style={{

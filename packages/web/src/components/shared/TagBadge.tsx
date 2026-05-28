@@ -9,7 +9,7 @@ export default function TagBadge({ name, onClick, removable, onRemove }: TagBadg
   return (
     <span
       onClick={onClick}
-      className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-blue-100 text-blue-700 cursor-pointer hover:bg-blue-200"
+      className="tag-badge inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-blue-100 text-blue-700 cursor-pointer hover:bg-blue-200"
     >
       #{name}
       {removable && (

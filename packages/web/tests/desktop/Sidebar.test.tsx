@@ -4,8 +4,110 @@ import userEvent from "@testing-library/user-event";
 
 afterEach(cleanup);
 
-const mockNotes = [
-  {
+const {
+  mockNotes,
+  mockTags,
+  mockSetSidebarOpen,
+  mockSetCurrentNote,
+  mockNoteTagsMap,
+  mockListNotes,
+  mockListFolders,
+  mockListTags,
+  mockCreateNote,
+  mockDeleteNote,
+  mockUpdateNote,
+  mockGetNotesForTag,
+  mockGetTagsForNote,
+} = vi.hoisted(() => ({
+  mockNotes: [
+    {
+      id: "n1",
+      title: "Note 1",
+      contentJson: "",
+      mdText: "",
+      folderId: null,
+      type: "rich",
+      createdAt: 1,
+      updatedAt: 1,
+      deletedAt: null,
+      version: 1,
+    },
+    {
+      id: "n2",
+      title: "Note 2",
+      contentJson: "",
+      mdText: "",
+      folderId: null,
+      type: "rich",
+      createdAt: 2,
+      updatedAt: 2,
+      deletedAt: null,
+      version: 1,
+    },
+    {
+      id: "n3",
+      title: "Deleted Note",
+      contentJson: "",
+      mdText: "",
+      folderId: null,
+      type: "rich",
+      createdAt: 3,
+      updatedAt: 3,
+      deletedAt: 3,
+      version: 1,
+    },
+  ],
+  mockTags: [
+    { id: "t1", name: "work" },
+    { id: "t2", name: "personal" },
+  ],
+  mockSetSidebarOpen: vi.fn(),
+  mockSetCurrentNote: vi.fn(),
+  mockNoteTagsMap: new Map(),
+  mockListNotes: vi.fn().mockResolvedValue([
+    {
+      id: "n1",
+      title: "Note 1",
+      contentJson: "",
+      mdText: "",
+      folderId: null,
+      type: "rich",
+      createdAt: 1,
+      updatedAt: 1,
+      deletedAt: null,
+      version: 1,
+    },
+    {
+      id: "n2",
+      title: "Note 2",
+      contentJson: "",
+      mdText: "",
+      folderId: null,
+      type: "rich",
+      createdAt: 2,
+      updatedAt: 2,
+      deletedAt: null,
+      version: 1,
+    },
+    {
+      id: "n3",
+      title: "Deleted Note",
+      contentJson: "",
+      mdText: "",
+      folderId: null,
+      type: "rich",
+      createdAt: 3,
+      updatedAt: 3,
+      deletedAt: 3,
+      version: 1,
+    },
+  ]),
+  mockListFolders: vi.fn().mockResolvedValue([]),
+  mockListTags: vi.fn().mockResolvedValue([
+    { id: "t1", name: "work" },
+    { id: "t2", name: "personal" },
+  ]),
+  mockCreateNote: vi.fn().mockResolvedValue({
     id: "n1",
     title: "Note 1",
     contentJson: "",
@@ -16,41 +118,25 @@ const mockNotes = [
     updatedAt: 1,
     deletedAt: null,
     version: 1,
-  },
-  {
-    id: "n2",
-    title: "Note 2",
+  }),
+  mockDeleteNote: vi.fn().mockResolvedValue(undefined),
+  mockUpdateNote: vi.fn().mockResolvedValue({
+    id: "n1",
+    title: "Note 1",
     contentJson: "",
     mdText: "",
     folderId: null,
     type: "rich",
-    createdAt: 2,
-    updatedAt: 2,
+    createdAt: 1,
+    updatedAt: 1,
     deletedAt: null,
     version: 1,
-  },
-  {
-    id: "n3",
-    title: "Deleted Note",
-    contentJson: "",
-    mdText: "",
-    folderId: null,
-    type: "rich",
-    createdAt: 3,
-    updatedAt: 3,
-    deletedAt: 3,
-    version: 1,
-  },
-];
-
-const mockTags = [
-  { id: "t1", name: "work" },
-  { id: "t2", name: "personal" },
-];
+  }),
+  mockGetNotesForTag: vi.fn().mockResolvedValue([]),
+  mockGetTagsForNote: vi.fn().mockResolvedValue([]),
+}));
 
 let mockSidebarOpen = true;
-const mockSetSidebarOpen = vi.fn();
-const mockSetCurrentNote = vi.fn();
 
 vi.mock("../../src/stores", () => ({
   useNotesStore: (selector: any) =>
@@ -61,7 +147,7 @@ vi.mock("../../src/stores", () => ({
       setNotes: vi.fn(),
       addNote: vi.fn(),
       removeNoteFromList: vi.fn(),
-      noteTagsMap: new Map(),
+      noteTagsMap: mockNoteTagsMap,
       setNoteTagsMap: vi.fn(),
     }),
   useFoldersStore: (selector: any) =>
@@ -90,14 +176,14 @@ vi.mock("../../src/stores", () => ({
 
 vi.mock("../../src/hooks", () => ({
   useStorage: () => ({
-    listNotes: vi.fn().mockResolvedValue(mockNotes),
-    listFolders: vi.fn().mockResolvedValue([]),
-    listTags: vi.fn().mockResolvedValue(mockTags),
-    createNote: vi.fn().mockResolvedValue(mockNotes[0]),
-    deleteNote: vi.fn().mockResolvedValue(undefined),
-    updateNote: vi.fn().mockResolvedValue(mockNotes[0]),
-    getNotesForTag: vi.fn().mockResolvedValue([]),
-    getTagsForNote: vi.fn().mockResolvedValue([]),
+    listNotes: mockListNotes,
+    listFolders: mockListFolders,
+    listTags: mockListTags,
+    createNote: mockCreateNote,
+    deleteNote: mockDeleteNote,
+    updateNote: mockUpdateNote,
+    getNotesForTag: mockGetNotesForTag,
+    getTagsForNote: mockGetTagsForNote,
   }),
   useSearch: () => ({
     searchInput: {},
@@ -124,6 +210,47 @@ vi.mock("../../src/components/shared/SearchBar", () => ({
 
 vi.mock("../../src/components/shared/ThemeToggle", () => ({
   default: () => <div data-testid="theme-toggle">ThemeToggle</div>,
+}));
+
+vi.mock("../../src/lib/markdown-serializer", () => ({
+  extractTitleFromContent: vi.fn((content) => content?.slice(0, 50) || ""),
+  serializeToMarkdown: vi.fn(() => ""),
+  parseMarkdown: vi.fn(() => ({})),
+}));
+
+vi.mock("../../src/lib", () => ({
+  getStorage: vi.fn(() => ({
+    listNotes: vi.fn().mockResolvedValue([]),
+    listFolders: vi.fn().mockResolvedValue([]),
+    listTags: vi.fn().mockResolvedValue([]),
+    createNote: vi.fn().mockResolvedValue({}),
+    deleteNote: vi.fn().mockResolvedValue(undefined),
+    updateNote: vi.fn().mockResolvedValue({}),
+    getNotesForTag: vi.fn().mockResolvedValue([]),
+    getTagsForNote: vi.fn().mockResolvedValue([]),
+  })),
+  initStorage: vi.fn(),
+  closeStorage: vi.fn(),
+}));
+
+vi.mock("../../src/components/shared/DataManagementPanel", () => ({
+  default: () => <div data-testid="data-management-panel">DataManagementPanel</div>,
+}));
+
+vi.mock("../../src/components/shared/DeleteTagDialog", () => ({
+  default: () => null,
+}));
+
+vi.mock("../../src/components/shared/DeleteNoteDialog", () => ({
+  default: () => null,
+}));
+
+vi.mock("../../src/components/shared/MoveNoteDialog", () => ({
+  default: () => null,
+}));
+
+vi.mock("../../src/components/shared/SearchFilterPanel", () => ({
+  default: () => <div data-testid="search-filter-panel">SearchFilterPanel</div>,
 }));
 
 vi.mock("../../src/components/shared/NoteCard", () => ({

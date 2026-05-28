@@ -1,49 +1,72 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, waitFor, cleanup } from "@testing-library/react";
+import { render, screen, waitFor, cleanup, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 afterEach(cleanup);
 
-const mockUpdateNote = vi.fn().mockResolvedValue({});
-const mockAddTagsToNote = vi.fn();
-const mockListTags = vi.fn();
-const mockCreateTag = vi.fn();
-const mockUploadFile = vi.fn();
-const mockShowToast = vi.fn();
-const mockRevokeAllObjectUrls = vi.fn();
+const {
+  mockUpdateNote,
+  mockAddTagsToNote,
+  mockRemoveTagFromNote,
+  mockListTags,
+  mockCreateTag,
+  mockUploadFile,
+  mockShowToast,
+  mockRevokeAllObjectUrls,
+  mockNotesStoreState,
+} = vi.hoisted(() => ({
+  mockUpdateNote: vi.fn().mockResolvedValue({}),
+  mockAddTagsToNote: vi.fn(),
+  mockRemoveTagFromNote: vi.fn().mockResolvedValue(undefined),
+  mockListTags: vi.fn(),
+  mockCreateTag: vi.fn(),
+  mockUploadFile: vi.fn(),
+  mockShowToast: vi.fn(),
+  mockRevokeAllObjectUrls: vi.fn(),
+  mockNotesStoreState: {
+    notes: [] as any[],
+    currentNote: null as any,
+    updateNoteInList: vi.fn(),
+    setCurrentNote: vi.fn(),
+    updateNoteTags: vi.fn(),
+    removeNoteFromList: vi.fn(),
+  },
+}));
+
 let mockEditorMode: "wysiwyg" | "markdown" = "wysiwyg";
 let mockIsMobile = false;
 let mockTags: { id: string; name: string }[] = [];
 
-const mockNotesStoreState = {
-  notes: [],
-  currentNote: null,
-  updateNoteInList: vi.fn(),
-  setCurrentNote: vi.fn(),
-};
-
-vi.mock("../../src/stores", () => ({
-  useUIStore: (selector: any) =>
-    selector({
-      editorMode: mockEditorMode,
-      setEditorMode: vi.fn(),
-      isMobile: mockIsMobile,
-      setIsMobile: vi.fn(),
+vi.mock("../../src/stores", () => {
+  const notesStore = {
+    ...mockNotesStoreState,
+    getState: () => notesStore,
+  };
+  return {
+    useUIStore: (selector: any) =>
+      selector({
+        editorMode: mockEditorMode,
+        setEditorMode: vi.fn(),
+        isMobile: mockIsMobile,
+        setIsMobile: vi.fn(),
+      }),
+    useNotesStore: Object.assign((selector: any) => selector(mockNotesStoreState), {
+      getState: () => notesStore,
     }),
-  useNotesStore: (selector: any) => selector(mockNotesStoreState),
-  useSlashCommandStore: (selector: any) =>
-    selector({ pendingUpload: null, setPendingUpload: vi.fn() }),
-  useAttachmentsStore: (selector: any) => selector({ attachments: [], addAttachment: vi.fn() }),
-  useTagsStore: (selector: any) =>
-    selector({
-      tags: mockTags,
-      setTags: vi.fn(),
-      addTag: vi.fn(),
-      removeTag: vi.fn(),
-      loading: false,
-      setLoading: vi.fn(),
-    }),
-}));
+    useSlashCommandStore: (selector: any) =>
+      selector({ pendingUpload: null, setPendingUpload: vi.fn() }),
+    useAttachmentsStore: (selector: any) => selector({ attachments: [], addAttachment: vi.fn() }),
+    useTagsStore: (selector: any) =>
+      selector({
+        tags: mockTags,
+        setTags: vi.fn(),
+        addTag: vi.fn(),
+        removeTag: vi.fn(),
+        loading: false,
+        setLoading: vi.fn(),
+      }),
+  };
+});
 
 vi.mock("../../src/hooks", () => ({
   useStorage: () => ({
@@ -51,8 +74,11 @@ vi.mock("../../src/hooks", () => ({
     createNote: vi.fn(),
     listNotes: vi.fn(),
     addTagsToNote: mockAddTagsToNote,
+    removeTagFromNote: mockRemoveTagFromNote,
     listTags: mockListTags,
     createTag: mockCreateTag,
+    deleteNote: vi.fn(),
+    getTagsForNote: vi.fn().mockResolvedValue([]),
   }),
   useAttachmentUpload: () => ({ uploadFile: mockUploadFile }),
   useToast: () => ({ showToast: mockShowToast }),
@@ -257,9 +283,13 @@ describe("NoteView", () => {
   it("removes tag from noteTagIds when remove button clicked", async () => {
     const user = userEvent.setup();
     render(<NoteView note={mockNote} initialTagIds={["tag-1", "tag-2"]} />);
+    expect(screen.getAllByTestId("tag-badge").length).toBe(2);
     const removeButtons = screen.getAllByTestId("remove-tag-btn");
-    await user.click(removeButtons[0]);
-    expect(screen.getAllByTestId("tag-badge").length).toBe(1);
+    await act(async () => {
+      await user.click(removeButtons[0]);
+    });
+    expect(mockRemoveTagFromNote).toHaveBeenCalledWith("note-1", "tag-1");
+    expect(mockNotesStoreState.updateNoteTags).toHaveBeenCalled();
   });
 
   it("shows 添加标签 button (TagSelector trigger)", () => {

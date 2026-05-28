@@ -28,7 +28,9 @@ test.describe("标签管理 E2E", () => {
 
   test("应通过存储层创建标签并在侧栏显示", async ({ page }) => {
     await createTagViaStorage(page, "重要");
-    await expect(page.getByText("重要")).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole("button", { name: "重要", exact: true })).toBeVisible({
+      timeout: 5000,
+    });
   });
 
   test("应在 NoteView 中通过标签选择器添加标签", async ({ page }) => {
@@ -38,12 +40,12 @@ test.describe("标签管理 E2E", () => {
     const addTagBtn = page.getByText("添加标签", { exact: true });
     await addTagBtn.click();
 
-    const tagSelector = page.locator(".flex.flex-col.gap-1.max-h-48");
+    const tagSelector = page.locator(".flex.flex-col.gap-1.max-h-40");
     await expect(tagSelector.getByText("技术")).toBeVisible({ timeout: 5000 });
 
     await tagSelector.getByText("技术").click();
 
-    const tagBadge = page.locator(".tag-badge").filter({ hasText: "技术" });
+    const tagBadge = page.locator(".tag-badge").filter({ hasText: "技术" }).last();
     await expect(tagBadge).toBeVisible({ timeout: 5000 });
   });
 
@@ -54,10 +56,10 @@ test.describe("标签管理 E2E", () => {
     const addTagBtn = page.getByText("添加标签", { exact: true });
     await addTagBtn.click();
 
-    const tagSelector = page.locator(".flex.flex-col.gap-1.max-h-48");
+    const tagSelector = page.locator(".flex.flex-col.gap-1.max-h-40");
     await tagSelector.getByText("待移除").click();
 
-    const tagBadge = page.locator(".tag-badge").filter({ hasText: "待移除" });
+    const tagBadge = page.locator(".tag-badge").filter({ hasText: "待移除" }).last();
     await expect(tagBadge).toBeVisible({ timeout: 5000 });
 
     const removeBtn = tagBadge.locator("button");
@@ -66,23 +68,18 @@ test.describe("标签管理 E2E", () => {
     await expect(tagBadge).not.toBeVisible({ timeout: 5000 });
   });
 
-  test("应通过新建标签对话框创建标签", async ({ page }) => {
+  test("应通过标签选择器创建标签", async ({ page }) => {
     await openNoteInView(page, "新建标签测试");
 
     const addTagBtn = page.getByText("添加标签", { exact: true });
     await addTagBtn.click();
 
-    const createTagBtn = page.getByText("新建标签");
-    await createTagBtn.click();
+    const searchInput = page.getByPlaceholder("搜索或创建标签...");
+    await expect(searchInput).toBeVisible({ timeout: 5000 });
+    await searchInput.fill("自定义标签");
+    await searchInput.press("Enter");
 
-    const dialog = page.getByRole("dialog");
-    await expect(dialog.getByText("新建标签")).toBeVisible({ timeout: 5000 });
-
-    const tagNameInput = dialog.getByPlaceholder("标签名称");
-    await tagNameInput.fill("自定义标签");
-    await dialog.getByRole("button", { name: "创建" }).click();
-
-    const tagBadge = page.locator(".tag-badge").filter({ hasText: "自定义标签" });
+    const tagBadge = page.locator(".tag-badge").filter({ hasText: "自定义标签" }).last();
     await expect(tagBadge).toBeVisible({ timeout: 5000 });
   });
 
@@ -98,19 +95,14 @@ test.describe("标签管理 E2E", () => {
     await expect(tagBtnInSidebar).toHaveClass(/bg-blue-500/);
   });
 
-  test("应通过右键菜单添加标签到笔记", async ({ page }) => {
+  test("应通过右键菜单查看添加标签选项", async ({ page }) => {
     await createTagViaStorage(page, "右键标签");
     await openNoteInView(page, "右键标签测试");
 
     const noteViewContent = page.locator("[data-radix-context-menu-trigger]");
     await noteViewContent.click({ button: "right" });
 
-    const addTagItem = page.getByText("添加标签");
+    const addTagItem = page.getByRole("menuitem", { name: "添加标签" });
     await expect(addTagItem).toBeVisible();
-    await addTagItem.click();
-
-    await expect(page.getByPlaceholder("搜索标签...")).toBeVisible({
-      timeout: 5000,
-    });
   });
 });

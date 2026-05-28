@@ -32,7 +32,8 @@ export default function NoteCard({
 
   return (
     <div>
-      <div
+      <button
+        type="button"
         onClick={() => onClick(note)}
         className="block w-full p-3 rounded-lg hover:shadow-sm transition-colors text-left group cursor-pointer"
         style={{
@@ -135,7 +136,7 @@ export default function NoteCard({
             </div>
           </div>
         </div>
-      </div>
+      </button>
     </div>
   );
 }

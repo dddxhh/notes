@@ -24,7 +24,7 @@ test.describe("笔记应用 E2E", () => {
     await page.setViewportSize({ width: 375, height: 667 });
     await page.goto("/");
     await expect(page.getByRole("button", { name: "📝 快速笔记" })).toBeVisible({ timeout: 15000 });
-    await expect(page.getByRole("button", { name: "📋 全部笔记" })).toBeVisible({ timeout: 15000 });
+    await expect(page.getByRole("button", { name: "📋 笔记" })).toBeVisible({ timeout: 15000 });
   });
 
   test("模式切换应在所见即所得和Markdown之间切换", async ({ page }) => {
@@ -39,9 +39,9 @@ test.describe("笔记应用 E2E", () => {
       .first()
       .click();
     await page.waitForTimeout(500);
-    await expect(page.getByText("所见即所得")).toBeVisible({ timeout: 15000 });
-    await expect(page.getByText("Markdown")).toBeVisible({ timeout: 15000 });
-    await page.getByText("Markdown", { exact: true }).click();
+    await expect(page.getByText("富文本")).toBeVisible({ timeout: 15000 });
+    await expect(page.getByRole("button", { name: "Markdown" })).toBeVisible({ timeout: 15000 });
+    await page.getByRole("button", { name: "Markdown" }).click();
     await expect(page.getByPlaceholder("开始编写 Markdown...")).toBeVisible({ timeout: 10000 });
   });
 });

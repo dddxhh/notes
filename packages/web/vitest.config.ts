@@ -12,5 +12,11 @@ export default defineConfig({
   test: {
     environment: "happy-dom",
     include: ["tests/**/*.test.ts", "tests/**/*.test.tsx"],
+    pool: "threads",
+    poolOptions: {
+      threads: {
+        maxThreads: 2,
+      },
+    },
   },
 });

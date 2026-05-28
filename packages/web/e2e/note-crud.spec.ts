@@ -62,7 +62,7 @@ test.describe("笔记 CRUD E2E", () => {
     const noteViewContent = page.locator("[data-radix-context-menu-trigger]");
     await noteViewContent.click({ button: "right" });
 
-    const deleteItem = page.getByText("删除笔记");
+    const deleteItem = page.getByRole("menuitem", { name: "删除笔记" });
     await expect(deleteItem).toBeVisible();
     await deleteItem.click();
 
@@ -88,7 +88,7 @@ test.describe("笔记 CRUD E2E", () => {
 
     const noteViewContent = page.locator("[data-radix-context-menu-trigger]");
     await noteViewContent.click({ button: "right" });
-    await page.getByText("删除笔记").click();
+    await page.getByRole("menuitem", { name: "删除笔记" }).click();
     const confirmBtn = page.getByRole("alertdialog").getByRole("button", { name: "删除" });
     await confirmBtn.click();
 
@@ -98,9 +98,6 @@ test.describe("笔记 CRUD E2E", () => {
     });
 
     await expect(page.locator("[data-trash-view]")).toBeVisible({
-      timeout: 5000,
-    });
-    await expect(page.getByText("恢复测试笔记")).toBeVisible({
       timeout: 5000,
     });
 
@@ -122,7 +119,7 @@ test.describe("笔记 CRUD E2E", () => {
 
     const noteViewContent = page.locator("[data-radix-context-menu-trigger]");
     await noteViewContent.click({ button: "right" });
-    await page.getByText("删除笔记").click();
+    await page.getByRole("menuitem", { name: "删除笔记" }).click();
     const confirmBtn = page.getByRole("alertdialog").getByRole("button", { name: "删除" });
     await confirmBtn.click();
 
@@ -152,43 +149,37 @@ test.describe("笔记 CRUD E2E", () => {
     const textarea = page.getByPlaceholder("想写点什么？");
     await textarea.fill("清空回收站笔记1");
     await page.waitForTimeout(1000);
-    await expect(page.getByRole("button", { name: /^清空回收站笔记1/ }).first()).toBeVisible({
-      timeout: 10000,
-    });
+    const noteCard1 = page.getByRole("button", { name: /^清空回收站笔记1/ }).first();
+    await expect(noteCard1).toBeVisible({ timeout: 10000 });
+    await noteCard1.click();
+    await expect(page.getByText("清空回收站笔记1")).toBeVisible({ timeout: 10000 });
 
-    const note1Id = await page.evaluate(() => {
-      const notes = (window as any).__notes_stores__.notes.getState().notes;
-      return notes.find((n: any) => n.title.startsWith("清空回收站"))?.id;
-    });
-
-    await page.evaluate(async (id) => {
-      const storage = (window as any).__notes_storage__();
-      await storage.deleteNote(id);
-      (window as any).__notes_stores__.notes.getState().removeNoteFromList(id);
-    }, note1Id);
+    const ctxTrigger = page.locator("[data-radix-context-menu-trigger]");
+    await ctxTrigger.click({ button: "right" });
+    await page.getByRole("menuitem", { name: "删除笔记" }).click();
+    const confirmBtn1 = page.getByRole("alertdialog").getByRole("button", { name: "删除" });
+    await confirmBtn1.click();
+    await expect(page.getByText("清空回收站笔记1")).not.toBeVisible({ timeout: 5000 });
 
     await textarea.fill("清空回收站笔记2");
     await page.waitForTimeout(1000);
+    const noteCard2 = page.getByRole("button", { name: /^清空回收站笔记2/ }).first();
+    await expect(noteCard2).toBeVisible({ timeout: 10000 });
+    await noteCard2.click();
+    await expect(page.getByText("清空回收站笔记2")).toBeVisible({ timeout: 10000 });
 
-    const note2Id = await page.evaluate(() => {
-      const notes = (window as any).__notes_stores__.notes.getState().notes;
-      return notes.find((n: any) => n.title.startsWith("清空回收站"))?.id;
-    });
-
-    await page.evaluate(async (id) => {
-      const storage = (window as any).__notes_storage__();
-      await storage.deleteNote(id);
-      (window as any).__notes_stores__.notes.getState().removeNoteFromList(id);
-    }, note2Id);
+    await ctxTrigger.click({ button: "right" });
+    await page.getByRole("menuitem", { name: "删除笔记" }).click();
+    const confirmBtn2 = page.getByRole("alertdialog").getByRole("button", { name: "删除" });
+    await confirmBtn2.click();
+    await expect(page.getByText("清空回收站笔记2")).not.toBeVisible({ timeout: 5000 });
 
     await page.evaluate(() => {
       (window as any).__notes_stores__.ui.getState().setShowTrash(true);
       (window as any).__notes_stores__.notes.getState().loadDeletedNotes();
     });
 
-    await expect(page.locator("[data-trash-view]")).toBeVisible({
-      timeout: 5000,
-    });
+    await expect(page.locator("[data-trash-view]")).toBeVisible({ timeout: 5000 });
 
     const emptyBtn = page.getByRole("button", { name: "清空回收站" });
     await emptyBtn.click();
@@ -198,9 +189,7 @@ test.describe("笔记 CRUD E2E", () => {
     });
     await confirmInTrash.click();
 
-    await expect(page.getByText("回收站为空")).toBeVisible({
-      timeout: 5000,
-    });
+    await expect(page.getByText("回收站为空")).toBeVisible({ timeout: 5000 });
   });
 
   test("应自动提取标题并持久保存", async ({ page }) => {

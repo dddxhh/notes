@@ -4,12 +4,33 @@ import userEvent from "@testing-library/user-event";
 
 afterEach(cleanup);
 
-const mockListNotes = vi.fn();
-const mockSetNotes = vi.fn();
-const mockSetCurrentNote = vi.fn();
-const mockListFolders = vi.fn();
-const mockSetFolders = vi.fn();
-const mockSetCurrentFolderId = vi.fn();
+const {
+  mockListNotes,
+  mockSetNotes,
+  mockSetCurrentNote,
+  mockListFolders,
+  mockSetFolders,
+  mockSetCurrentFolderId,
+  mockNoteTagsMap,
+  mockCreateNote,
+  mockDeleteNote,
+  mockUpdateNote,
+  mockGetNotesForTag,
+  mockGetTagsForNote,
+} = vi.hoisted(() => ({
+  mockListNotes: vi.fn(),
+  mockSetNotes: vi.fn(),
+  mockSetCurrentNote: vi.fn(),
+  mockListFolders: vi.fn(),
+  mockSetFolders: vi.fn(),
+  mockSetCurrentFolderId: vi.fn(),
+  mockNoteTagsMap: new Map(),
+  mockCreateNote: vi.fn(),
+  mockDeleteNote: vi.fn().mockResolvedValue(undefined),
+  mockUpdateNote: vi.fn(),
+  mockGetNotesForTag: vi.fn().mockResolvedValue([]),
+  mockGetTagsForNote: vi.fn().mockResolvedValue([]),
+}));
 
 let mockNotes: any[] = [];
 let mockTags: { id: string; name: string }[] = [];
@@ -25,7 +46,7 @@ vi.mock("../../src/stores", () => ({
           addNote: vi.fn(),
           setCurrentNote: mockSetCurrentNote,
           removeNoteFromList: vi.fn(),
-          noteTagsMap: new Map(),
+          noteTagsMap: mockNoteTagsMap,
           setNoteTagsMap: vi.fn(),
         })
       : { notes: mockNotes },
@@ -57,11 +78,11 @@ vi.mock("../../src/hooks", () => ({
   useStorage: () => ({
     listNotes: mockListNotes,
     listFolders: mockListFolders,
-    createNote: vi.fn().mockResolvedValue(mockNotes[0]),
-    deleteNote: vi.fn().mockResolvedValue(undefined),
-    updateNote: vi.fn().mockResolvedValue(mockNotes[0]),
-    getNotesForTag: vi.fn().mockResolvedValue([]),
-    getTagsForNote: vi.fn().mockResolvedValue([]),
+    createNote: mockCreateNote,
+    deleteNote: mockDeleteNote,
+    updateNote: mockUpdateNote,
+    getNotesForTag: mockGetNotesForTag,
+    getTagsForNote: mockGetTagsForNote,
   }),
 }));
 
@@ -79,6 +100,34 @@ vi.mock("../../src/components/shared/TagBadge", () => ({
       #{name}
     </button>
   ),
+}));
+
+vi.mock("../../src/lib/markdown-serializer", () => ({
+  extractTitleFromContent: vi.fn((content) => content?.slice(0, 50) || ""),
+  serializeToMarkdown: vi.fn(() => ""),
+  parseMarkdown: vi.fn(() => ({})),
+}));
+
+vi.mock("../../src/lib", () => ({
+  getStorage: vi.fn(() => ({
+    listNotes: vi.fn().mockResolvedValue([]),
+    listFolders: vi.fn().mockResolvedValue([]),
+    createNote: vi.fn().mockResolvedValue({}),
+    deleteNote: vi.fn().mockResolvedValue(undefined),
+    updateNote: vi.fn().mockResolvedValue({}),
+    getNotesForTag: vi.fn().mockResolvedValue([]),
+    getTagsForNote: vi.fn().mockResolvedValue([]),
+  })),
+  initStorage: vi.fn(),
+  closeStorage: vi.fn(),
+}));
+
+vi.mock("../../src/components/shared/DeleteNoteDialog", () => ({
+  default: () => null,
+}));
+
+vi.mock("../../src/components/shared/MoveNoteDialog", () => ({
+  default: () => null,
 }));
 
 vi.mock("@tanstack/react-virtual", () => ({
@@ -142,6 +191,8 @@ describe("NoteListMobile", () => {
     mockFolders = [];
     mockListNotes.mockResolvedValue(mockNotes);
     mockListFolders.mockResolvedValue([]);
+    mockCreateNote.mockResolvedValue(mockNotes[0]);
+    mockUpdateNote.mockResolvedValue(mockNotes[0]);
   });
 
   it("renders header with 全部笔记", () => {

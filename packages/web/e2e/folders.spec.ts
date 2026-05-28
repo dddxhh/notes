@@ -45,14 +45,14 @@ test.describe("文件夹管理 E2E", () => {
 
     const folderDropdown = page.getByText("全部笔记").first();
     await folderDropdown.click();
-    await expect(page.getByText("筛选文件夹")).toBeVisible({ timeout: 5000 });
 
     const folderItem = page.locator("[data-folder-id]").filter({
       hasText: "筛选文件夹",
     });
+    await expect(folderItem).toBeVisible({ timeout: 5000 });
     await folderItem.click();
 
-    await expect(page.getByText("文件夹内笔记")).toBeVisible({
+    await expect(page.getByText("文件夹内笔记").first()).toBeVisible({
       timeout: 5000,
     });
   });
@@ -100,51 +100,44 @@ test.describe("文件夹管理 E2E", () => {
     });
   });
 
-  test("应通过右键菜单重命名文件夹", async ({ page }) => {
+  test("应通过下拉菜单重命名文件夹", async ({ page }) => {
     await createFolderViaStorage(page, "原始文件夹名");
 
-    const folderDropdown = page.getByText("全部笔记").first();
-    await folderDropdown.click();
-    await expect(page.getByText("原始文件夹名")).toBeVisible({
-      timeout: 5000,
-    });
+    await page.getByText("全部笔记").first().click();
 
     const folderItem = page.locator("[data-folder-id]").filter({
       hasText: "原始文件夹名",
     });
-    await folderItem.click({ button: "right" });
+    await expect(folderItem).toBeVisible({ timeout: 5000 });
+    await folderItem.click();
 
-    const renameItem = page.getByText("重命名");
-    await expect(renameItem).toBeVisible();
-    await renameItem.click();
+    await page.getByText("原始文件夹名").first().click();
 
-    const dialog = page.getByRole("dialog");
-    const renameInput = dialog.locator("input");
+    await page.getByRole("button", { name: /重命名/ }).click();
+
+    const renameInput = page.locator("input").last();
     await renameInput.fill("重命名后文件夹");
-    await dialog.getByRole("button", { name: "确认" }).click();
+    await renameInput.press("Enter");
 
-    await expect(page.getByText("重命名后文件夹")).toBeVisible({
+    await expect(page.getByText("重命名后文件夹").first()).toBeVisible({
       timeout: 5000,
     });
   });
 
-  test("应通过右键菜单删除文件夹", async ({ page }) => {
+  test("应通过下拉菜单删除文件夹", async ({ page }) => {
     await createFolderViaStorage(page, "待删除文件夹");
 
-    const folderDropdown = page.getByText("全部笔记").first();
-    await folderDropdown.click();
-    await expect(page.getByText("待删除文件夹")).toBeVisible({
-      timeout: 5000,
-    });
+    await page.getByText("全部笔记").first().click();
 
     const folderItem = page.locator("[data-folder-id]").filter({
       hasText: "待删除文件夹",
     });
-    await folderItem.click({ button: "right" });
+    await expect(folderItem).toBeVisible({ timeout: 5000 });
+    await folderItem.click();
 
-    const deleteItem = page.getByText("删除文件夹");
-    await expect(deleteItem).toBeVisible();
-    await deleteItem.click();
+    await page.getByText("待删除文件夹").first().click();
+
+    await page.getByRole("button", { name: "🗑 删除文件夹" }).click();
 
     const confirmBtn = page.getByRole("alertdialog").getByRole("button", { name: "删除" });
     await confirmBtn.click();

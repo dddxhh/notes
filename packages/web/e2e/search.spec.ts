@@ -37,7 +37,7 @@ test.describe("搜索 E2E", () => {
     await searchInput.fill("搜索关键词");
     await page.waitForTimeout(1500);
 
-    await expect(page.getByText("搜索关键词笔记")).toBeVisible({
+    await expect(page.getByText("搜索关键词笔记").first()).toBeVisible({
       timeout: 10000,
     });
   });
@@ -51,7 +51,7 @@ test.describe("搜索 E2E", () => {
     await searchInput.fill("清除搜索");
     await page.waitForTimeout(500);
 
-    const clearBtn = page.getByRole("button", { name: "清除搜索" });
+    const clearBtn = page.getByRole("button", { name: "清除搜索", exact: true });
     await expect(clearBtn).toBeVisible();
     await clearBtn.click();
 
@@ -62,21 +62,21 @@ test.describe("搜索 E2E", () => {
     const filterToggle = page.getByRole("button", { name: "筛选切换" });
     await filterToggle.click();
 
-    await expect(page.getByText("文件夹")).toBeVisible({ timeout: 5000 });
     await expect(page.getByText("标签筛选")).toBeVisible();
     await expect(page.getByText("时间范围")).toBeVisible();
   });
 
-  test("应通过搜索筛选面板按文件夹筛选", async ({ page }) => {
+  test("应通过文件夹下拉按文件夹筛选", async ({ page }) => {
     await createFolderViaStorage(page, "搜索文件夹");
 
-    const filterToggle = page.getByRole("button", { name: "筛选切换" });
-    await filterToggle.click();
+    const folderDropdown = page.getByText("全部笔记").first();
+    await folderDropdown.click();
 
-    const folderSelect = page.getByRole("combobox", { name: "文件夹" });
-    await folderSelect.selectOption({ label: "搜索文件夹" });
+    const folderItem = page.locator("[data-folder-id]").filter({ hasText: "搜索文件夹" });
+    await expect(folderItem).toBeVisible({ timeout: 5000 });
+    await folderItem.click();
 
-    await expect(folderSelect).toHaveValue(/.+/);
+    await expect(page.getByText("搜索文件夹")).toBeVisible({ timeout: 5000 });
   });
 
   test("应通过搜索筛选面板按标签筛选", async ({ page }) => {
@@ -106,19 +106,19 @@ test.describe("搜索 E2E", () => {
     const modeBtn = page.getByText("并集");
     await expect(modeBtn).toBeVisible();
     await modeBtn.click();
-    await expect(page.getByText("交集")).toBeVisible();
+    await expect(page.getByRole("button", { name: "交集", exact: true })).toBeVisible();
   });
 
   test("应在快速笔记中切换搜索栏", async ({ page }) => {
     const searchToggle = page.getByTestId("search-toggle");
     await searchToggle.click();
 
-    await expect(page.getByPlaceholder("搜索笔记...")).toBeVisible({
+    await expect(page.getByTestId("main-area").getByPlaceholder("搜索笔记...")).toBeVisible({
       timeout: 5000,
     });
 
     await searchToggle.click();
-    await expect(page.getByPlaceholder("搜索笔记...")).not.toBeVisible({
+    await expect(page.getByTestId("main-area").getByPlaceholder("搜索笔记...")).not.toBeVisible({
       timeout: 3000,
     });
   });

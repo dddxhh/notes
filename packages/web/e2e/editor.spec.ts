@@ -25,7 +25,7 @@ test.describe("编辑器 E2E", () => {
     await editorArea.pressSequentially("Hello World 编辑器测试");
     await page.waitForTimeout(1000);
 
-    await expect(page.getByText("Hello World")).toBeVisible();
+    await expect(page.locator(".tiptap").getByText("Hello World")).toBeVisible();
     await expect(page.getByText("自动保存")).toBeVisible();
   });
 
@@ -117,7 +117,7 @@ test.describe("编辑器 E2E", () => {
     await editorArea.click();
     await editorArea.pressSequentially("Task Item");
 
-    await expect(page.locator("[data-type='taskItem']")).toHaveText(/Task Item/);
+    await expect(page.locator(".tiptap li")).toHaveText(/Task Item/);
   });
 
   test("应在工具栏插入表格", async ({ page }) => {
@@ -127,7 +127,7 @@ test.describe("编辑器 E2E", () => {
     await tableBtn.click();
 
     await expect(page.locator("table")).toBeVisible({ timeout: 5000 });
-    await expect(page.locator("td")).toHaveCount(9);
+    await expect(page.locator("td, th")).toHaveCount(9);
   });
 
   test("应在工具栏插入代码块", async ({ page }) => {
@@ -196,7 +196,7 @@ test.describe("编辑器 E2E", () => {
     await mdTextarea.fill("# 模式切换标题");
     await page.waitForTimeout(1000);
 
-    const wysiwygBtn = page.getByText("所见即所得", { exact: true });
+    const wysiwygBtn = page.getByText("富文本", { exact: true });
     await wysiwygBtn.click();
 
     await expect(page.locator(".tiptap")).toBeVisible({ timeout: 10000 });
