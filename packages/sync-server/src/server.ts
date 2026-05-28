@@ -1,7 +1,10 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import websocket from "@fastify/websocket";
+import multipart from "@fastify/multipart";
 import { authRoutes } from "./auth/routes";
+import { metadataRoutes } from "./routes/metadata";
+import { attachmentRoutes } from "./routes/attachments";
 import { loadConfig } from "./config";
 import { closePool } from "./db/client";
 import { handleConnection } from "./ws/sync-handler";
@@ -12,8 +15,11 @@ async function main(): Promise<void> {
 
   await app.register(cors, { origin: true });
   await app.register(websocket);
+  await app.register(multipart, { limits: { fileSize: 50 * 1024 * 1024 } });
 
   await app.register(authRoutes, { prefix: "/api/v1" });
+  await app.register(metadataRoutes, { prefix: "/api/v1" });
+  await app.register(attachmentRoutes, { prefix: "/api/v1" });
 
   app.get("/health", async () => ({ status: "ok" }));
 

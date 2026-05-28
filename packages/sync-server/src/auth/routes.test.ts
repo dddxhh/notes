@@ -36,11 +36,13 @@ beforeAll(async () => {
   await app.ready();
 
   const pool = getPool();
-  await pool.query("DELETE FROM users");
+  await pool.query("DELETE FROM users WHERE username IN ('alice', 'bob', 'charlie', 'dave')");
 });
 
 afterAll(async () => {
   if (!dbAvailable) return;
+  const pool = getPool();
+  await pool.query("DELETE FROM users WHERE username IN ('alice', 'bob', 'charlie', 'dave')");
   await app?.close();
   await closePool();
 });
@@ -48,7 +50,7 @@ afterAll(async () => {
 describe.skipIf(!dbAvailable)("POST /auth/register", () => {
   beforeEach(async () => {
     const pool = getPool();
-    await pool.query("DELETE FROM users");
+    await pool.query("DELETE FROM users WHERE username IN ('alice', 'bob', 'charlie', 'dave')");
   });
 
   it("should register a new user", async () => {
@@ -105,7 +107,7 @@ describe.skipIf(!dbAvailable)("POST /auth/register", () => {
 describe.skipIf(!dbAvailable)("POST /auth/login", () => {
   beforeEach(async () => {
     const pool = getPool();
-    await pool.query("DELETE FROM users");
+    await pool.query("DELETE FROM users WHERE username IN ('alice', 'bob', 'charlie', 'dave')");
     await app.inject({
       method: "POST",
       url: "/auth/register",
@@ -151,7 +153,7 @@ describe.skipIf(!dbAvailable)("POST /auth/login", () => {
 describe.skipIf(!dbAvailable)("POST /auth/refresh", () => {
   it("should refresh access token", async () => {
     const pool = getPool();
-    await pool.query("DELETE FROM users");
+    await pool.query("DELETE FROM users WHERE username IN ('alice', 'bob', 'charlie', 'dave')");
 
     const registerRes = await app.inject({
       method: "POST",
