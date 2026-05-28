@@ -1,17 +1,25 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
+import websocket from "@fastify/websocket";
 import { authRoutes } from "./auth/routes";
 import { loadConfig } from "./config";
 import { closePool } from "./db/client";
+import { handleConnection } from "./ws/sync-handler";
 
 async function main(): Promise<void> {
   const config = loadConfig();
   const app = Fastify({ logger: true });
 
   await app.register(cors, { origin: true });
+  await app.register(websocket);
+
   await app.register(authRoutes, { prefix: "/api/v1" });
 
   app.get("/health", async () => ({ status: "ok" }));
+
+  app.get("/ws", { websocket: true }, (socket, request) => {
+    handleConnection(socket, { url: request.url });
+  });
 
   const shutdown = async (): Promise<void> => {
     await app.close();
