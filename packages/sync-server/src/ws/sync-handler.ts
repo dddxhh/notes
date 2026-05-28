@@ -6,6 +6,7 @@ import * as decoding from "lib0/decoding";
 import { DocManager } from "./doc-manager";
 import { verifyAccessToken } from "../auth/token";
 import { loadConfig } from "../config";
+import { getPool } from "../db/client";
 
 const messageSync = 0;
 const messageAwareness = 1;
@@ -14,6 +15,7 @@ interface ConnectionState {
   userId: string;
   username: string;
   docName: string | null;
+  canWrite?: boolean;
   ws: WebSocket;
 }
 
@@ -104,6 +106,35 @@ async function handleMessage(state: ConnectionState, message: Uint8Array): Promi
 
 async function handleSyncStep1(state: ConnectionState, decoder: decoding.Decoder): Promise<void> {
   const docName = decoding.readVarString(decoder);
+
+  const noteId = docName.startsWith("note:") ? docName.slice(5) : null;
+  if (noteId) {
+    const pool = getPool();
+    const access = await pool.query(
+      `SELECT 1 FROM note_metadata WHERE id = $1 AND user_id = $2
+       UNION
+       SELECT 1 FROM shares WHERE note_id = $1 AND target_user_id = $2`,
+      [noteId, state.userId],
+    );
+
+    if (access.rows.length === 0) {
+      state.ws.close(4003, "Access denied");
+      return;
+    }
+
+    const permCheck = await pool.query(
+      `SELECT 'write' as perm FROM note_metadata WHERE id = $1 AND user_id = $2
+       UNION
+       SELECT permission as perm FROM shares WHERE note_id = $1 AND target_user_id = $2`,
+      [noteId, state.userId],
+    );
+
+    const permissions = permCheck.rows.map((r: any) => r.perm);
+    state.canWrite = permissions.includes("write");
+  } else {
+    state.canWrite = true;
+  }
+
   state.docName = docName;
 
   const doc = await docManager.getDoc(docName);
@@ -127,6 +158,7 @@ async function handleSyncStep1(state: ConnectionState, decoder: decoding.Decoder
 
 async function handleSyncStep2(state: ConnectionState, decoder: decoding.Decoder): Promise<void> {
   if (!state.docName) return;
+  if (!state.canWrite) return;
 
   const update = decoding.readVarUint8Array(decoder);
   await docManager.applyUpdate(state.docName, update, state.userId);
@@ -135,6 +167,7 @@ async function handleSyncStep2(state: ConnectionState, decoder: decoding.Decoder
 
 async function handleUpdate(state: ConnectionState, decoder: decoding.Decoder): Promise<void> {
   if (!state.docName) return;
+  if (!state.canWrite) return;
 
   const update = decoding.readVarUint8Array(decoder);
   await docManager.applyUpdate(state.docName, update, state.userId);
