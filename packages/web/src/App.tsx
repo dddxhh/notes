@@ -6,6 +6,7 @@ import MobileLayout from "./components/layouts/MobileLayout";
 import AttachmentIntegrityBanner from "./components/shared/AttachmentIntegrityBanner";
 import * as Tooltip from "@radix-ui/react-tooltip";
 import { useSyncStore } from "./stores/syncStore";
+import { useAuthStore } from "./stores/authStore";
 
 export default function App() {
   const [ready, setReady] = useState(false);
@@ -21,6 +22,8 @@ export default function App() {
       if (navigator.storage && navigator.storage.persist) {
         navigator.storage.persist();
       }
+
+      useAuthStore.getState().restore();
 
       const serverUrl = localStorage.getItem("sync-server-url");
       const token = localStorage.getItem("sync-token");
