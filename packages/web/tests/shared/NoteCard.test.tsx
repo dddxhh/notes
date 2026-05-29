@@ -56,7 +56,7 @@ describe("NoteCard", () => {
     const onClick = vi.fn();
     const user = userEvent.setup();
     const { container } = render(<NoteCard note={mockNote} onClick={onClick} />);
-    const button = container.querySelector("button");
+    const button = container.querySelector('[role="button"]');
     expect(button).toBeTruthy();
     await user.click(button!);
     expect(onClick).toHaveBeenCalledWith(mockNote);

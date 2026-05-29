@@ -32,9 +32,16 @@ export default function NoteCard({
 
   return (
     <div>
-      <button
-        type="button"
+      <div
+        role="button"
+        tabIndex={0}
         onClick={() => onClick(note)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onClick(note);
+          }
+        }}
         className="block w-full p-3 rounded-lg hover:shadow-sm transition-colors text-left group cursor-pointer"
         style={{
           backgroundColor: "var(--bg-secondary)",
@@ -136,7 +143,7 @@ export default function NoteCard({
             </div>
           </div>
         </div>
-      </button>
+      </div>
     </div>
   );
 }
