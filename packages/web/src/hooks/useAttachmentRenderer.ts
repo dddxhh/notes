@@ -5,6 +5,10 @@ import {
   resolveAttachmentSrc,
 } from "../lib/attachment-protocol";
 import { getStorage } from "../lib";
+import { useSyncStore } from "../stores/syncStore";
+import { download as syncDownload } from "../lib/sync-attachment";
+import { SyncClient } from "../lib/sync-client";
+import { useAuthStore } from "../stores/authStore";
 
 export function useAttachmentRenderer(src: string): {
   resolvedSrc: string | null;
@@ -29,9 +33,34 @@ export function useAttachmentRenderer(src: string): {
     let cancelled = false;
 
     const id = parseAttachmentId(src)!;
-    resolveAttachmentSrc(src, (attachmentId: string) =>
-      getStorage().getAttachmentBlob(attachmentId),
-    )
+    resolveAttachmentSrc(src, async (attachmentId: string) => {
+      let blob = await getStorage().getAttachmentBlob(attachmentId);
+
+      if (!blob && useSyncStore.getState().engine) {
+        const serverUrl = useAuthStore.getState().serverUrl;
+        const token = useAuthStore.getState().accessToken;
+        if (serverUrl && token) {
+          const client = new SyncClient({
+            serverUrl,
+            getToken: () => useAuthStore.getState().accessToken,
+            onTokenExpired: async () => {
+              try {
+                await useAuthStore.getState().refresh();
+                return true;
+              } catch {
+                return false;
+              }
+            },
+          });
+          blob = await syncDownload(client, attachmentId);
+          if (blob) {
+            await getStorage().saveAttachmentBlob(attachmentId, blob);
+          }
+        }
+      }
+
+      return blob;
+    })
       .then((result) => {
         if (cancelled) return;
         if (result) {
