@@ -13,6 +13,8 @@ import { CustomImage } from "./CustomImage";
 import { CustomVideo } from "./CustomVideo";
 import { SlashCommand } from "./SlashCommandExtension";
 import { lowlight } from "./highlight-languages";
+import Collaboration from "@tiptap/extension-collaboration";
+import CollaborationCursor from "@tiptap/extension-collaboration-cursor";
 
 export function getEditorExtensions(isMobile: boolean) {
   const extensions = [
@@ -47,3 +49,5 @@ export function getEditorExtensions(isMobile: boolean) {
   ];
   return extensions;
 }
+
+export { Collaboration, CollaborationCursor };

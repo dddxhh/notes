@@ -1,6 +1,8 @@
 import { useEditor, EditorContent } from "@tiptap/react";
 import { useEffect, useRef, useMemo } from "react";
-import { getEditorExtensions } from "../../lib/tiptap-setup";
+import { getEditorExtensions, Collaboration, CollaborationCursor } from "../../lib/tiptap-setup";
+import { useSyncStore } from "../../stores/syncStore";
+import { useAuthStore } from "../../stores/authStore";
 import { proseMirrorJSONToMarkdown } from "../../lib/markdown-serializer";
 import { useUIStore, useSlashCommandStore } from "../../stores";
 import { useAttachmentUpload, type UploadResult } from "../../hooks";
@@ -29,6 +31,12 @@ export default function Editor({
   const pendingUpload = useSlashCommandStore((s) => s.pendingUpload);
   const setPendingUpload = useSlashCommandStore((s) => s.setPendingUpload);
   const { uploadFile } = useAttachmentUpload(currentNoteId ?? "");
+
+  const isSyncEnabled = useSyncStore((s) => s.engine !== null);
+  const getNoteDoc = useSyncStore((s) => s.getNoteDoc);
+
+  const yjsDoc = isSyncEnabled && currentNoteId ? getNoteDoc(currentNoteId) : null;
+  const yjsXmlFragment = yjsDoc?.getXmlFragment("contentJson") ?? null;
 
   const noteIdRef = useRef<string | null>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -70,11 +78,41 @@ export default function Editor({
   }, [content]);
 
   const editor = useEditor({
-    extensions: getEditorExtensions(mobile),
-    content: parsedContent || "",
+    extensions: useMemo(() => {
+      const base = getEditorExtensions(mobile);
+      if (yjsXmlFragment) {
+        const provider = useSyncStore.getState().engine?.getProvider(currentNoteId!);
+        return [
+          ...base,
+          Collaboration.configure({ fragment: yjsXmlFragment }),
+          ...(provider
+            ? [
+                CollaborationCursor.configure({
+                  provider,
+                  user: {
+                    name: useAuthStore.getState().user?.username || "Anonymous",
+                    color: "#3b82f6",
+                  },
+                }),
+              ]
+            : []),
+        ];
+      }
+      return base;
+    }, [mobile, yjsXmlFragment, currentNoteId]),
+    content: yjsXmlFragment ? undefined : parsedContent || "",
     onUpdate: ({ editor }) => {
       const contentJson = JSON.stringify(editor.getJSON());
       const mdText = proseMirrorJSONToMarkdown(contentJson);
+
+      if (yjsDoc) {
+        const yMdText = yjsDoc.getText("mdText");
+        yjsDoc.transact(() => {
+          yMdText.delete(0, yMdText.length);
+          yMdText.insert(0, mdText);
+        });
+      }
+
       onUpdate(contentJson, mdText);
     },
     editorProps: {
