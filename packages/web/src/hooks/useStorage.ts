@@ -13,18 +13,47 @@ import {
   SearchResult,
   DataDump,
 } from "@notes/core";
+import { useSyncStore } from "../stores/syncStore";
+import {
+  pushNote,
+  pushFolder,
+  pushTag,
+  pushDeleteNote,
+  pushDeleteFolder,
+  pushDeleteTag,
+  pushNoteTags,
+  pushQueue,
+  isPullingFromRemote,
+} from "../lib/sync-metadata";
 
 export function useStorage() {
   const createNote = useCallback(async (input: CreateNoteInput): Promise<Note> => {
-    return getStorage().createNote(input);
+    const note = await getStorage().createNote(input);
+    if (useSyncStore.getState().engine && !isPullingFromRemote()) {
+      pushNote(note).catch(() => {
+        pushQueue.enqueue({ type: "note", data: note, entityId: note.id });
+      });
+    }
+    return note;
   }, []);
 
   const updateNote = useCallback(async (id: string, input: UpdateNoteInput): Promise<Note> => {
-    return getStorage().updateNote(id, input);
+    const note = await getStorage().updateNote(id, input);
+    if (useSyncStore.getState().engine && !isPullingFromRemote()) {
+      pushNote(note).catch(() => {
+        pushQueue.enqueue({ type: "note", data: note, entityId: note.id });
+      });
+    }
+    return note;
   }, []);
 
   const deleteNote = useCallback(async (id: string): Promise<void> => {
-    return getStorage().deleteNote(id);
+    await getStorage().deleteNote(id);
+    if (useSyncStore.getState().engine && !isPullingFromRemote()) {
+      pushDeleteNote(id).catch(() => {
+        pushQueue.enqueue({ type: "deleteNote", data: id, entityId: id });
+      });
+    }
   }, []);
 
   const getNote = useCallback(async (id: string): Promise<Note | null> => {
@@ -36,18 +65,35 @@ export function useStorage() {
   }, []);
 
   const createFolder = useCallback(async (input: CreateFolderInput): Promise<Folder> => {
-    return getStorage().createFolder(input);
+    const folder = await getStorage().createFolder(input);
+    if (useSyncStore.getState().engine && !isPullingFromRemote()) {
+      pushFolder(folder).catch(() => {
+        pushQueue.enqueue({ type: "folder", data: folder, entityId: folder.id });
+      });
+    }
+    return folder;
   }, []);
 
   const updateFolder = useCallback(
     async (id: string, input: UpdateFolderInput): Promise<Folder> => {
-      return getStorage().updateFolder(id, input);
+      const folder = await getStorage().updateFolder(id, input);
+      if (useSyncStore.getState().engine && !isPullingFromRemote()) {
+        pushFolder(folder).catch(() => {
+          pushQueue.enqueue({ type: "folder", data: folder, entityId: folder.id });
+        });
+      }
+      return folder;
     },
     [],
   );
 
   const deleteFolder = useCallback(async (id: string): Promise<void> => {
-    return getStorage().deleteFolder(id);
+    await getStorage().deleteFolder(id);
+    if (useSyncStore.getState().engine && !isPullingFromRemote()) {
+      pushDeleteFolder(id).catch(() => {
+        pushQueue.enqueue({ type: "deleteFolder", data: id, entityId: id });
+      });
+    }
   }, []);
 
   const listFolders = useCallback(async (parentId?: string | null): Promise<Folder[]> => {
@@ -55,7 +101,13 @@ export function useStorage() {
   }, []);
 
   const createTag = useCallback(async (name: string): Promise<Tag> => {
-    return getStorage().createTag(name);
+    const tag = await getStorage().createTag(name);
+    if (useSyncStore.getState().engine && !isPullingFromRemote()) {
+      pushTag(tag).catch(() => {
+        pushQueue.enqueue({ type: "tag", data: tag, entityId: tag.id });
+      });
+    }
+    return tag;
   }, []);
 
   const updateTag = useCallback(async (id: string, input: UpdateTagInput): Promise<Tag> => {
@@ -63,7 +115,20 @@ export function useStorage() {
   }, []);
 
   const addTagsToNote = useCallback(async (noteId: string, tagIds: string[]): Promise<void> => {
-    return getStorage().addTagsToNote(noteId, tagIds);
+    await getStorage().addTagsToNote(noteId, tagIds);
+    if (useSyncStore.getState().engine && !isPullingFromRemote()) {
+      const allTags = await getStorage().getTagsForNote(noteId);
+      pushNoteTags(
+        noteId,
+        allTags.map((t) => t.id),
+      ).catch(() => {
+        pushQueue.enqueue({
+          type: "noteTags",
+          data: allTags.map((t) => ({ noteId, tagId: t.id })),
+          entityId: noteId,
+        });
+      });
+    }
   }, []);
 
   const listTags = useCallback(async (): Promise<Tag[]> => {
@@ -71,7 +136,20 @@ export function useStorage() {
   }, []);
 
   const removeTagFromNote = useCallback(async (noteId: string, tagId: string): Promise<void> => {
-    return getStorage().removeTagFromNote(noteId, tagId);
+    await getStorage().removeTagFromNote(noteId, tagId);
+    if (useSyncStore.getState().engine && !isPullingFromRemote()) {
+      const allTags = await getStorage().getTagsForNote(noteId);
+      pushNoteTags(
+        noteId,
+        allTags.map((t) => t.id),
+      ).catch(() => {
+        pushQueue.enqueue({
+          type: "noteTags",
+          data: allTags.map((t) => ({ noteId, tagId: t.id })),
+          entityId: noteId,
+        });
+      });
+    }
   }, []);
 
   const removeTagsFromNote = useCallback(
@@ -82,7 +160,12 @@ export function useStorage() {
   );
 
   const deleteTag = useCallback(async (id: string): Promise<void> => {
-    return getStorage().deleteTag(id);
+    await getStorage().deleteTag(id);
+    if (useSyncStore.getState().engine && !isPullingFromRemote()) {
+      pushDeleteTag(id).catch(() => {
+        pushQueue.enqueue({ type: "deleteTag", data: id, entityId: id });
+      });
+    }
   }, []);
 
   const getNotesForTag = useCallback(async (tagId: string): Promise<Note[]> => {
