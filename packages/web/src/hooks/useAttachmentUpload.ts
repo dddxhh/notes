@@ -3,6 +3,10 @@ import { getStorage } from "../lib/sqlite-init";
 import { validateFile, compressImage } from "@notes/core";
 import { useAttachmentsStore } from "../stores";
 import type { Attachment } from "@notes/core";
+import { useSyncStore } from "../stores/syncStore";
+import { upload as syncUpload } from "../lib/sync-attachment";
+import { SyncClient } from "../lib/sync-client";
+import { useAuthStore } from "../stores/authStore";
 
 interface UploadResult {
   success: boolean;
@@ -33,6 +37,27 @@ export function useAttachmentUpload(noteId: string) {
         const storage = getStorage();
         const attachment = await storage.saveAttachment(noteId, processedFile, validation.type!);
         addAttachment(attachment);
+
+        if (useSyncStore.getState().engine) {
+          const serverUrl = useAuthStore.getState().serverUrl;
+          const token = useAuthStore.getState().accessToken;
+          if (serverUrl && token) {
+            const client = new SyncClient({
+              serverUrl,
+              getToken: () => useAuthStore.getState().accessToken,
+              onTokenExpired: async () => {
+                try {
+                  await useAuthStore.getState().refresh();
+                  return true;
+                } catch {
+                  return false;
+                }
+              },
+            });
+            syncUpload(client, attachment, processedFile).catch(() => {});
+          }
+        }
+
         return { success: true, attachment };
       } catch (e) {
         return { success: false, error: `上传失败: ${e}` };
