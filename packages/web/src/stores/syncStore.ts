@@ -48,7 +48,10 @@ export const useSyncStore = create<SyncStoreState>((set, get) => ({
 
     pullAll(client)
       .then(() => set({ status: "connected" }))
-      .catch(() => set({ status: "connected" }));
+      .catch((err) => {
+        console.error("pullAll failed:", err);
+        set({ status: "error" });
+      });
   },
 
   disconnect: () => {

@@ -101,15 +101,13 @@ export async function pullAll(client: SyncClient): Promise<void> {
           name: rf.name,
           parentId: rf.parentId,
           sortOrder: rf.sortOrder,
-          _skipSync: true,
-        } as any);
+        });
       } else if (rf.updatedAt > lf.updatedAt) {
         await storage.updateFolder(lf.id, {
           name: rf.name,
           parentId: rf.parentId,
           sortOrder: rf.sortOrder,
-          _skipSync: true,
-        } as any);
+        });
       }
     }
 
@@ -133,8 +131,7 @@ export async function pullAll(client: SyncClient): Promise<void> {
           folderId: rn.folderId,
           type: rn.type as any,
           deletedAt: rn.deletedAt,
-          _skipSync: true,
-        } as any);
+        });
       }
     }
 

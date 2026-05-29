@@ -73,7 +73,6 @@ describe("sync-metadata", () => {
     expect(mockStorage.createFolder).toHaveBeenCalledWith(
       expect.objectContaining({
         name: "Remote Folder",
-        _skipSync: true,
       }),
     );
   });
