@@ -25,7 +25,6 @@ export default function Editor({
   isMobile,
   onFileUpload,
 }: EditorProps) {
-  const editorMode = useUIStore((s) => s.editorMode);
   const isMobileDefault = useUIStore((s) => s.isMobile);
   const mobile = isMobile ?? isMobileDefault;
   const pendingUpload = useSlashCommandStore((s) => s.pendingUpload);
@@ -35,8 +34,25 @@ export default function Editor({
   const isSyncEnabled = useSyncStore((s) => s.engine !== null);
   const getNoteDoc = useSyncStore((s) => s.getNoteDoc);
 
-  const yjsDoc = isSyncEnabled && currentNoteId ? getNoteDoc(currentNoteId) : null;
-  const yjsXmlFragment = yjsDoc?.getXmlFragment("contentJson") ?? null;
+  const yjsDoc = useMemo(
+    () => (isSyncEnabled && currentNoteId ? getNoteDoc(currentNoteId) : null),
+    [isSyncEnabled, currentNoteId, getNoteDoc],
+  );
+  const yjsXmlFragment = useMemo(
+    () => (yjsDoc ? yjsDoc.getXmlFragment("contentJson") : null),
+    [yjsDoc],
+  );
+
+  const onUpdateRef = useRef(onUpdate);
+  const yjsDocRef = useRef(yjsDoc);
+
+  useEffect(() => {
+    onUpdateRef.current = onUpdate;
+  }, [onUpdate]);
+
+  useEffect(() => {
+    yjsDocRef.current = yjsDoc;
+  }, [yjsDoc]);
 
   const noteIdRef = useRef<string | null>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -105,15 +121,16 @@ export default function Editor({
       const contentJson = JSON.stringify(editor.getJSON());
       const mdText = proseMirrorJSONToMarkdown(contentJson);
 
-      if (yjsDoc) {
-        const yMdText = yjsDoc.getText("mdText");
-        yjsDoc.transact(() => {
+      const currentYjsDoc = yjsDocRef.current;
+      if (currentYjsDoc) {
+        const yMdText = currentYjsDoc.getText("mdText");
+        currentYjsDoc.transact(() => {
           yMdText.delete(0, yMdText.length);
           yMdText.insert(0, mdText);
         });
       }
 
-      onUpdate(contentJson, mdText);
+      onUpdateRef.current(contentJson, mdText);
     },
     editorProps: {
       attributes: {

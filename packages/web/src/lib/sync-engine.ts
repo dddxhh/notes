@@ -12,6 +12,7 @@ export class SyncEngine {
   private docs = new Map<string, Y.Doc>();
   private statusListeners = new Set<StatusListener>();
   private currentStatus: SyncStatus = "disconnected";
+  private connectionStates = new Map<string, string>();
 
   constructor(config: SyncConfig) {
     this.config = config;
@@ -30,13 +31,8 @@ export class SyncEngine {
     });
 
     wsProvider.on("status", (event: { status: string }) => {
-      if (event.status === "connected") {
-        this.updateStatus("connected");
-      } else if (event.status === "connecting") {
-        this.updateStatus("syncing");
-      } else {
-        this.updateStatus("disconnected");
-      }
+      this.connectionStates.set(noteId, event.status);
+      this.recomputeStatus();
     });
 
     const idbProvider = new IndexeddbPersistence(docName, doc);
@@ -59,6 +55,8 @@ export class SyncEngine {
     this.providers.delete(noteId);
     this.idbProviders.delete(noteId);
     this.docs.delete(noteId);
+    this.connectionStates.delete(noteId);
+    this.recomputeStatus();
   }
 
   onStatusChange(listener: StatusListener): () => void {
@@ -85,10 +83,25 @@ export class SyncEngine {
     this.providers.clear();
     this.idbProviders.clear();
     this.docs.clear();
+    this.connectionStates.clear();
     this.updateStatus("disconnected");
   }
 
+  private recomputeStatus(): void {
+    const states = Array.from(this.connectionStates.values());
+    if (states.length === 0) {
+      this.updateStatus("disconnected");
+    } else if (states.some((s) => s === "connected")) {
+      this.updateStatus("connected");
+    } else if (states.some((s) => s === "connecting")) {
+      this.updateStatus("syncing");
+    } else {
+      this.updateStatus("disconnected");
+    }
+  }
+
   private updateStatus(status: SyncStatus): void {
+    if (this.currentStatus === status) return;
     this.currentStatus = status;
     for (const listener of this.statusListeners) {
       listener(status);
