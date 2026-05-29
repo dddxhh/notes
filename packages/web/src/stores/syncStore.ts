@@ -27,7 +27,7 @@ export const useSyncStore = create<SyncStoreState>((set, get) => ({
       set({ status });
     });
 
-    set({ engine, config, status: "connecting" });
+    set({ engine, config, status: "connected" });
   },
 
   disconnect: () => {

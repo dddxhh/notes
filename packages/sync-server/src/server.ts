@@ -25,7 +25,7 @@ async function main(): Promise<void> {
 
   app.get("/health", async () => ({ status: "ok" }));
 
-  app.get("/ws", { websocket: true }, (socket, request) => {
+  app.get("/ws/*", { websocket: true }, (socket, request) => {
     handleConnection(socket, { url: request.url });
   });
 

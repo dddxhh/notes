@@ -30,7 +30,13 @@ export class SyncEngine {
     });
 
     wsProvider.on("status", (event: { status: string }) => {
-      this.updateStatus(event.status as SyncStatus);
+      if (event.status === "connected") {
+        this.updateStatus("connected");
+      } else if (event.status === "connecting") {
+        this.updateStatus("syncing");
+      } else {
+        this.updateStatus("disconnected");
+      }
     });
 
     const idbProvider = new IndexeddbPersistence(docName, doc);
