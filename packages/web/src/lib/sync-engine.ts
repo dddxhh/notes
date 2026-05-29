@@ -48,6 +48,10 @@ export class SyncEngine {
     return doc;
   }
 
+  getProvider(noteId: string): WebsocketProvider | null {
+    return this.providers.get(noteId) || null;
+  }
+
   destroyNoteDoc(noteId: string): void {
     this.providers.get(noteId)?.destroy();
     this.idbProviders.get(noteId)?.destroy();
