@@ -2,7 +2,7 @@ import { create } from "zustand";
 import type { SyncStatus, SyncConfig } from "@notes/core";
 import { SyncEngine } from "../lib/sync-engine";
 import { SyncClient } from "../lib/sync-client";
-import { pullAll, setSyncClient } from "../lib/sync-metadata";
+import { pullAll, setSyncClient, pushQueue } from "../lib/sync-metadata";
 import { useAuthStore } from "./authStore";
 
 interface SyncStoreState {
@@ -47,7 +47,10 @@ export const useSyncStore = create<SyncStoreState>((set, get) => ({
     set({ engine, config, status: "connecting" });
 
     pullAll(client)
-      .then(() => set({ status: "connected" }))
+      .then(async () => {
+        await pushQueue.flush(client);
+        set({ status: "connected" });
+      })
       .catch((err) => {
         console.error("pullAll failed:", err);
         set({ status: "error" });
