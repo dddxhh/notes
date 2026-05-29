@@ -110,27 +110,29 @@ async function handleSyncStep1(state: ConnectionState, decoder: decoding.Decoder
   const noteId = docName.startsWith("note:") ? docName.slice(5) : null;
   if (noteId) {
     const pool = getPool();
-    const access = await pool.query(
-      `SELECT 1 FROM note_metadata WHERE id = $1 AND user_id = $2
-       UNION
-       SELECT 1 FROM shares WHERE note_id = $1 AND target_user_id = $2`,
-      [noteId, state.userId],
-    );
 
-    if (access.rows.length === 0) {
-      state.ws.close(4003, "Access denied");
-      return;
+    const noteExists = await pool.query(`SELECT user_id FROM note_metadata WHERE id = $1`, [
+      noteId,
+    ]);
+
+    if (noteExists.rows.length > 0) {
+      const ownerId = noteExists.rows[0].user_id;
+      if (ownerId !== state.userId) {
+        const shareCheck = await pool.query(
+          `SELECT permission FROM shares WHERE note_id = $1 AND target_user_id = $2`,
+          [noteId, state.userId],
+        );
+        if (shareCheck.rows.length === 0) {
+          state.ws.close(4003, "Access denied");
+          return;
+        }
+        state.canWrite = shareCheck.rows[0].permission === "write";
+      } else {
+        state.canWrite = true;
+      }
+    } else {
+      state.canWrite = true;
     }
-
-    const permCheck = await pool.query(
-      `SELECT 'write' as perm FROM note_metadata WHERE id = $1 AND user_id = $2
-       UNION
-       SELECT permission as perm FROM shares WHERE note_id = $1 AND target_user_id = $2`,
-      [noteId, state.userId],
-    );
-
-    const permissions = permCheck.rows.map((r: any) => r.perm);
-    state.canWrite = permissions.includes("write");
   } else {
     state.canWrite = true;
   }

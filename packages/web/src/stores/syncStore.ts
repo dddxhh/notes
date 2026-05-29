@@ -1,6 +1,9 @@
 import { create } from "zustand";
 import type { SyncStatus, SyncConfig } from "@notes/core";
 import { SyncEngine } from "../lib/sync-engine";
+import { SyncClient } from "../lib/sync-client";
+import { pullAll, setSyncClient } from "../lib/sync-metadata";
+import { useAuthStore } from "./authStore";
 
 interface SyncStoreState {
   status: SyncStatus;
@@ -27,7 +30,25 @@ export const useSyncStore = create<SyncStoreState>((set, get) => ({
       set({ status });
     });
 
-    set({ engine, config, status: "connected" });
+    const client = new SyncClient({
+      serverUrl: config.serverUrl,
+      getToken: () => useAuthStore.getState().accessToken,
+      onTokenExpired: async () => {
+        try {
+          await useAuthStore.getState().refresh();
+          return true;
+        } catch {
+          return false;
+        }
+      },
+    });
+    setSyncClient(client);
+
+    set({ engine, config, status: "connecting" });
+
+    pullAll(client)
+      .then(() => set({ status: "connected" }))
+      .catch(() => set({ status: "connected" }));
   },
 
   disconnect: () => {
