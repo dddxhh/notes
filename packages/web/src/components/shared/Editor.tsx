@@ -8,7 +8,6 @@ import { useUIStore, useSlashCommandStore } from "../../stores";
 import { useAttachmentUpload, type UploadResult } from "../../hooks";
 import { createAttachmentSrc } from "../../lib/attachment-protocol";
 import type { Attachment } from "@notes/core";
-import { prosemirrorJSONToYXmlFragment } from "y-prosemirror";
 import EditorToolbar from "./EditorToolbar";
 
 interface EditorProps {
@@ -161,14 +160,9 @@ export default function Editor({
     noteIdRef.current = currentNoteId ?? null;
 
     if (yjsXmlFragment) {
-      if (yjsXmlFragment.length === 0 && parsedContent) {
-        try {
-          const schema = editor.view.state.schema;
-          prosemirrorJSONToYXmlFragment(schema, parsedContent, yjsXmlFragment);
-        } catch (e) {
-          console.warn("Failed to init Yjs doc from local content:", e);
-        }
-      }
+      // Yjs mode: Collaboration extension manages content from Yjs doc
+      // Don't initialize from local content - Yjs is the source of truth
+      // Content will come from server sync or y-indexeddb cache
     } else {
       editor.commands.setContent(parsedContent || "");
     }
