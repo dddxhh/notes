@@ -37,6 +37,7 @@ export interface StorageAdapter {
   getAttachmentThumbnail(id: string): Promise<Blob | null>;
   deleteAttachment(id: string): Promise<void>;
   listAttachmentIds(): Promise<string[]>;
+  saveAttachmentBlob(id: string, blob: Blob): Promise<void>;
 
   searchNotes(input: SearchInput): Promise<SearchResult>;
 

@@ -296,6 +296,10 @@ export class WebStorageAdapter implements StorageAdapter {
     return rows.map((r) => r.id as string);
   }
 
+  async saveAttachmentBlob(id: string, blob: Blob): Promise<void> {
+    await saveBlob(id, blob);
+  }
+
   async searchNotes(input: SearchInput): Promise<SearchResult> {
     return searchNotes(this.getDB(), input);
   }
