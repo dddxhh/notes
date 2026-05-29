@@ -1,5 +1,6 @@
 import ExportPanel from "./ExportPanel";
 import ImportPanel from "./ImportPanel";
+import SyncSettingsPanel from "./SyncSettingsPanel";
 import * as Dialog from "@radix-ui/react-dialog";
 
 interface DataManagementPanelProps {
@@ -16,7 +17,7 @@ export default function DataManagementPanel({ open, onOpenChange }: DataManageme
           className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 max-h-[80vh] rounded-lg p-6 overflow-auto shadow-lg z-50"
           style={{ backgroundColor: "var(--bg-secondary)", color: "var(--text-primary)" }}
         >
-          <Dialog.Title className="text-lg font-bold mb-4">数据管理</Dialog.Title>
+          <Dialog.Title className="text-lg font-bold mb-4">设置</Dialog.Title>
           <Dialog.Close asChild>
             <button
               aria-label="关闭"
@@ -26,6 +27,8 @@ export default function DataManagementPanel({ open, onOpenChange }: DataManageme
               ✕
             </button>
           </Dialog.Close>
+          <SyncSettingsPanel />
+          <div className="border-t my-4" style={{ borderColor: "var(--border-color)" }} />
           <ExportPanel />
           <div className="border-t my-4" style={{ borderColor: "var(--border-color)" }} />
           <ImportPanel />
