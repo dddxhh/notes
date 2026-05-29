@@ -8,6 +8,7 @@ import { useUIStore, useSlashCommandStore } from "../../stores";
 import { useAttachmentUpload, type UploadResult } from "../../hooks";
 import { createAttachmentSrc } from "../../lib/attachment-protocol";
 import type { Attachment } from "@notes/core";
+import { prosemirrorJSONToYXmlFragment } from "y-prosemirror";
 import EditorToolbar from "./EditorToolbar";
 
 interface EditorProps {
@@ -156,11 +157,22 @@ export default function Editor({
   });
 
   useEffect(() => {
-    if (editor && parsedContent && noteIdRef.current !== currentNoteId) {
-      editor.commands.setContent(parsedContent);
-      noteIdRef.current = currentNoteId ?? null;
+    if (!editor || noteIdRef.current === currentNoteId) return;
+    noteIdRef.current = currentNoteId ?? null;
+
+    if (yjsXmlFragment) {
+      if (yjsXmlFragment.length === 0 && parsedContent) {
+        try {
+          const schema = editor.view.state.schema;
+          prosemirrorJSONToYXmlFragment(schema, parsedContent, yjsXmlFragment);
+        } catch (e) {
+          console.warn("Failed to init Yjs doc from local content:", e);
+        }
+      }
+    } else {
+      editor.commands.setContent(parsedContent || "");
     }
-  }, [editor, parsedContent, currentNoteId]);
+  }, [editor, parsedContent, currentNoteId, yjsXmlFragment]);
 
   useEffect(() => {
     if (pendingUpload === "image") {
