@@ -19,6 +19,7 @@ export interface CreateNoteInput {
   mdText?: string;
   folderId?: string | null;
   type?: NoteType;
+  id?: string;
 }
 
 export interface UpdateNoteInput {

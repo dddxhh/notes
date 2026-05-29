@@ -2,8 +2,10 @@ import { create } from "zustand";
 import type { SyncStatus, SyncConfig } from "@notes/core";
 import { SyncEngine } from "../lib/sync-engine";
 import { SyncClient } from "../lib/sync-client";
-import { pullAll, setSyncClient, pushQueue } from "../lib/sync-metadata";
+import { pullAll, setSyncClient } from "../lib/sync-metadata";
 import { useAuthStore } from "./authStore";
+
+let pullAllPromise: Promise<void> | null = null;
 
 interface SyncStoreState {
   status: SyncStatus;
@@ -22,8 +24,17 @@ export const useSyncStore = create<SyncStoreState>((set, get) => ({
   config: null,
 
   initSync: (config: SyncConfig) => {
+    // Prevent concurrent initialization
+    if (pullAllPromise) {
+      console.log("[syncStore] initSync already in progress, skipping");
+      return;
+    }
+
     const existing = get().engine;
-    if (existing) existing.disconnect();
+    if (existing) {
+      existing.disconnect();
+      set({ engine: null, config: null, status: "disconnected" });
+    }
 
     const engine = new SyncEngine(config);
     engine.onStatusChange((status) => {
@@ -46,14 +57,16 @@ export const useSyncStore = create<SyncStoreState>((set, get) => ({
 
     set({ engine, config, status: "connecting" });
 
-    pullAll(client)
-      .then(async () => {
-        await pushQueue.flush(client);
+    pullAllPromise = pullAll(client)
+      .then(() => {
         set({ status: "connected" });
       })
       .catch((err) => {
         console.error("pullAll failed:", err);
         set({ status: "error" });
+      })
+      .finally(() => {
+        pullAllPromise = null;
       });
   },
 

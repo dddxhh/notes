@@ -59,7 +59,7 @@ export class WebStorageAdapter implements StorageAdapter {
   }
 
   async createNote(input: CreateNoteInput): Promise<Note> {
-    const id = generateId();
+    const id = input.id ?? generateId();
     const now = Date.now();
     const db = this.getDB();
     await runSQL(
@@ -175,7 +175,7 @@ export class WebStorageAdapter implements StorageAdapter {
   }
 
   async createFolder(input: CreateFolderInput): Promise<Folder> {
-    const id = generateId();
+    const id = input.id ?? generateId();
     const now = Date.now();
     const db = this.getDB();
     await runSQL(
@@ -304,15 +304,15 @@ export class WebStorageAdapter implements StorageAdapter {
     return searchNotes(this.getDB(), input);
   }
 
-  async createTag(name: string): Promise<Tag> {
+  async createTag(name: string, id?: string): Promise<Tag> {
     const db = this.getDB();
     const existing = await querySQL<Row>(db, `SELECT id, name FROM tags WHERE name=?`, [name]);
     if (existing.length > 0) {
       return { id: existing[0].id as string, name: existing[0].name as string };
     }
-    const id = generateId();
-    await runSQL(db, `INSERT INTO tags (id, name) VALUES (?, ?)`, [id, name]);
-    return { id, name };
+    const tagId = id ?? generateId();
+    await runSQL(db, `INSERT INTO tags (id, name) VALUES (?, ?)`, [tagId, name]);
+    return { id: tagId, name };
   }
 
   async updateTag(id: string, input: UpdateTagInput): Promise<Tag> {

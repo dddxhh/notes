@@ -41,7 +41,7 @@ export interface StorageAdapter {
 
   searchNotes(input: SearchInput): Promise<SearchResult>;
 
-  createTag(name: string): Promise<Tag>;
+  createTag(name: string, id?: string): Promise<Tag>;
   updateTag(id: string, input: UpdateTagInput): Promise<Tag>;
   addTagToNote(noteId: string, tagId: string): Promise<void>;
   addTagsToNote(noteId: string, tagIds: string[]): Promise<void>;

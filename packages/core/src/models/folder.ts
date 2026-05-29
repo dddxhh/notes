@@ -11,6 +11,7 @@ export interface CreateFolderInput {
   name: string;
   parentId?: string | null;
   sortOrder?: number;
+  id?: string;
 }
 
 export interface UpdateFolderInput {

@@ -84,79 +84,178 @@ class PushQueue {
 
 export const pushQueue = new PushQueue();
 
+/**
+ * Incremental merge: idempotent, safe to call multiple times.
+ * - Remote is source of truth for IDs
+ * - Local items with same name but different ID get remapped to remote ID
+ * - Local-only items get pushed to server
+ */
 export async function pullAll(client: SyncClient): Promise<void> {
   isPulling = true;
   try {
-    const remote = await client.pullMetadata();
     const storage = getStorage();
+    const remote = await client.pullMetadata();
 
+    // --- FOLDERS ---
     const localFolders = await storage.listFolders();
-    const localFolderMap = new Map(localFolders.map((f) => [f.id, f]));
-    const remoteFolderIds = new Set(remote.folders.map((f) => f.id));
+    const localFolderById = new Map(localFolders.map((f) => [f.id, f]));
+    const seenFolderIds = new Set<string>();
 
     for (const rf of remote.folders) {
-      const lf = localFolderMap.get(rf.id);
-      if (!lf) {
-        await storage.createFolder({
-          name: rf.name,
-          parentId: rf.parentId,
-          sortOrder: rf.sortOrder,
-        });
-      } else if (rf.updatedAt > lf.updatedAt) {
-        await storage.updateFolder(lf.id, {
-          name: rf.name,
-          parentId: rf.parentId,
-          sortOrder: rf.sortOrder,
-        });
+      if (localFolderById.has(rf.id)) {
+        // Same ID exists locally - update if remote is newer
+        seenFolderIds.add(rf.id);
+        const lf = localFolderById.get(rf.id)!;
+        if (rf.updatedAt > lf.updatedAt) {
+          await storage.updateFolder(rf.id, {
+            name: rf.name,
+            parentId: rf.parentId,
+            sortOrder: rf.sortOrder,
+          });
+        }
+      } else {
+        // Remote folder ID not found locally
+        // Check if a local folder with same (name, parentId) exists (ID mismatch)
+        const matchingLocal = localFolders.find(
+          (lf) =>
+            lf.name === rf.name &&
+            (lf.parentId ?? null) === (rf.parentId ?? null) &&
+            !seenFolderIds.has(lf.id),
+        );
+
+        if (matchingLocal) {
+          // ID mismatch: delete old local folder, recreate with remote ID
+          const oldId = matchingLocal.id;
+          seenFolderIds.add(oldId);
+
+          // Move notes from old folder to "no folder" temporarily
+          const notesInFolder = await storage.listNotes(oldId);
+          await storage.deleteFolder(oldId);
+          await storage.createFolder({
+            id: rf.id,
+            name: rf.name,
+            parentId: rf.parentId,
+            sortOrder: rf.sortOrder,
+          });
+          // Reassign notes to new folder ID
+          for (const note of notesInFolder) {
+            await storage.updateNote(note.id, { folderId: rf.id });
+          }
+        } else {
+          // No matching local folder - create with remote ID
+          await storage.createFolder({
+            id: rf.id,
+            name: rf.name,
+            parentId: rf.parentId,
+            sortOrder: rf.sortOrder,
+          });
+        }
+        seenFolderIds.add(rf.id);
       }
     }
 
-    for (const lf of localFolders) {
+    // Queue local-only folders for push
+    const currentLocalFolders = await storage.listFolders();
+    const remoteFolderIds = new Set(remote.folders.map((f) => f.id));
+    for (const lf of currentLocalFolders) {
       if (!remoteFolderIds.has(lf.id)) {
         pushQueue.enqueue({ type: "folder", data: lf, entityId: lf.id });
       }
     }
 
+    // --- NOTES ---
     const localNotes = await storage.listNotes();
-    const localNoteMap = new Map(localNotes.map((n) => [n.id, n]));
-    const remoteNoteIds = new Set(remote.notes.map((n) => n.id));
+    const localNoteById = new Map(localNotes.map((n) => [n.id, n]));
+    const seenNoteIds = new Set<string>();
 
     for (const rn of remote.notes) {
-      const ln = localNoteMap.get(rn.id);
-      if (!ln) {
-        // Remote note doesn't exist locally - will be synced via Yjs
-      } else if (rn.updatedAt > ln.updatedAt) {
-        await storage.updateNote(ln.id, {
+      if (localNoteById.has(rn.id)) {
+        seenNoteIds.add(rn.id);
+        const ln = localNoteById.get(rn.id)!;
+        if (rn.updatedAt > ln.updatedAt) {
+          await storage.updateNote(rn.id, {
+            title: rn.title,
+            folderId: rn.folderId,
+            type: rn.type as any,
+            deletedAt: rn.deletedAt,
+          });
+        }
+      } else {
+        // Remote note not found locally - create with remote ID
+        await storage.createNote({
+          id: rn.id,
           title: rn.title,
           folderId: rn.folderId,
           type: rn.type as any,
-          deletedAt: rn.deletedAt,
         });
+        seenNoteIds.add(rn.id);
       }
     }
 
-    for (const ln of localNotes) {
+    // Queue local-only notes for push
+    const currentLocalNotes = await storage.listNotes();
+    const remoteNoteIds = new Set(remote.notes.map((n) => n.id));
+    for (const ln of currentLocalNotes) {
       if (!remoteNoteIds.has(ln.id)) {
         pushQueue.enqueue({ type: "note", data: ln, entityId: ln.id });
       }
     }
 
+    // --- TAGS ---
     const localTags = await storage.listTags();
-    const localTagMap = new Map(localTags.map((t) => [t.id, t]));
-    const remoteTagIds = new Set(remote.tags.map((t) => t.id));
+    const localTagByName = new Map(localTags.map((t) => [t.name, t]));
+    const seenTagIds = new Set<string>();
 
     for (const rt of remote.tags) {
-      if (!localTagMap.has(rt.id)) {
-        await storage.createTag(rt.name);
+      const lt = localTagByName.get(rt.name);
+      if (lt) {
+        seenTagIds.add(lt.id);
+        if (lt.id !== rt.id) {
+          // Same name, different ID - remap: delete old, create with remote ID
+          // First update all note-tag references
+          const notesWithOldTag = await storage.getNotesForTag(lt.id);
+          await storage.deleteTag(lt.id);
+          await storage.createTag(rt.name, rt.id);
+          for (const note of notesWithOldTag) {
+            try {
+              await storage.addTagsToNote(note.id, [rt.id]);
+            } catch {}
+          }
+        }
+      } else {
+        // Tag not found locally - create with remote ID
+        await storage.createTag(rt.name, rt.id);
       }
+      seenTagIds.add(rt.id);
     }
 
-    for (const lt of localTags) {
+    // Queue local-only tags for push
+    const currentLocalTags = await storage.listTags();
+    const remoteTagIds = new Set(remote.tags.map((t) => t.id));
+    for (const lt of currentLocalTags) {
       if (!remoteTagIds.has(lt.id)) {
         pushQueue.enqueue({ type: "tag", data: lt, entityId: lt.id });
       }
     }
 
+    // --- NOTE-TAGS ---
+    for (const rnt of remote.noteTags) {
+      try {
+        const existingTags = await storage.getTagsForNote(rnt.noteId);
+        if (!existingTags.some((t) => t.id === rnt.tagId)) {
+          await storage.addTagsToNote(rnt.noteId, [rnt.tagId]);
+        }
+      } catch {}
+    }
+
+    // --- PUSH LOCAL-ONLY DATA ---
+    try {
+      await pushQueue.flush(client);
+    } catch (err) {
+      console.warn("Failed to push local data:", err);
+    }
+
+    // --- REFRESH STORES ---
     useNotesStore.getState().setNotes(await storage.listNotes());
     useFoldersStore.getState().setFolders(await storage.listFolders());
     useTagsStore.getState().setTags(await storage.listTags());
