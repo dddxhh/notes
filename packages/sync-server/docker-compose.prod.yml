@@ -1,0 +1,38 @@
+services:
+  server:
+    build:
+      context: .
+      dockerfile: packages/sync-server/Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      DATABASE_URL: postgres://notes:${DB_PASSWORD}@db:5432/notes_sync
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      PORT: "3001"
+      ATTACHMENT_DIR: /data/attachments
+    volumes:
+      - attachments:/data/attachments
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: notes_sync
+      POSTGRES_USER: notes
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U notes -d notes_sync"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  attachments:
