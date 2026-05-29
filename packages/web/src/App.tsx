@@ -25,8 +25,8 @@ export default function App() {
 
       useAuthStore.getState().restore();
 
-      const serverUrl = localStorage.getItem("sync-server-url");
-      const token = localStorage.getItem("sync-token");
+      const serverUrl = sessionStorage.getItem("sync-server-url");
+      const token = sessionStorage.getItem("sync-token");
       if (serverUrl && token) {
         initSync({
           serverUrl,

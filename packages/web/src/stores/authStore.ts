@@ -41,9 +41,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         throw new Error(body.error ?? "Login failed");
       }
       const data = await res.json();
-      localStorage.setItem("sync-server-url", serverUrl);
-      localStorage.setItem("sync-token", data.accessToken);
-      localStorage.setItem("sync-refresh-token", data.refreshToken);
+      sessionStorage.setItem("sync-server-url", serverUrl);
+      sessionStorage.setItem("sync-token", data.accessToken);
+      sessionStorage.setItem("sync-refresh-token", data.refreshToken);
+      sessionStorage.setItem("sync-user", JSON.stringify(data.user));
       set({
         user: data.user,
         serverUrl,
@@ -70,9 +71,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         throw new Error(body.error ?? "Registration failed");
       }
       const data = await res.json();
-      localStorage.setItem("sync-server-url", serverUrl);
-      localStorage.setItem("sync-token", data.accessToken);
-      localStorage.setItem("sync-refresh-token", data.refreshToken);
+      sessionStorage.setItem("sync-server-url", serverUrl);
+      sessionStorage.setItem("sync-token", data.accessToken);
+      sessionStorage.setItem("sync-refresh-token", data.refreshToken);
+      sessionStorage.setItem("sync-user", JSON.stringify(data.user));
       set({
         user: data.user,
         serverUrl,
@@ -87,9 +89,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   logout: () => {
-    localStorage.removeItem("sync-server-url");
-    localStorage.removeItem("sync-token");
-    localStorage.removeItem("sync-refresh-token");
+    sessionStorage.removeItem("sync-server-url");
+    sessionStorage.removeItem("sync-token");
+    sessionStorage.removeItem("sync-refresh-token");
+    sessionStorage.removeItem("sync-user");
     set({
       user: null,
       serverUrl: null,
@@ -113,7 +116,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         return;
       }
       const data = await res.json();
-      localStorage.setItem("sync-token", data.accessToken);
+      sessionStorage.setItem("sync-token", data.accessToken);
       set({ accessToken: data.accessToken });
     } catch {
       // silent fail, will retry on next request
@@ -121,11 +124,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   restore: () => {
-    const serverUrl = localStorage.getItem("sync-server-url");
-    const token = localStorage.getItem("sync-token");
-    const refresh = localStorage.getItem("sync-refresh-token");
+    const serverUrl = sessionStorage.getItem("sync-server-url");
+    const token = sessionStorage.getItem("sync-token");
+    const refresh = sessionStorage.getItem("sync-refresh-token");
+    const userJson = sessionStorage.getItem("sync-user");
     if (serverUrl && token) {
-      set({ serverUrl, accessToken: token, refreshToken: refresh });
+      const user = userJson ? JSON.parse(userJson) : null;
+      set({ serverUrl, accessToken: token, refreshToken: refresh, user });
     }
   },
 }));

@@ -4,12 +4,14 @@ interface NoteTitleInputProps {
   value: string;
   onChange: (title: string) => void;
   placeholder?: string;
+  autoFocus?: boolean;
 }
 
 export default function NoteTitleInput({
   value,
   onChange,
   placeholder = "输入标题...",
+  autoFocus = false,
 }: NoteTitleInputProps) {
   const [localValue, setLocalValue] = useState(value);
   const debounceRef = useRef<number | null>(null);
@@ -17,7 +19,10 @@ export default function NoteTitleInput({
 
   useEffect(() => {
     setLocalValue(value);
-  }, [value]);
+    if (autoFocus && value === "") {
+      inputRef.current?.focus();
+    }
+  }, [value, autoFocus]);
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {

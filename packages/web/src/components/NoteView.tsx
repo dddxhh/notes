@@ -283,7 +283,7 @@ export default function NoteView({ note, onBack, initialTagIds }: NoteViewProps)
             ← 返回
           </button>
         )}
-        <NoteTitleInput value={title} onChange={handleTitleChange} />
+        <NoteTitleInput value={title} onChange={handleTitleChange} autoFocus />
         <div className="flex items-center gap-2">
           <ModeToggle />
         </div>
