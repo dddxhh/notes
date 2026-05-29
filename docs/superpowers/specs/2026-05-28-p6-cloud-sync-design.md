@@ -497,8 +497,8 @@ Token 刷新：
   服务端：验证 refresh token → 返回新的 access token
 
 客户端存储：
-  access token → 内存（syncStore）
-  refresh token → localStorage
+  access token → 内存（syncStore）+ sessionStorage
+  refresh token → sessionStorage
 ```
 
 ### 6.2 安全策略

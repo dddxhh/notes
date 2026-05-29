@@ -111,7 +111,7 @@ export const useNotesStore = create<NotesState>((set, get) => ({
 
 ### Store vs Hook vs Adapter 的分工
 
-| 层              | 责责                        | 依赖                       |
+| 层              | 职责                        | 依赖                       |
 | --------------- | --------------------------- | -------------------------- |
 | adapter         | 持久化读写                  | 无 React                   |
 | store           | 缓存 + UI 状态              | adapter（通过 getStorage） |

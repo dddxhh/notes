@@ -16,7 +16,7 @@
 | `--code-bg`                                               | 代码块背景   |
 | `--sidebar-bg` / `--card-bg` / `--hover-bg`               | 特定区域背景 |
 
-深色模式通过 `.dark` 类切换（`<body>` 上），与 Tailwind `darkMode: "class"` 一致。变量在 `globals.css` 的 `:root` 和 `.dark` 中分别定义。
+深色模式通过 `.dark` 类切换（`<html>` 上，即 `documentElement`），与 Tailwind `darkMode: "class"` 一致。变量在 `globals.css` 的 `:root` 和 `.dark` 中分别定义。
 
 **规则**：新增颜色必须添加对应的 CSS 变量并在 `:root` 和 `.dark` 中同时定义。不要用 Tailwind 硬编码色值。
 
@@ -57,11 +57,11 @@
 
 ## 深色模式切换
 
-`useTheme` hook 管理 `document.body.classList` 的 `dark` 类。读取主题从 `uiStore.theme`（`"light" | "dark"`）。
+`useTheme` hook 管理 `document.documentElement.classList` 的 `dark` 类。读取主题从 `uiStore.theme`（`"light" | "dark"`）。
 
 ```typescript
 const { theme } = useTheme();
-// hook 内部：document.body.classList.toggle("dark", theme === "dark");
+// hook 内部：document.documentElement.classList.toggle("dark", theme === "dark");
 ```
 
 **规则**：组件不直接操作 `document.body.classList`，通过 `useTheme` 或 `uiStore.setTheme` 切换主题。

@@ -49,7 +49,7 @@ packages/web/src/lib/
 ```
 用户登录成功
   ↓
-authStore.login() → 保存 token 到 localStorage
+authStore.login() → 保存 token 到 sessionStorage
   ↓
 syncStore.initSync() → 创建 SyncEngine（WebSocket 连接）
   ↓
@@ -274,10 +274,10 @@ export async function pullAll(client: SyncClient): Promise<void> {
     }
   }
 
-  // 2. 合并 notes（同理，比较 updatedAt）
-  // 3. 合并 tags（同理，按 name 去重）
-  // 4. 合并 noteTags（全量替换，以远程为准）
-  // 5. 合并 attachments 元数据（远程有本地无 → 记录 ID，不下载 blob）
+  // 2. 合并 notes（同理，比较 updatedAt；远程有本地无 → 创建；ID 不同但同文件夹同标题 → 重映射）
+  // 3. 合并 tags（按 name 去重；同名不同 ID → 删旧建新，重映射 note-tag 关联）
+  // 4. 合并 noteTags（远程有本地无 → addTagsToNote）
+  // 5. 推送本地独有数据（pushQueue.flush）
 
   // 6. 刷新 stores
   useNotesStore.getState().setNotes(await storage.listNotes());
