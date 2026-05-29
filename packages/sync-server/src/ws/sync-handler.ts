@@ -45,10 +45,14 @@ export async function handleConnection(ws: WebSocket, request: { url?: string })
     return;
   }
 
+  // Extract docName from URL path: /ws/note:abc123 -> note:abc123
+  const pathParts = url.pathname.split("/");
+  const docName = pathParts.slice(2).join("/") || null;
+
   const state: ConnectionState = {
     userId: payload.userId,
     username: payload.username,
-    docName: null,
+    docName,
     ws,
   };
 
@@ -105,8 +109,12 @@ async function handleMessage(state: ConnectionState, message: Uint8Array): Promi
 }
 
 async function handleSyncStep1(state: ConnectionState, decoder: decoding.Decoder): Promise<void> {
-  const docName = decoding.readVarString(decoder);
+  if (!state.docName) {
+    state.ws.close(4000, "Missing docName");
+    return;
+  }
 
+  const docName = state.docName;
   const noteId = docName.startsWith("note:") ? docName.slice(5) : null;
   if (noteId) {
     const pool = getPool();
@@ -136,8 +144,6 @@ async function handleSyncStep1(state: ConnectionState, decoder: decoding.Decoder
   } else {
     state.canWrite = true;
   }
-
-  state.docName = docName;
 
   const doc = await docManager.getDoc(docName);
   docManager.addConnection(docName);
