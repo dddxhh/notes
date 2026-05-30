@@ -14,6 +14,7 @@ interface NoteCardProps {
   onDelete?: (note: Note) => void;
   onMoveToFolder?: (note: Note) => void;
   onCopyMarkdown?: (note: Note) => void;
+  onShare?: (note: Note) => void;
 }
 
 export default function NoteCard({
@@ -24,6 +25,7 @@ export default function NoteCard({
   onDelete,
   onMoveToFolder,
   onCopyMarkdown,
+  onShare,
 }: NoteCardProps) {
   const timeStr = formatShortDateTime(note.updatedAt);
 
@@ -87,12 +89,13 @@ export default function NoteCard({
                   </span>
                 )}
               </div>
-              {(onDelete || onMoveToFolder) && (
+              {(onDelete || onMoveToFolder || onShare) && (
                 <div className="flex-shrink-0">
                   <NoteCardMenu
                     onDelete={() => onDelete?.(note)}
                     onMoveToFolder={() => onMoveToFolder?.(note)}
                     onCopyMarkdown={() => onCopyMarkdown?.(note)}
+                    onShare={onShare ? () => onShare(note) : undefined}
                   />
                 </div>
               )}

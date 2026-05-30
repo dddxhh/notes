@@ -10,6 +10,7 @@ import NoteCard from "../shared/NoteCard";
 import DeleteTagDialog from "../shared/DeleteTagDialog";
 import DeleteNoteDialog from "../shared/DeleteNoteDialog";
 import MoveNoteDialog from "../shared/MoveNoteDialog";
+import ShareDialog from "../shared/ShareDialog";
 import { extractTitleFromContent } from "../../lib/markdown-serializer";
 import DataManagementPanel from "../shared/DataManagementPanel";
 import SyncStatusIndicator from "../shared/SyncStatusIndicator";
@@ -54,6 +55,7 @@ export default function Sidebar() {
   const [deleteNoteId, setDeleteNoteId] = useState<string | null>(null);
   const [moveNoteId, setMoveNoteId] = useState<string | null>(null);
   const [moveNoteFolderId, setMoveNoteFolderId] = useState<string | null>(null);
+  const [shareNoteId, setShareNoteId] = useState<string | null>(null);
   const [editingTagId, setEditingTagId] = useState<string | null>(null);
   const [editingTagName, setEditingTagName] = useState("");
   const [showDataManagement, setShowDataManagement] = useState(false);
@@ -340,6 +342,7 @@ export default function Sidebar() {
                     setMoveNoteFolderId(n.folderId);
                   }}
                   onCopyMarkdown={(n) => navigator.clipboard.writeText(n.mdText)}
+                  onShare={(n) => setShareNoteId(n.id)}
                 />
               </div>
             );
@@ -441,6 +444,19 @@ export default function Sidebar() {
         noteId={moveNoteId ?? ""}
         currentFolderId={moveNoteFolderId}
         onMove={handleMoveToFolder}
+      />
+      <ShareDialog
+        open={shareNoteId !== null}
+        onOpenChange={(open) => {
+          if (!open) setShareNoteId(null);
+        }}
+        noteId={shareNoteId ?? ""}
+        noteTitle={
+          shareNoteId
+            ? finalNotes.find((n) => n.id === shareNoteId)?.title ||
+              extractTitleFromContent(finalNotes.find((n) => n.id === shareNoteId)?.mdText || "")
+            : ""
+        }
       />
       <DataManagementPanel open={showDataManagement} onOpenChange={setShowDataManagement} />
     </div>

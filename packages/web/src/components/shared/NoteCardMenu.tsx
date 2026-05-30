@@ -4,12 +4,14 @@ interface NoteCardMenuProps {
   onDelete: () => void;
   onMoveToFolder: () => void;
   onCopyMarkdown: () => void;
+  onShare?: () => void;
 }
 
 export default function NoteCardMenu({
   onDelete,
   onMoveToFolder,
   onCopyMarkdown,
+  onShare,
 }: NoteCardMenuProps) {
   return (
     <DropdownMenu.Root>
@@ -45,6 +47,14 @@ export default function NoteCardMenu({
           >
             复制 Markdown
           </DropdownMenu.Item>
+          {onShare && (
+            <DropdownMenu.Item
+              onClick={onShare}
+              className="px-3 py-2 text-sm cursor-pointer hover:opacity-80 rounded-md outline-none"
+            >
+              分享
+            </DropdownMenu.Item>
+          )}
           <DropdownMenu.Item
             onClick={onDelete}
             className="px-3 py-2 text-sm cursor-pointer hover:opacity-80 rounded-md outline-none"

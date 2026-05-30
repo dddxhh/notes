@@ -238,6 +238,10 @@ vi.mock("../../src/components/shared/DataManagementPanel", () => ({
   default: () => <div data-testid="data-management-panel">DataManagementPanel</div>,
 }));
 
+vi.mock("../../src/components/shared/ShareDialog", () => ({
+  default: () => <div data-testid="share-dialog">ShareDialog</div>,
+}));
+
 vi.mock("../../src/components/shared/DeleteTagDialog", () => ({
   default: () => null,
 }));
