@@ -59,6 +59,7 @@ export interface Share {
   hasPassword: boolean;
   expiresAt: string | null;
   createdAt: string;
+  shareToken?: string;
 }
 
 interface Folder {
