@@ -54,7 +54,6 @@ export const shareRoutes: FastifyPluginAsync = async (app) => {
       passwordHash = await hashPassword(body.password);
     }
 
-    const shareToken = nanoid(24);
     const permission = body.permission ?? "read";
     const expiresAt = body.expiresAt ?? null;
 
@@ -69,7 +68,7 @@ export const shareRoutes: FastifyPluginAsync = async (app) => {
       noteId: body.noteId,
       type: body.type,
       permission,
-      shareToken: body.type === "public_link" ? shareToken : undefined,
+      shareToken: body.type === "public_link" ? id : undefined,
       targetUsername: body.targetUsername,
       expiresAt,
     });

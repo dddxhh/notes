@@ -3,12 +3,11 @@ import MarkdownIt from "markdown-it";
 
 interface PublicShareViewProps {
   token: string;
-  serverUrl: string;
 }
 
 const md = new MarkdownIt({ html: false, linkify: true, breaks: true });
 
-export default function PublicShareView({ token, serverUrl }: PublicShareViewProps) {
+export default function PublicShareView({ token }: PublicShareViewProps) {
   const [title, setTitle] = useState("");
   const [html, setHtml] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -22,7 +21,7 @@ export default function PublicShareView({ token, serverUrl }: PublicShareViewPro
       setLoading(true);
       setError(null);
       try {
-        const url = new URL(`${serverUrl}/api/v1/shares/public/${token}`);
+        const url = new URL(`/api/v1/shares/public/${token}`, window.location.origin);
         if (submittedPassword) url.searchParams.set("password", submittedPassword);
 
         const res = await fetch(url.toString());
@@ -58,7 +57,7 @@ export default function PublicShareView({ token, serverUrl }: PublicShareViewPro
     };
 
     fetchNote();
-  }, [token, serverUrl, submittedPassword]);
+  }, [token, submittedPassword]);
 
   if (loading) {
     return (

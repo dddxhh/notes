@@ -20,6 +20,8 @@ export default function ShareDialog({ open, onOpenChange, noteId, noteTitle }: S
   const [permission, setPermission] = useState<"read" | "write">("read");
   const [copied, setCopied] = useState(false);
 
+  const webOrigin = typeof window !== "undefined" ? window.location.origin : "";
+
   const getClient = useCallback(() => {
     const { serverUrl, accessToken } = useAuthStore.getState();
     if (!serverUrl || !accessToken) return null;
@@ -111,8 +113,6 @@ export default function ShareDialog({ open, onOpenChange, noteId, noteTitle }: S
     }
   };
 
-  const serverUrl = useAuthStore((s) => s.serverUrl);
-
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
@@ -164,10 +164,34 @@ export default function ShareDialog({ open, onOpenChange, noteId, noteTitle }: S
                       color: "var(--text-primary)",
                     }}
                   >
-                    {serverUrl}/share/{createdToken}
+                    {webOrigin}/s/{createdToken}
                   </span>
                   <button
-                    onClick={() => handleCopy(`${serverUrl}/share/${createdToken}`)}
+                    onClick={() => handleCopy(`${webOrigin}/s/${createdToken}`)}
+                    className="text-sm rounded-md px-3 py-1.5 hover:opacity-80"
+                    style={{ backgroundColor: "var(--accent)", color: "#fff" }}
+                  >
+                    {copied ? "已复制" : "复制"}
+                  </button>
+                </div>
+              ) : shares.some((s) => s.type === "public_link") ? (
+                <div className="flex items-center gap-2 mb-4">
+                  <span
+                    className="flex-1 text-sm rounded-md px-3 py-1.5 border truncate"
+                    style={{
+                      backgroundColor: "var(--bg-tertiary)",
+                      borderColor: "var(--border-color)",
+                      color: "var(--text-primary)",
+                    }}
+                  >
+                    {webOrigin}/s/{shares.find((s) => s.type === "public_link")!.id}
+                  </span>
+                  <button
+                    onClick={() =>
+                      handleCopy(
+                        `${webOrigin}/s/${shares.find((s) => s.type === "public_link")!.id}`,
+                      )
+                    }
                     className="text-sm rounded-md px-3 py-1.5 hover:opacity-80"
                     style={{ backgroundColor: "var(--accent)", color: "#fff" }}
                   >

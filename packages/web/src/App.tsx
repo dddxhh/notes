@@ -42,10 +42,9 @@ export default function App() {
   }, []);
 
   if (shareMatch) {
-    const serverUrl = sessionStorage.getItem("sync-server-url") || "http://localhost:3001";
     return (
       <Tooltip.Provider delayDuration={300}>
-        <PublicShareView token={shareMatch[1]} serverUrl={serverUrl} />
+        <PublicShareView token={shareMatch[1]} />
       </Tooltip.Provider>
     );
   }
