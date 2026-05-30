@@ -233,6 +233,25 @@ docker compose -f docker-compose.prod.yml exec server \
   node -e "import('./dist/db/migrate.js')"
 ```
 
+## Yjs 更新压缩
+
+定期压缩 Yjs 更新碎片，减少数据库体积：
+
+```bash
+# 手动运行
+pnpm --filter @notes/sync-server compress
+
+# 定时任务（每小时）
+0 * * * * cd /path/to/notes && pnpm --filter @notes/sync-server compress >> /var/log/notes-compress.log 2>&1
+```
+
+Docker Compose 部署时，可通过 `exec` 运行：
+
+```bash
+docker compose -f docker-compose.prod.yml exec server \
+  node -e "import('./dist/scripts/compress-yjs.js').then(m => m.compressAllDocs()).then(c => console.log('Compressed', c, 'docs'))"
+```
+
 ## 安全建议
 
 1. **强密钥**：`JWT_SECRET` 和 `JWT_REFRESH_SECRET` 使用 `openssl rand -base64 32` 生成
