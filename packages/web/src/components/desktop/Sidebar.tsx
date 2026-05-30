@@ -94,7 +94,10 @@ export default function Sidebar() {
     }
   }, []);
 
-  const activeNotes = useMemo(() => notes.filter((n) => n.deletedAt === null), [notes]);
+  const activeNotes = useMemo(
+    () => notes.filter((n) => n.deletedAt === null && !sharedNoteIds.has(n.id)),
+    [notes, sharedNoteIds],
+  );
 
   const [tagFilteredNoteIds, setTagFilteredNoteIds] = useState<string[]>([]);
 
