@@ -13,8 +13,10 @@ interface NotesState {
   loading: boolean;
   deletedNotes: Note[];
   sharedNotes: Note[];
+  sharedNoteIds: Set<string>;
   setNotes: (notes: Note[]) => void;
   setSharedNotes: (notes: Note[]) => void;
+  setSharedNoteIds: (ids: Set<string>) => void;
   setCurrentNote: (note: Note | null) => void;
   addNote: (note: Note) => void;
   updateNoteInList: (id: string, note: Partial<Note> & { id: string }) => void;
@@ -44,8 +46,10 @@ export const useNotesStore = create<NotesState>((set, get) => ({
   loading: false,
   deletedNotes: [],
   sharedNotes: [],
+  sharedNoteIds: new Set(),
   setNotes: (notes) => set({ notes }),
   setSharedNotes: (notes) => set({ sharedNotes: notes }),
+  setSharedNoteIds: (ids) => set({ sharedNoteIds: ids }),
   setCurrentNote: (note) => set({ currentNote: note }),
   addNote: (note) => set((state) => ({ notes: [note, ...state.notes] })),
   updateNoteInList: (id, partial) =>

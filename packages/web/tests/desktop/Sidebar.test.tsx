@@ -144,12 +144,14 @@ vi.mock("../../src/stores", () => ({
       notes: mockNotes,
       currentNote: null,
       sharedNotes: [],
+      sharedNoteIds: new Set(),
       setCurrentNote: mockSetCurrentNote,
       setNotes: vi.fn(),
       addNote: vi.fn(),
       removeNoteFromList: vi.fn(),
       noteTagsMap: mockNoteTagsMap,
       setNoteTagsMap: vi.fn(),
+      setSharedNoteIds: vi.fn(),
     }),
   useFoldersStore: (selector: any) =>
     selector({
@@ -240,6 +242,23 @@ vi.mock("../../src/components/shared/DataManagementPanel", () => ({
 
 vi.mock("../../src/components/shared/ShareDialog", () => ({
   default: () => <div data-testid="share-dialog">ShareDialog</div>,
+}));
+
+vi.mock("../../src/stores/authStore", () => {
+  const mockAuthStore = {
+    serverUrl: null,
+    accessToken: null,
+    user: null,
+  };
+  const useAuthStore = (selector: any) => selector(mockAuthStore);
+  useAuthStore.getState = () => mockAuthStore;
+  return { useAuthStore };
+});
+
+vi.mock("../../src/lib/sync-client", () => ({
+  SyncClient: vi.fn().mockImplementation(() => ({
+    listShares: vi.fn().mockResolvedValue([]),
+  })),
 }));
 
 vi.mock("../../src/components/shared/DeleteTagDialog", () => ({

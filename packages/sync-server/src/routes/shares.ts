@@ -1,8 +1,11 @@
 import { type FastifyPluginAsync } from "fastify";
 import { nanoid } from "nanoid";
+import { join } from "path";
+import { createReadStream } from "fs";
 import { hashPassword, verifyPassword } from "../auth/password";
 import { authMiddleware } from "../auth/middleware";
 import { getPool } from "../db/client";
+import { loadConfig } from "../config";
 
 export const shareRoutes: FastifyPluginAsync = async (app) => {
   app.post("/shares", { preHandler: authMiddleware }, async (request, reply) => {
@@ -176,5 +179,63 @@ export const shareRoutes: FastifyPluginAsync = async (app) => {
       createdAt: share.created_at,
       updatedAt: share.updated_at,
     });
+  });
+
+  app.get("/shares/public/:token/attachments/:attachmentId", async (request, reply) => {
+    const { token, attachmentId } = request.params as { token: string; attachmentId: string };
+    const pool = getPool();
+
+    const shareResult = await pool.query(
+      `SELECT s.note_id, s.password_hash, s.expires_at
+       FROM shares s
+       WHERE s.id = $1 AND s.type = 'public_link'`,
+      [token],
+    );
+
+    if (shareResult.rows.length === 0) {
+      return reply.status(404).send({ error: "Share not found" });
+    }
+
+    const share = shareResult.rows[0];
+
+    if (share.expires_at && new Date(share.expires_at) < new Date()) {
+      return reply.status(410).send({ error: "Share has expired" });
+    }
+
+    const query = request.query as { password?: string };
+    if (share.password_hash) {
+      if (!query.password) {
+        return reply.status(401).send({ error: "Password required" });
+      }
+      const valid = await verifyPassword(query.password, share.password_hash);
+      if (!valid) {
+        return reply.status(401).send({ error: "Invalid password" });
+      }
+    }
+
+    const attResult = await pool.query(
+      `SELECT a.id, a.mime_type, a.filename, a.user_id
+       FROM attachments a
+       WHERE a.id = $1 AND a.note_id = $2`,
+      [attachmentId, share.note_id],
+    );
+
+    if (attResult.rows.length === 0) {
+      return reply.status(404).send({ error: "Attachment not found" });
+    }
+
+    const att = attResult.rows[0];
+    const config = loadConfig();
+    const filePath = join(config.attachmentDir, att.user_id, att.id);
+
+    try {
+      const stream = createReadStream(filePath);
+      reply.header("Content-Type", att.mime_type);
+      reply.header("Content-Disposition", `inline; filename="${att.filename}"`);
+      reply.header("Cache-Control", "public, max-age=86400");
+      return reply.send(stream);
+    } catch {
+      return reply.status(404).send({ error: "File not found on disk" });
+    }
   });
 };

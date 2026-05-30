@@ -2,6 +2,8 @@ import { useRef, useMemo, useState, useCallback, useEffect } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useNotesStore, useTagsStore, useUIStore, useFoldersStore } from "../../stores";
 import { useSearch, useStorage } from "../../hooks";
+import { SyncClient } from "../../lib/sync-client";
+import { useAuthStore } from "../../stores/authStore";
 import FolderTreeDropdown from "./FolderTreeDropdown";
 import SearchBar from "../shared/SearchBar";
 import SearchFilterPanel from "../shared/SearchFilterPanel";
@@ -43,6 +45,8 @@ export default function Sidebar() {
   const removeNoteFromList = useNotesStore((s) => s.removeNoteFromList);
   const noteTagsMap = useNotesStore((s) => s.noteTagsMap);
   const setNoteTagsMap = useNotesStore((s) => s.setNoteTagsMap);
+  const sharedNoteIds = useNotesStore((s) => s.sharedNoteIds);
+  const setSharedNoteIds = useNotesStore((s) => s.setSharedNoteIds);
   const setFolders = useFoldersStore((s) => s.setFolders);
   const setTags = useTagsStore((s) => s.setTags);
   const updateTagInList = useTagsStore((s) => s.updateTagInList);
@@ -72,6 +76,22 @@ export default function Sidebar() {
     listTags()
       .then((t) => setTags(t))
       .catch(() => {});
+
+    const { serverUrl, accessToken } = useAuthStore.getState();
+    if (serverUrl && accessToken) {
+      const client = new SyncClient({
+        serverUrl,
+        getToken: () => useAuthStore.getState().accessToken,
+        onTokenExpired: async () => false,
+      });
+      client
+        .listShares()
+        .then((shares) => {
+          const ids = new Set(shares.map((s) => s.noteId));
+          setSharedNoteIds(ids);
+        })
+        .catch(() => {});
+    }
   }, []);
 
   const activeNotes = useMemo(() => notes.filter((n) => n.deletedAt === null), [notes]);
@@ -336,6 +356,7 @@ export default function Sidebar() {
                   note={note}
                   onClick={setCurrentNote}
                   tags={noteTagsMap.get(note.id)}
+                  isShared={sharedNoteIds.has(note.id)}
                   onDelete={(n) => setDeleteNoteId(n.id)}
                   onMoveToFolder={(n) => {
                     setMoveNoteId(n.id);

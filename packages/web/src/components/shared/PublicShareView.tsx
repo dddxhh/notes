@@ -7,6 +7,15 @@ interface PublicShareViewProps {
 
 const md = new MarkdownIt({ html: false, linkify: true, breaks: true });
 
+function rewriteAttachmentUrls(html: string, token: string, password?: string): string {
+  const base = `/api/v1/shares/public/${token}/attachments/`;
+  const passwordParam = password ? `?password=${encodeURIComponent(password)}` : "";
+  return html.replace(
+    /src="attachment:\/\/([^"]+)"/g,
+    (_match, id) => `src="${base}${id}${passwordParam}"`,
+  );
+}
+
 export default function PublicShareView({ token }: PublicShareViewProps) {
   const [title, setTitle] = useState("");
   const [html, setHtml] = useState("");
@@ -47,7 +56,8 @@ export default function PublicShareView({ token }: PublicShareViewProps) {
 
         const data = await res.json();
         setTitle(data.title || "未命名笔记");
-        setHtml(md.render(data.mdText || ""));
+        const rawHtml = md.render(data.mdText || "");
+        setHtml(rewriteAttachmentUrls(rawHtml, token, submittedPassword || undefined));
         setNeedsPassword(false);
       } catch (err) {
         setError(err instanceof Error ? err.message : "加载失败");

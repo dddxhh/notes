@@ -11,6 +11,7 @@ interface NoteCardProps {
   onClick: (note: Note) => void;
   tags?: { id: string; name: string }[];
   attachments?: Attachment[];
+  isShared?: boolean;
   onDelete?: (note: Note) => void;
   onMoveToFolder?: (note: Note) => void;
   onCopyMarkdown?: (note: Note) => void;
@@ -22,6 +23,7 @@ export default function NoteCard({
   onClick,
   tags,
   attachments,
+  isShared,
   onDelete,
   onMoveToFolder,
   onCopyMarkdown,
@@ -104,6 +106,11 @@ export default function NoteCard({
               <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
                 {timeStr}
               </span>
+              {isShared && (
+                <span className="text-xs" style={{ color: "var(--accent)" }} title="已分享">
+                  🔗
+                </span>
+              )}
               {tags && tags.length > 0 && (
                 <div className="flex items-center gap-1 overflow-hidden">
                   {tags.slice(0, 2).map((tag) => (
