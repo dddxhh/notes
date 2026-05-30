@@ -2,7 +2,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import * as Tabs from "@radix-ui/react-tabs";
 import { useState, useEffect, useCallback } from "react";
 import { SyncClient, type CreateShareInput, type Share } from "../../lib/sync-client";
-import { useAuthStore } from "../../stores";
+import { useAuthStore, useNotesStore } from "../../stores";
 
 interface ShareDialogProps {
   open: boolean;
@@ -98,6 +98,13 @@ export default function ShareDialog({ open, onOpenChange, noteId, noteTitle }: S
     try {
       await client.deleteShare(id);
       setShares((prev) => prev.filter((s) => s.id !== id));
+      const remaining = shares.filter((s) => s.id !== id);
+      if (!remaining.some((s) => s.noteId === noteId)) {
+        const { sharedNoteIds, setSharedNoteIds } = useNotesStore.getState();
+        const next = new Set(sharedNoteIds);
+        next.delete(noteId);
+        setSharedNoteIds(next);
+      }
     } catch {
       setError("删除分享失败");
     }
