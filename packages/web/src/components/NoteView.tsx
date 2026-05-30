@@ -344,6 +344,7 @@ export default function NoteView({ note, onBack, initialTagIds }: NoteViewProps)
         onMoveToFolder={handleContextMenuMoveToFolder}
         onAddTag={handleContextMenuAddTag}
         onCopyMarkdown={handleContextMenuCopyMarkdown}
+        noteTitle={title}
       >
         <div className="flex-1 overflow-auto p-4">
           {editorMode === "wysiwyg" ? (

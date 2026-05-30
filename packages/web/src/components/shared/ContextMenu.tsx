@@ -2,6 +2,7 @@ import * as RadixContextMenu from "@radix-ui/react-context-menu";
 import { useState } from "react";
 import ConfirmDialog from "./ConfirmDialog";
 import MoveNoteDialog from "./MoveNoteDialog";
+import ShareDialog from "./ShareDialog";
 
 interface ContextMenuProps {
   itemId: string;
@@ -11,6 +12,7 @@ interface ContextMenuProps {
   onMoveToFolder: (id: string, targetFolderId: string) => void;
   onAddTag: (id: string) => void;
   onCopyMarkdown: (id: string) => void;
+  noteTitle?: string;
   children: React.ReactNode;
 }
 
@@ -22,12 +24,14 @@ export default function ContextMenu({
   onMoveToFolder,
   onAddTag,
   onCopyMarkdown,
+  noteTitle,
   children,
 }: ContextMenuProps) {
   const deleteLabel = itemType === "folder" ? "删除文件夹" : "删除笔记";
 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [moveOpen, setMoveOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
 
   return (
     <RadixContextMenu.Root>
@@ -66,6 +70,14 @@ export default function ContextMenu({
             复制 Markdown
           </RadixContextMenu.Item>
         )}
+        {itemType === "note" && (
+          <RadixContextMenu.Item
+            onClick={() => setShareOpen(true)}
+            className="context-menu-item px-3 py-2 text-sm cursor-pointer hover:opacity-80 rounded-md"
+          >
+            分享
+          </RadixContextMenu.Item>
+        )}
         <RadixContextMenu.Item
           onClick={() => setConfirmOpen(true)}
           className="context-menu-item px-3 py-2 text-sm cursor-pointer hover:opacity-80 rounded-md"
@@ -91,6 +103,14 @@ export default function ContextMenu({
           noteId={itemId}
           currentFolderId={currentFolderId ?? null}
           onMove={(targetFolderId) => onMoveToFolder(itemId, targetFolderId)}
+        />
+      )}
+      {itemType === "note" && (
+        <ShareDialog
+          open={shareOpen}
+          onOpenChange={setShareOpen}
+          noteId={itemId}
+          noteTitle={noteTitle ?? ""}
         />
       )}
     </RadixContextMenu.Root>
