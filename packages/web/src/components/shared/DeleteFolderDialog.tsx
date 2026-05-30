@@ -21,9 +21,9 @@ export default function DeleteFolderDialog({
   return (
     <AlertDialog.Root open={open} onOpenChange={onOpenChange}>
       <AlertDialog.Portal>
-        <AlertDialog.Overlay className="fixed inset-0 bg-black/50" />
+        <AlertDialog.Overlay className="fixed inset-0 bg-black/50 z-[60]" />
         <AlertDialog.Content
-          className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 rounded-lg p-6 shadow-lg"
+          className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 rounded-lg p-6 shadow-lg z-[61]"
           style={{ backgroundColor: "var(--bg-secondary)", color: "var(--text-primary)" }}
         >
           <AlertDialog.Title className="text-lg font-bold mb-2">
