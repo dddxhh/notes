@@ -63,6 +63,12 @@ export default function ShareDialog({ open, onOpenChange, noteId, noteTitle }: S
         setCreatedToken(result.shareToken);
       }
       await loadShares();
+      const { sharedNoteIds, setSharedNoteIds } = useNotesStore.getState();
+      if (!sharedNoteIds.has(noteId)) {
+        const next = new Set(sharedNoteIds);
+        next.add(noteId);
+        setSharedNoteIds(next);
+      }
     } catch {
       setError("创建公开链接失败");
     } finally {
@@ -85,6 +91,12 @@ export default function ShareDialog({ open, onOpenChange, noteId, noteTitle }: S
       await client.createShare(input);
       setTargetUsername("");
       await loadShares();
+      const { sharedNoteIds, setSharedNoteIds } = useNotesStore.getState();
+      if (!sharedNoteIds.has(noteId)) {
+        const next = new Set(sharedNoteIds);
+        next.add(noteId);
+        setSharedNoteIds(next);
+      }
     } catch {
       setError("分享失败");
     } finally {
@@ -96,9 +108,13 @@ export default function ShareDialog({ open, onOpenChange, noteId, noteTitle }: S
     const client = getClient();
     if (!client) return;
     try {
+      const deletedShare = shares.find((s) => s.id === id);
       await client.deleteShare(id);
-      setShares((prev) => prev.filter((s) => s.id !== id));
       const remaining = shares.filter((s) => s.id !== id);
+      setShares(remaining);
+      if (deletedShare?.type === "public_link") {
+        setCreatedToken(null);
+      }
       if (!remaining.some((s) => s.noteId === noteId)) {
         const { sharedNoteIds, setSharedNoteIds } = useNotesStore.getState();
         const next = new Set(sharedNoteIds);
