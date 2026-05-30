@@ -4,6 +4,7 @@ import { useResponsive, useTheme, useAttachmentIntegrity } from "./hooks";
 import DesktopLayout from "./components/layouts/DesktopLayout";
 import MobileLayout from "./components/layouts/MobileLayout";
 import AttachmentIntegrityBanner from "./components/shared/AttachmentIntegrityBanner";
+import PublicShareView from "./components/shared/PublicShareView";
 import * as Tooltip from "@radix-ui/react-tooltip";
 import { useSyncStore } from "./stores/syncStore";
 import { useAuthStore } from "./stores/authStore";
@@ -16,7 +17,10 @@ export default function App() {
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const initSync = useSyncStore((s) => s.initSync);
 
+  const shareMatch = window.location.pathname.match(/^\/s\/(.+)$/);
+
   useEffect(() => {
+    if (shareMatch) return;
     initStorage().then(() => {
       setReady(true);
       if (navigator.storage && navigator.storage.persist) {
@@ -36,6 +40,15 @@ export default function App() {
       }
     });
   }, []);
+
+  if (shareMatch) {
+    const serverUrl = sessionStorage.getItem("sync-server-url") || "http://localhost:3001";
+    return (
+      <Tooltip.Provider delayDuration={300}>
+        <PublicShareView token={shareMatch[1]} serverUrl={serverUrl} />
+      </Tooltip.Provider>
+    );
+  }
 
   if (!ready)
     return (
