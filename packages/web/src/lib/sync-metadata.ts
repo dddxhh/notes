@@ -295,6 +295,15 @@ export async function pullAll(client: SyncClient): Promise<void> {
       console.warn("Failed to push local data:", err);
     }
 
+    // --- SHARED NOTES ---
+    const sharedNoteMetas = remote.notes.filter((n) => !n.isOwner);
+    const sharedNotes: Note[] = [];
+    for (const sn of sharedNoteMetas) {
+      const local = await storage.getNote(sn.id);
+      if (local) sharedNotes.push(local);
+    }
+    useNotesStore.getState().setSharedNotes(sharedNotes);
+
     // --- REFRESH STORES ---
     useNotesStore.getState().setNotes(await storage.listNotes());
     useFoldersStore.getState().setFolders(await storage.listFolders());

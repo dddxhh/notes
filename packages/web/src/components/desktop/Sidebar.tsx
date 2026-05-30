@@ -17,6 +17,8 @@ import type { Note } from "@notes/core";
 
 export default function Sidebar() {
   const notes = useNotesStore((s) => s.notes);
+  const sharedNotes = useNotesStore((s) => s.sharedNotes);
+  const currentNote = useNotesStore((s) => s.currentNote);
   const setCurrentNote = useNotesStore((s) => s.setCurrentNote);
   const tags = useTagsStore((s) => s.tags);
   const currentFolderId = useFoldersStore((s) => s.currentFolderId);
@@ -343,6 +345,30 @@ export default function Sidebar() {
             );
           })}
         </div>
+        {sharedNotes.length > 0 && currentFolderId === null && !searchInput.query && (
+          <div className="mt-2 pt-2 border-t" style={{ borderColor: "var(--border-color)" }}>
+            <p
+              className="text-xs font-semibold px-2 mb-1"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              共享给我
+            </p>
+            {sharedNotes.map((note) => (
+              <div
+                key={note.id}
+                onClick={() => setCurrentNote(note)}
+                className="text-sm px-2 py-1 rounded cursor-pointer hover:opacity-80"
+                style={{
+                  backgroundColor:
+                    currentNote?.id === note.id ? "rgba(59,130,246,0.1)" : "transparent",
+                  color: currentNote?.id === note.id ? "var(--accent)" : "var(--text-primary)",
+                }}
+              >
+                {note.title || <em style={{ color: "var(--text-tertiary)" }}>未命名</em>}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div

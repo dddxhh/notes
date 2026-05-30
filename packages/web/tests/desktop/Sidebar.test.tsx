@@ -143,6 +143,7 @@ vi.mock("../../src/stores", () => ({
     selector({
       notes: mockNotes,
       currentNote: null,
+      sharedNotes: [],
       setCurrentNote: mockSetCurrentNote,
       setNotes: vi.fn(),
       addNote: vi.fn(),

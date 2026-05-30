@@ -42,6 +42,7 @@ vi.mock("../../src/stores", () => ({
       ? selector({
           notes: mockNotes,
           currentNote: null,
+          sharedNotes: [],
           setNotes: mockSetNotes,
           addNote: vi.fn(),
           setCurrentNote: mockSetCurrentNote,
@@ -49,7 +50,7 @@ vi.mock("../../src/stores", () => ({
           noteTagsMap: mockNoteTagsMap,
           setNoteTagsMap: vi.fn(),
         })
-      : { notes: mockNotes },
+      : { notes: mockNotes, sharedNotes: [] },
   useFoldersStore: (selector?: any) =>
     selector
       ? selector({
