@@ -10,7 +10,15 @@ export function isPullingFromRemote(): boolean {
 }
 
 interface QueueItem {
-  type: "note" | "folder" | "tag" | "deleteNote" | "deleteFolder" | "deleteTag" | "noteTags";
+  type:
+    | "note"
+    | "folder"
+    | "tag"
+    | "deleteNote"
+    | "deleteFolder"
+    | "deleteTag"
+    | "deleteAttachment"
+    | "noteTags";
   data: any;
   entityId?: string;
 }
@@ -61,6 +69,10 @@ class PushQueue {
         case "deleteTag":
           batch.deletedTagIds = batch.deletedTagIds || [];
           batch.deletedTagIds.push(item.data);
+          break;
+        case "deleteAttachment":
+          batch.deletedAttachmentIds = batch.deletedAttachmentIds || [];
+          batch.deletedAttachmentIds.push(item.data);
           break;
         case "noteTags":
           batch.noteTags = batch.noteTags || [];
@@ -164,9 +176,10 @@ export async function pullAll(client: SyncClient): Promise<void> {
     }
 
     // --- NOTES ---
-    const localNotes = await storage.listNotes();
-    const localNoteById = new Map(localNotes.map((n) => [n.id, n]));
+    const allLocalNotes = await storage.listAllNotes();
+    const localNoteById = new Map(allLocalNotes.map((n) => [n.id, n]));
     const seenNoteIds = new Set<string>();
+    const claimedLocalNoteIds = new Set<string>();
 
     for (const rn of remote.notes) {
       if (localNoteById.has(rn.id)) {
@@ -179,20 +192,47 @@ export async function pullAll(client: SyncClient): Promise<void> {
             type: rn.type as any,
             deletedAt: rn.deletedAt,
           });
+        } else if (ln.deletedAt && !rn.deletedAt) {
+          // Local is deleted but remote isn't - push soft-delete
+          pushQueue.enqueue({ type: "deleteNote", data: rn.id, entityId: rn.id });
         }
       } else {
-        // Remote note not found locally - create with remote ID
-        await storage.createNote({
-          id: rn.id,
-          title: rn.title,
-          folderId: rn.folderId,
-          type: rn.type as any,
-        });
+        // Remote note not found locally by ID
+        // Check if a local note with same (title, folderId) exists (ID mismatch)
+        const matchingLocal = allLocalNotes.find(
+          (ln) =>
+            ln.title === rn.title &&
+            (ln.folderId ?? null) === (rn.folderId ?? null) &&
+            !seenNoteIds.has(ln.id) &&
+            !claimedLocalNoteIds.has(ln.id) &&
+            !ln.deletedAt,
+        );
+
+        if (matchingLocal) {
+          // ID mismatch: remote is likely a placeholder, local has the real data
+          // Delete remote placeholder and queue local note for push
+          pushQueue.enqueue({ type: "deleteNote", data: rn.id, entityId: rn.id });
+          pushQueue.enqueue({
+            type: "note",
+            data: matchingLocal,
+            entityId: matchingLocal.id,
+          });
+          claimedLocalNoteIds.add(matchingLocal.id);
+          seenNoteIds.add(matchingLocal.id);
+        } else if (!rn.deletedAt) {
+          // No matching local note and remote isn't deleted - create with remote ID
+          await storage.createNote({
+            id: rn.id,
+            title: rn.title,
+            folderId: rn.folderId,
+            type: rn.type as any,
+          });
+        }
         seenNoteIds.add(rn.id);
       }
     }
 
-    // Queue local-only notes for push
+    // Queue local-only notes for push (only non-deleted)
     const currentLocalNotes = await storage.listNotes();
     const remoteNoteIds = new Set(remote.notes.map((n) => n.id));
     for (const ln of currentLocalNotes) {
@@ -314,6 +354,11 @@ export async function pushNoteTags(noteId: string, tagIds: string[]): Promise<vo
   await client.pushMetadata({
     noteTags: tagIds.map((tagId) => ({ noteId, tagId })),
   });
+}
+
+export async function pushDeleteAttachment(attachmentId: string): Promise<void> {
+  const client = getClient();
+  await client.pushMetadata({ deletedAttachmentIds: [attachmentId] });
 }
 
 let clientInstance: SyncClient | null = null;

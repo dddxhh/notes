@@ -2,6 +2,12 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { upload, download } from "../../src/lib/sync-attachment";
 import { SyncClient } from "../../src/lib/sync-client";
 
+vi.mock("../../src/lib/sqlite-init", () => ({
+  getStorage: () => ({
+    getNote: vi.fn().mockResolvedValue(null),
+  }),
+}));
+
 describe("sync-attachment", () => {
   let mockClient: SyncClient;
 

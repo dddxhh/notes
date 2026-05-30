@@ -19,6 +19,10 @@ export function useAttachmentUpload(noteId: string) {
 
   const uploadFile = useCallback(
     async (file: File): Promise<UploadResult> => {
+      if (!noteId) {
+        return { success: false, error: "笔记尚未保存，无法上传附件" };
+      }
+
       const validation = validateFile(file);
       if (!validation.valid) {
         return { success: false, error: validation.error };
@@ -54,7 +58,9 @@ export function useAttachmentUpload(noteId: string) {
                 }
               },
             });
-            syncUpload(client, attachment, processedFile).catch(() => {});
+            syncUpload(client, attachment, processedFile).catch((err) => {
+              console.error("Failed to sync upload attachment:", attachment.id, err);
+            });
           }
         }
 

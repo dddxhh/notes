@@ -37,6 +37,7 @@ export interface MetadataBatch {
   deletedNoteIds?: string[];
   deletedFolderIds?: string[];
   deletedTagIds?: string[];
+  deletedAttachmentIds?: string[];
 }
 
 interface Folder {
@@ -126,7 +127,10 @@ export class SyncClient {
       body: formData,
     });
 
-    if (!res.ok) throw new Error("Upload failed");
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      throw new Error(`Upload failed: ${res.status} ${body}`);
+    }
     return res.json();
   }
 

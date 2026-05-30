@@ -210,7 +210,7 @@ export default function Editor({
 
   return (
     <div className="editor-container">
-      {!mobile && <EditorToolbar editor={editor} />}
+      {!mobile && <EditorToolbar editor={editor} noteId={currentNoteId} />}
       <EditorContent editor={editor} />
       <input
         ref={imageInputRef}

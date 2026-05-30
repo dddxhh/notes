@@ -24,6 +24,7 @@ export interface StorageAdapter {
   permanentlyDeleteNote(id: string): Promise<void>;
   getNote(id: string): Promise<Note | null>;
   listNotes(folderId?: string, tagId?: string): Promise<Note[]>;
+  listAllNotes(): Promise<Note[]>;
 
   createFolder(input: CreateFolderInput): Promise<Folder>;
   updateFolder(id: string, input: UpdateFolderInput): Promise<Folder>;

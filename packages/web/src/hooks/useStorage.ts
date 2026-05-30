@@ -21,6 +21,7 @@ import {
   pushDeleteNote,
   pushDeleteFolder,
   pushDeleteTag,
+  pushDeleteAttachment,
   pushNoteTags,
   pushQueue,
   isPullingFromRemote,
@@ -191,6 +192,15 @@ export function useStorage() {
     return getStorage().getTagsForNote(noteId);
   }, []);
 
+  const deleteAttachment = useCallback(async (id: string): Promise<void> => {
+    await getStorage().deleteAttachment(id);
+    if (useSyncStore.getState().engine && !isPullingFromRemote()) {
+      pushDeleteAttachment(id).catch(() => {
+        pushQueue.enqueue({ type: "deleteAttachment", data: id, entityId: id });
+      });
+    }
+  }, []);
+
   const dumpAll = useCallback(async (): Promise<DataDump> => {
     return getStorage().dumpAll();
   }, []);
@@ -221,6 +231,7 @@ export function useStorage() {
     updateNotesFolderId,
     softDeleteNotesByFolder,
     getTagsForNote,
+    deleteAttachment,
     dumpAll,
     restoreAll,
   };

@@ -174,6 +174,12 @@ export class WebStorageAdapter implements StorageAdapter {
     return rows.map(mapNoteRow);
   }
 
+  async listAllNotes(): Promise<Note[]> {
+    const db = this.getDB();
+    const rows = await querySQL<Row>(db, `SELECT * FROM notes ORDER BY updated_at DESC`);
+    return rows.map(mapNoteRow);
+  }
+
   async createFolder(input: CreateFolderInput): Promise<Folder> {
     const id = input.id ?? generateId();
     const now = Date.now();

@@ -414,8 +414,13 @@ export class SharedWorkerStorageAdapter implements StorageAdapter {
     return rows.map(mapNoteRow);
   }
 
+  async listAllNotes(): Promise<Note[]> {
+    const rows = await this.client.query<Row>(`SELECT * FROM notes ORDER BY updated_at DESC`);
+    return rows.map(mapNoteRow);
+  }
+
   async createFolder(input: CreateFolderInput): Promise<Folder> {
-    const id = generateId();
+    const id = input.id ?? generateId();
     const now = Date.now();
     await this.client.run(
       `INSERT INTO folders (id, name, parent_id, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)`,

@@ -1,9 +1,5 @@
 import { useState, useEffect } from "react";
-import {
-  isAttachmentSrc,
-  parseAttachmentId,
-  resolveAttachmentSrc,
-} from "../lib/attachment-protocol";
+import { isAttachmentSrc, resolveAttachmentSrc } from "../lib/attachment-protocol";
 import { getStorage } from "../lib";
 import { useSyncStore } from "../stores/syncStore";
 import { download as syncDownload } from "../lib/sync-attachment";
@@ -16,6 +12,7 @@ export function useAttachmentRenderer(src: string): {
 } {
   const [resolvedSrc, setResolvedSrc] = useState<string | null>(null);
   const [error, setError] = useState(false);
+  const engine = useSyncStore((s) => s.engine);
 
   useEffect(() => {
     if (!src) {
@@ -32,11 +29,10 @@ export function useAttachmentRenderer(src: string): {
 
     let cancelled = false;
 
-    const id = parseAttachmentId(src)!;
     resolveAttachmentSrc(src, async (attachmentId: string) => {
       let blob = await getStorage().getAttachmentBlob(attachmentId);
 
-      if (!blob && useSyncStore.getState().engine) {
+      if (!blob && engine) {
         const serverUrl = useAuthStore.getState().serverUrl;
         const token = useAuthStore.getState().accessToken;
         if (serverUrl && token) {
@@ -71,8 +67,9 @@ export function useAttachmentRenderer(src: string): {
           setError(true);
         }
       })
-      .catch(() => {
+      .catch((err) => {
         if (cancelled) return;
+        console.error("Failed to resolve attachment:", src, err);
         setResolvedSrc(null);
         setError(true);
       });
@@ -80,7 +77,7 @@ export function useAttachmentRenderer(src: string): {
     return () => {
       cancelled = true;
     };
-  }, [src]);
+  }, [src, engine]);
 
   return { resolvedSrc, error };
 }

@@ -1,6 +1,9 @@
 import { type FastifyPluginAsync } from "fastify";
+import { unlink } from "fs/promises";
+import { join } from "path";
 import { authMiddleware } from "../auth/middleware";
 import { getPool } from "../db/client";
+import { loadConfig } from "../config";
 
 export const metadataRoutes: FastifyPluginAsync = async (app) => {
   app.addHook("preHandler", authMiddleware);
@@ -79,7 +82,7 @@ export const metadataRoutes: FastifyPluginAsync = async (app) => {
     });
   });
 
-  app.post("/metadata/batch", async (request, reply) => {
+  app.post("/metadata/batch", { bodyLimit: 10 * 1024 * 1024 }, async (request, reply) => {
     const { userId } = request.user;
     const pool = getPool();
     const body = request.body as {
@@ -106,6 +109,7 @@ export const metadataRoutes: FastifyPluginAsync = async (app) => {
       deletedNoteIds?: string[];
       deletedFolderIds?: string[];
       deletedTagIds?: string[];
+      deletedAttachmentIds?: string[];
     };
 
     const client = await pool.connect();
@@ -158,11 +162,23 @@ export const metadataRoutes: FastifyPluginAsync = async (app) => {
       }
 
       if (body.deletedNoteIds) {
+        const config = loadConfig();
+        const now = Date.now();
         for (const id of body.deletedNoteIds) {
-          await client.query(`DELETE FROM note_metadata WHERE id = $1 AND user_id = $2`, [
-            id,
-            userId,
-          ]);
+          const attResult = await client.query(
+            `SELECT id FROM attachments WHERE note_id = $1 AND user_id = $2`,
+            [id, userId],
+          );
+          for (const row of attResult.rows) {
+            const filePath = join(config.attachmentDir, userId, row.id);
+            try {
+              await unlink(filePath);
+            } catch {}
+          }
+          await client.query(
+            `UPDATE note_metadata SET deleted_at = $3, updated_at = $3 WHERE id = $1 AND user_id = $2`,
+            [id, userId, now],
+          );
         }
       }
 
@@ -192,6 +208,20 @@ export const metadataRoutes: FastifyPluginAsync = async (app) => {
             `INSERT INTO note_tags (note_id, tag_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
             [nt.noteId, nt.tagId],
           );
+        }
+      }
+
+      if (body.deletedAttachmentIds) {
+        const config = loadConfig();
+        for (const id of body.deletedAttachmentIds) {
+          await client.query(`DELETE FROM attachments WHERE id = $1 AND user_id = $2`, [
+            id,
+            userId,
+          ]);
+          const filePath = join(config.attachmentDir, userId, id);
+          try {
+            await unlink(filePath);
+          } catch {}
         }
       }
 

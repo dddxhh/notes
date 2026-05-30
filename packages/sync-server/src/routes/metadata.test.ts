@@ -297,6 +297,7 @@ describe.skipIf(!dbAvailable)("POST /metadata/batch", () => {
       headers: authHeader(),
     });
     expect(syncRes.json().folders).toHaveLength(0);
-    expect(syncRes.json().notes).toHaveLength(0);
+    expect(syncRes.json().notes).toHaveLength(1);
+    expect(syncRes.json().notes[0].deletedAt).not.toBeNull();
   });
 });

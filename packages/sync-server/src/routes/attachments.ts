@@ -45,6 +45,10 @@ export const attachmentRoutes: FastifyPluginAsync = async (app) => {
     }
     await writeFile(filePath, Buffer.concat(chunks));
 
+    if (!meta.noteId) {
+      return reply.status(400).send({ error: "Missing noteId" });
+    }
+
     await pool.query(
       `INSERT INTO attachments (id, user_id, note_id, type, filename, mime_type, size, created_at)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)

@@ -14,6 +14,18 @@ import { formatDateTime } from "../lib/format-date";
 import { Note } from "@notes/core";
 import type { UploadResult } from "../hooks";
 
+const ATTACHMENT_RE = /attachment:\/\/([a-zA-Z0-9_-]+)/g;
+
+function extractAttachmentIds(content: string): Set<string> {
+  const ids = new Set<string>();
+  let match: RegExpExecArray | null;
+  ATTACHMENT_RE.lastIndex = 0;
+  while ((match = ATTACHMENT_RE.exec(content)) !== null) {
+    ids.add(match[1]);
+  }
+  return ids;
+}
+
 interface NoteViewProps {
   note: Note;
   onBack?: () => void;
@@ -26,8 +38,15 @@ export default function NoteView({ note, onBack, initialTagIds }: NoteViewProps)
   const tags = useTagsStore((s) => s.tags);
   const addTagToStore = useTagsStore((s) => s.addTag);
   const removeNoteFromList = useNotesStore((s) => s.removeNoteFromList);
-  const { updateNote, addTagsToNote, removeTagFromNote, createTag, deleteNote, getTagsForNote } =
-    useStorage();
+  const {
+    updateNote,
+    addTagsToNote,
+    removeTagFromNote,
+    createTag,
+    deleteNote,
+    deleteAttachment,
+    getTagsForNote,
+  } = useStorage();
   const { uploadFile } = useAttachmentUpload(note.id);
   const { showToast } = useToast();
   const [contentJson, setContentJson] = useState(note.contentJson);
@@ -112,6 +131,14 @@ export default function NoteView({ note, onBack, initialTagIds }: NoteViewProps)
       if (currentNote && currentNote.id === noteIdRef.current) {
         store.setCurrentNote({ ...currentNote, contentJson: cj, mdText: mt, updatedAt: now });
       }
+      const oldIds = extractAttachmentIds(orig.contentJson);
+      const newIds = extractAttachmentIds(cj);
+      for (const id of oldIds) {
+        if (!newIds.has(id)) {
+          deleteAttachment(id).catch(() => {});
+        }
+      }
+
       originalContentRef.current = { contentJson: cj, mdText: mt };
       setSaveStatus("saving");
       const saveStart = Date.now();
@@ -130,7 +157,7 @@ export default function NoteView({ note, onBack, initialTagIds }: NoteViewProps)
         });
       pendingSaveRef.current = null;
     }
-  }, [updateNote]);
+  }, [updateNote, deleteAttachment]);
 
   useEffect(() => {
     pendingSaveRef.current = { contentJson, mdText };

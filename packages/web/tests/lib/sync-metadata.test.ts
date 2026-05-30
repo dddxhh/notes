@@ -30,6 +30,7 @@ describe("sync-metadata", () => {
     mockStorage = {
       listFolders: vi.fn().mockResolvedValue([]),
       listNotes: vi.fn().mockResolvedValue([]),
+      listAllNotes: vi.fn().mockResolvedValue([]),
       listTags: vi.fn().mockResolvedValue([]),
       createFolder: vi.fn().mockResolvedValue({}),
       updateFolder: vi.fn().mockResolvedValue({}),

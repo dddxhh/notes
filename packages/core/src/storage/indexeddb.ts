@@ -1,5 +1,5 @@
 const DB_NAME = "notes-attachments";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const ATTACHMENTS_STORE = "attachments-store";
 const THUMBNAILS_STORE = "thumbnails-store";
 

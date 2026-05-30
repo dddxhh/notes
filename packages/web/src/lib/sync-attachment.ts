@@ -1,5 +1,6 @@
-import { SyncClient, AttachmentMetadata } from "./sync-client";
-import type { Attachment } from "@notes/core";
+import { SyncClient } from "./sync-client";
+import type { Attachment, Note } from "@notes/core";
+import { getStorage } from "./sqlite-init";
 
 const MAX_CONCURRENT_UPLOADS = 3;
 const uploadQueue: Array<{ client: SyncClient; att: Attachment; file: File }> = [];
@@ -18,9 +19,33 @@ async function processUploadQueue(): Promise<void> {
     while (uploadQueue.length > 0) {
       const batch = uploadQueue.splice(0, MAX_CONCURRENT_UPLOADS);
       await Promise.all(
-        batch.map(({ client, att, file }) =>
-          client
-            .uploadAttachment(
+        batch.map(async ({ client, att, file }) => {
+          try {
+            const storage = getStorage();
+            const note = await storage.getNote(att.noteId);
+            if (note) {
+              await client
+                .pushMetadata({
+                  notes: [
+                    {
+                      id: note.id,
+                      title: note.title,
+                      folderId: note.folderId,
+                      type: note.type,
+                      createdAt: note.createdAt,
+                      updatedAt: note.updatedAt,
+                      deletedAt: note.deletedAt,
+                      version: note.version,
+                      isOwner: true,
+                      sharePermission: null,
+                    },
+                  ],
+                })
+                .catch((err) => {
+                  console.warn("Failed to push note before attachment upload:", err);
+                });
+            }
+            await client.uploadAttachment(
               {
                 id: att.id,
                 noteId: att.noteId,
@@ -31,11 +56,11 @@ async function processUploadQueue(): Promise<void> {
                 createdAt: att.createdAt,
               },
               file,
-            )
-            .catch((err) => {
-              console.error("Failed to upload attachment:", att.id, err);
-            }),
-        ),
+            );
+          } catch (err) {
+            console.error("Failed to upload attachment:", att.id, err);
+          }
+        }),
       );
     }
   } finally {
