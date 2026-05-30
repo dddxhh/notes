@@ -97,7 +97,7 @@ export default function FolderTree({
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
   return (
-    <div>
+    <div className="max-h-60 overflow-y-auto">
       <div
         data-all-notes
         onClick={() => onSelectFolder(null)}
