@@ -40,6 +40,27 @@ export interface MetadataBatch {
   deletedAttachmentIds?: string[];
 }
 
+export interface CreateShareInput {
+  noteId: string;
+  type: "public_link" | "user_share";
+  targetUsername?: string;
+  permission?: "read" | "write";
+  password?: string;
+  expiresAt?: string;
+}
+
+export interface Share {
+  id: string;
+  noteId: string;
+  noteTitle: string;
+  type: "public_link" | "user_share";
+  permission: "read" | "write";
+  targetUsername: string | null;
+  hasPassword: boolean;
+  expiresAt: string | null;
+  createdAt: string;
+}
+
 interface Folder {
   id: string;
   name: string;
@@ -148,5 +169,20 @@ export class SyncClient {
 
   async deleteAttachment(id: string): Promise<void> {
     await this.request(`/api/v1/attachments/${id}`, { method: "DELETE" });
+  }
+
+  async createShare(input: CreateShareInput): Promise<Share> {
+    return this.request("/api/v1/shares", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+  }
+
+  async listShares(): Promise<Share[]> {
+    return this.request("/api/v1/shares");
+  }
+
+  async deleteShare(id: string): Promise<void> {
+    await this.request(`/api/v1/shares/${id}`, { method: "DELETE" });
   }
 }
