@@ -77,7 +77,17 @@ export const attachmentRoutes: FastifyPluginAsync = async (app) => {
     const pool = getPool();
 
     const result = await pool.query(
-      `SELECT id, mime_type, filename FROM attachments WHERE id = $1 AND user_id = $2`,
+      `SELECT a.id, a.mime_type, a.filename, a.user_id as owner_id
+       FROM attachments a
+       WHERE a.id = $1 AND (
+         a.user_id = $2
+         OR EXISTS (
+           SELECT 1 FROM shares s
+           WHERE s.note_id = a.note_id
+             AND s.target_user_id = $2
+             AND s.type = 'user_share'
+         )
+       )`,
       [id, userId],
     );
 
@@ -86,7 +96,7 @@ export const attachmentRoutes: FastifyPluginAsync = async (app) => {
     }
 
     const att = result.rows[0];
-    const filePath = join(config.attachmentDir, userId, id);
+    const filePath = join(config.attachmentDir, att.owner_id, id);
 
     try {
       const stream = createReadStream(filePath);
