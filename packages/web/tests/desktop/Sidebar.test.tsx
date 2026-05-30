@@ -18,6 +18,8 @@ const {
   mockUpdateNote,
   mockGetNotesForTag,
   mockGetTagsForNote,
+  mockSharedNotes,
+  mockSharedNoteIds,
 } = vi.hoisted(() => ({
   mockNotes: [
     {
@@ -134,6 +136,8 @@ const {
   }),
   mockGetNotesForTag: vi.fn().mockResolvedValue([]),
   mockGetTagsForNote: vi.fn().mockResolvedValue([]),
+  mockSharedNotes: [],
+  mockSharedNoteIds: new Set<string>(),
 }));
 
 let mockSidebarOpen = true;
@@ -143,8 +147,8 @@ vi.mock("../../src/stores", () => ({
     selector({
       notes: mockNotes,
       currentNote: null,
-      sharedNotes: [],
-      sharedNoteIds: new Set(),
+      sharedNotes: mockSharedNotes,
+      sharedNoteIds: mockSharedNoteIds,
       setCurrentNote: mockSetCurrentNote,
       setNotes: vi.fn(),
       addNote: vi.fn(),
