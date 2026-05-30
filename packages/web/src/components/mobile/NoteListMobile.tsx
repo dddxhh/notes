@@ -21,7 +21,6 @@ export default function NoteListMobile() {
   } = useStorage();
   const { notes, setNotes, setCurrentNote } = useNotesStore();
   const sharedNotes = useNotesStore((s) => s.sharedNotes);
-  const sharedNoteIds = useNotesStore((s) => s.sharedNoteIds);
   const currentNote = useNotesStore((s) => s.currentNote);
   const addNote = useNotesStore((s) => s.addNote);
   const removeNoteFromList = useNotesStore((s) => s.removeNoteFromList);
@@ -63,8 +62,10 @@ export default function NoteListMobile() {
     };
   }, [selectedTagId, getNotesForTag]);
 
+  const sharedNoteIdsSet = useMemo(() => new Set(sharedNotes.map((n) => n.id)), [sharedNotes]);
+
   const activeNotes = useMemo(() => {
-    const base = notes.filter((n) => n.deletedAt === null && !sharedNoteIds.has(n.id));
+    const base = notes.filter((n) => n.deletedAt === null && !sharedNoteIdsSet.has(n.id));
     let filtered = base;
     if (currentFolderId) {
       filtered = filtered.filter((n) => n.folderId === currentFolderId);
@@ -73,7 +74,7 @@ export default function NoteListMobile() {
       filtered = filtered.filter((n) => tagFilteredNoteIds.has(n.id));
     }
     return filtered;
-  }, [notes, sharedNoteIds, currentFolderId, selectedTagId, tagFilteredNoteIds]);
+  }, [notes, sharedNoteIdsSet, currentFolderId, selectedTagId, tagFilteredNoteIds]);
 
   useEffect(() => {
     let cancelled = false;

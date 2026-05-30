@@ -94,9 +94,11 @@ export default function Sidebar() {
     }
   }, []);
 
+  const sharedNoteIdsSet = useMemo(() => new Set(sharedNotes.map((n) => n.id)), [sharedNotes]);
+
   const activeNotes = useMemo(
-    () => notes.filter((n) => n.deletedAt === null && !sharedNoteIds.has(n.id)),
-    [notes, sharedNoteIds],
+    () => notes.filter((n) => n.deletedAt === null && !sharedNoteIdsSet.has(n.id)),
+    [notes, sharedNoteIdsSet],
   );
 
   const [tagFilteredNoteIds, setTagFilteredNoteIds] = useState<string[]>([]);
