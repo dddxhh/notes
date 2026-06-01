@@ -5,6 +5,7 @@ interface NoteTitleInputProps {
   onChange: (title: string) => void;
   placeholder?: string;
   autoFocus?: boolean;
+  disabled?: boolean;
 }
 
 export default function NoteTitleInput({
@@ -12,6 +13,7 @@ export default function NoteTitleInput({
   onChange,
   placeholder = "输入标题...",
   autoFocus = false,
+  disabled = false,
 }: NoteTitleInputProps) {
   const [localValue, setLocalValue] = useState(value);
   const debounceRef = useRef<number | null>(null);
@@ -62,6 +64,7 @@ export default function NoteTitleInput({
       onChange={handleChange}
       onKeyDown={handleKeyDown}
       placeholder={placeholder}
+      disabled={disabled}
       className="note-title-input flex-1 min-w-0 text-lg font-semibold outline-none"
       style={{ color: "var(--text-primary)" }}
     />

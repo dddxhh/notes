@@ -16,6 +16,7 @@ vi.mock("../src/stores", () => ({
       setCurrentNote: vi.fn(),
       setNotes: vi.fn(),
       addNote: vi.fn(),
+      sharedNotePermissions: new Map(),
     };
     return selector ? selector(state) : state;
   },

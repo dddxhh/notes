@@ -6,9 +6,12 @@ import { useNotesStore, useUIStore } from "../../stores";
 
 export default function DesktopLayout() {
   const currentNote = useNotesStore((s) => s.currentNote);
+  const sharedNotePermissions = useNotesStore((s) => s.sharedNotePermissions);
   const sidebarOpen = useUIStore((s) => s.sidebarOpen);
   const setSidebarOpen = useUIStore((s) => s.setSidebarOpen);
   const showTrash = useUIStore((s) => s.showTrash);
+
+  const isReadOnly = currentNote ? sharedNotePermissions.get(currentNote.id) === "read" : false;
 
   return (
     <div
@@ -36,7 +39,7 @@ export default function DesktopLayout() {
           {showTrash ? (
             <TrashView />
           ) : currentNote ? (
-            <NoteView key={currentNote.id} note={currentNote} />
+            <NoteView key={currentNote.id} note={currentNote} readOnly={isReadOnly} />
           ) : (
             <QuickNote />
           )}

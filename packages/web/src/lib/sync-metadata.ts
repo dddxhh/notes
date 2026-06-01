@@ -298,11 +298,18 @@ export async function pullAll(client: SyncClient): Promise<void> {
     // --- SHARED NOTES ---
     const sharedNoteMetas = remote.notes.filter((n) => !n.isOwner);
     const sharedNotes: Note[] = [];
+    const sharedNotePermissions = new Map<string, "read" | "write">();
     for (const sn of sharedNoteMetas) {
       const local = await storage.getNote(sn.id);
-      if (local) sharedNotes.push(local);
+      if (local) {
+        sharedNotes.push(local);
+        if (sn.sharePermission === "read" || sn.sharePermission === "write") {
+          sharedNotePermissions.set(sn.id, sn.sharePermission);
+        }
+      }
     }
     useNotesStore.getState().setSharedNotes(sharedNotes);
+    useNotesStore.getState().setSharedNotePermissions(sharedNotePermissions);
 
     // --- REFRESH STORES ---
     useNotesStore.getState().setNotes(await storage.listNotes());

@@ -21,6 +21,7 @@ vi.mock("../src/stores", () => ({
       setSearchResult: vi.fn(),
       loading: false,
       setLoading: vi.fn(),
+      sharedNotePermissions: new Map(),
     };
     return selector ? selector(state) : state;
   },

@@ -15,11 +15,14 @@ type ScreenState = "quickNote" | "noteList" | "search" | "settings";
 export default function MobileLayout() {
   const currentNote = useNotesStore((s) => s.currentNote);
   const setCurrentNote = useNotesStore((s) => s.setCurrentNote);
+  const sharedNotePermissions = useNotesStore((s) => s.sharedNotePermissions);
   const { createNote } = useStorage();
   const addNote = useNotesStore((s) => s.addNote);
   const [screen, setScreen] = useState<ScreenState>("quickNote");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const showTrash = useUIStore((s) => s.showTrash);
+
+  const isReadOnly = currentNote ? sharedNotePermissions.get(currentNote.id) === "read" : false;
 
   const handleBack = useCallback(() => {
     setCurrentNote(null);
@@ -50,7 +53,14 @@ export default function MobileLayout() {
       return <TrashView />;
     }
     if (currentNote) {
-      return <NoteView key={currentNote.id} note={currentNote} onBack={handleBack} />;
+      return (
+        <NoteView
+          key={currentNote.id}
+          note={currentNote}
+          onBack={handleBack}
+          readOnly={isReadOnly}
+        />
+      );
     }
     switch (screen) {
       case "quickNote":

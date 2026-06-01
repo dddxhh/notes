@@ -30,9 +30,10 @@ interface NoteViewProps {
   note: Note;
   onBack?: () => void;
   initialTagIds?: string[];
+  readOnly?: boolean;
 }
 
-export default function NoteView({ note, onBack, initialTagIds }: NoteViewProps) {
+export default function NoteView({ note, onBack, initialTagIds, readOnly = false }: NoteViewProps) {
   const editorMode = useUIStore((s) => s.editorMode);
   const isMobile = useUIStore((s) => s.isMobile);
   const tags = useTagsStore((s) => s.tags);
@@ -160,13 +161,14 @@ export default function NoteView({ note, onBack, initialTagIds }: NoteViewProps)
   }, [updateNote, deleteAttachment]);
 
   useEffect(() => {
+    if (readOnly) return;
     pendingSaveRef.current = { contentJson, mdText };
     const timeout = setTimeout(flushSave, 500);
     return () => {
       clearTimeout(timeout);
       flushSave();
     };
-  }, [contentJson, mdText, flushSave]);
+  }, [contentJson, mdText, flushSave, readOnly]);
 
   const originalTitleRef = useRef(note.title);
   useEffect(() => {
@@ -310,42 +312,33 @@ export default function NoteView({ note, onBack, initialTagIds }: NoteViewProps)
             ← 返回
           </button>
         )}
-        <NoteTitleInput value={title} onChange={handleTitleChange} autoFocus />
-        <div className="flex items-center gap-2">
-          <ModeToggle />
-        </div>
+        <NoteTitleInput value={title} onChange={handleTitleChange} autoFocus disabled={readOnly} />
+        <div className="flex items-center gap-2">{!readOnly && <ModeToggle />}</div>
       </div>
 
-      <div
-        className="flex items-center gap-2 px-4 py-1 border-b"
-        style={{ borderColor: "var(--border-color)" }}
-      >
-        {noteTags.map((tag) => (
-          <TagBadge
-            key={tag.id}
-            name={tag.name}
-            removable
-            onRemove={() => handleRemoveTag(tag.id)}
+      {!readOnly && (
+        <div
+          className="flex items-center gap-2 px-4 py-1 border-b"
+          style={{ borderColor: "var(--border-color)" }}
+        >
+          {noteTags.map((tag) => (
+            <TagBadge
+              key={tag.id}
+              name={tag.name}
+              removable
+              onRemove={() => handleRemoveTag(tag.id)}
+            />
+          ))}
+          <TagSelector
+            selectedTagIds={noteTagIds}
+            onAdd={handleAddTag}
+            onRemove={handleRemoveTag}
+            onCreateTag={handleCreateTag}
           />
-        ))}
-        <TagSelector
-          selectedTagIds={noteTagIds}
-          onAdd={handleAddTag}
-          onRemove={handleRemoveTag}
-          onCreateTag={handleCreateTag}
-        />
-      </div>
+        </div>
+      )}
 
-      <ContextMenu
-        itemId={note.id}
-        itemType="note"
-        currentFolderId={note.folderId}
-        onDelete={handleContextMenuDelete}
-        onMoveToFolder={handleContextMenuMoveToFolder}
-        onAddTag={handleContextMenuAddTag}
-        onCopyMarkdown={handleContextMenuCopyMarkdown}
-        noteTitle={title}
-      >
+      {readOnly ? (
         <div className="flex-1 overflow-auto p-4">
           {editorMode === "wysiwyg" ? (
             <Editor
@@ -353,13 +346,38 @@ export default function NoteView({ note, onBack, initialTagIds }: NoteViewProps)
               currentNoteId={note.id}
               onUpdate={handleWysiwygUpdate}
               isMobile={isMobile}
-              onFileUpload={handleFileUpload}
+              readOnly
             />
           ) : (
-            <MarkdownEditor content={mdText} onUpdate={handleMarkdownUpdate} />
+            <MarkdownEditor content={mdText} onUpdate={handleMarkdownUpdate} readOnly />
           )}
         </div>
-      </ContextMenu>
+      ) : (
+        <ContextMenu
+          itemId={note.id}
+          itemType="note"
+          currentFolderId={note.folderId}
+          onDelete={handleContextMenuDelete}
+          onMoveToFolder={handleContextMenuMoveToFolder}
+          onAddTag={handleContextMenuAddTag}
+          onCopyMarkdown={handleContextMenuCopyMarkdown}
+          noteTitle={title}
+        >
+          <div className="flex-1 overflow-auto p-4">
+            {editorMode === "wysiwyg" ? (
+              <Editor
+                content={contentJson}
+                currentNoteId={note.id}
+                onUpdate={handleWysiwygUpdate}
+                isMobile={isMobile}
+                onFileUpload={handleFileUpload}
+              />
+            ) : (
+              <MarkdownEditor content={mdText} onUpdate={handleMarkdownUpdate} />
+            )}
+          </div>
+        </ContextMenu>
+      )}
 
       <div
         className="p-2 text-xs border-t"

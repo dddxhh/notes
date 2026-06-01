@@ -16,6 +16,7 @@ interface EditorProps {
   onUpdate: (contentJson: string, mdText: string) => void;
   isMobile?: boolean;
   onFileUpload?: (file: File) => Promise<UploadResult | undefined>;
+  readOnly?: boolean;
 }
 
 export default function Editor({
@@ -24,6 +25,7 @@ export default function Editor({
   onUpdate,
   isMobile,
   onFileUpload,
+  readOnly = false,
 }: EditorProps) {
   const isMobileDefault = useUIStore((s) => s.isMobile);
   const mobile = isMobile ?? isMobileDefault;
@@ -94,6 +96,7 @@ export default function Editor({
   }, [content]);
 
   const editor = useEditor({
+    editable: !readOnly,
     extensions: useMemo(() => {
       const base = getEditorExtensions(mobile);
       if (yjsXmlFragment) {
@@ -210,22 +213,26 @@ export default function Editor({
 
   return (
     <div className="editor-container">
-      {!mobile && <EditorToolbar editor={editor} noteId={currentNoteId} />}
+      {!mobile && !readOnly && <EditorToolbar editor={editor} noteId={currentNoteId} />}
       <EditorContent editor={editor} />
-      <input
-        ref={imageInputRef}
-        type="file"
-        accept="image/*"
-        style={{ display: "none" }}
-        onChange={handleImageUpload}
-      />
-      <input
-        ref={videoInputRef}
-        type="file"
-        accept="video/*"
-        style={{ display: "none" }}
-        onChange={handleVideoUpload}
-      />
+      {!readOnly && (
+        <>
+          <input
+            ref={imageInputRef}
+            type="file"
+            accept="image/*"
+            style={{ display: "none" }}
+            onChange={handleImageUpload}
+          />
+          <input
+            ref={videoInputRef}
+            type="file"
+            accept="video/*"
+            style={{ display: "none" }}
+            onChange={handleVideoUpload}
+          />
+        </>
+      )}
     </div>
   );
 }

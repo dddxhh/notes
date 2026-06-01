@@ -40,6 +40,7 @@ describe("sync-metadata", () => {
     vi.mocked(useNotesStore.getState).mockReturnValue({
       setNotes: vi.fn(),
       setSharedNotes: vi.fn(),
+      setSharedNotePermissions: vi.fn(),
     } as any);
     vi.mocked(useFoldersStore.getState).mockReturnValue({ setFolders: vi.fn() } as any);
     vi.mocked(useTagsStore.getState).mockReturnValue({ setTags: vi.fn() } as any);
